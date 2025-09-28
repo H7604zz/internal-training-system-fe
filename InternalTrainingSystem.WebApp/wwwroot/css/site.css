@@ -1,0 +1,176 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Custom styles for Internal Training System */
+.navbar-brand {
+  font-weight: bold;
+  font-size: 1.25rem;
+}
+
+.card {
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+  transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: 600;
+  border-radius: 10px 10px 0 0 !important;
+}
+
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 0.5em 0.75em;
+  border-radius: 6px;
+}
+
+.table {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.table thead th {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: 600;
+  border: none;
+}
+
+.table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.progress {
+  height: 8px;
+  border-radius: 10px;
+  background-color: #e9ecef;
+}
+
+.progress-bar {
+  border-radius: 10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  white-space: nowrap;
+  line-height: 60px;
+  padding: 0 20px;
+}
+
+.breadcrumb {
+  background-color: transparent;
+  padding: 0;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+  content: ">";
+  color: #6c757d;
+}
+
+/* Dashboard specific styles */
+.dashboard-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+}
+
+.dashboard-card .card-body {
+  padding: 1.5rem;
+}
+
+.dashboard-card h4 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+/* Animation for loading */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .navbar-brand {
+    font-size: 1rem;
+  }
+  
+  .card {
+    margin-bottom: 1rem;
+  }
+  
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+}
