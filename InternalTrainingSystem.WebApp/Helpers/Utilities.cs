@@ -1,4 +1,6 @@
-﻿namespace InternalTrainingSystem.WebApp.Helpers
+﻿using System.Text.RegularExpressions;
+
+namespace InternalTrainingSystem.WebApp.Helpers
 {
     public class Utilities
     {
@@ -30,6 +32,47 @@
 
             // Combine baseUrl and path
             return $"{baseUrl}/{path}";
+        }
+
+        /// <summary>
+        /// Generates an absolute URL with kebab-case formatting for controller and action
+        /// </summary>
+        /// <param name="controller">Controller name (will be converted to kebab-case)</param>
+        /// <param name="action">Action name (will be converted to kebab-case)</param>
+        /// <param name="additionalPath">Additional path segments</param>
+        /// <returns>A kebab-case formatted absolute URL</returns>
+        public static string GetKebabUrl(string controller, string action, string? additionalPath = null)
+        {
+            if (_baseUrl == null)
+                throw new InvalidOperationException("UrlUtilities has not been initialized. Call Initialize(IConfiguration) first.");
+
+            string kebabController = ConvertToKebabCase(controller);
+            string kebabAction = ConvertToKebabCase(action);
+            
+            string baseUrl = _baseUrl.TrimEnd('/');
+            string path = $"{kebabController}/{kebabAction}";
+            
+            if (!string.IsNullOrEmpty(additionalPath))
+            {
+                additionalPath = additionalPath.TrimStart('/');
+                path = $"{path}/{additionalPath}";
+            }
+
+            return $"{baseUrl}/{path}";
+        }
+
+        /// <summary>
+        /// Converts PascalCase string to kebab-case
+        /// </summary>
+        /// <param name="input">Input string in PascalCase</param>
+        /// <returns>String in kebab-case format</returns>
+        private static string ConvertToKebabCase(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            // Convert PascalCase to kebab-case
+            return Regex.Replace(input, "([a-z])([A-Z])", "$1-$2").ToLowerInvariant();
         }
     }
 }
