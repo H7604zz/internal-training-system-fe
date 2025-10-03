@@ -51,7 +51,13 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+// Use session
+app.UseSession();
+
 app.UseRouting();
+
+// Use custom authentication middleware
+app.UseMiddleware<AuthenticationMiddleware>();
 
 app.UseAuthorization();
 
