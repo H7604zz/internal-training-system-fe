@@ -1,0 +1,138 @@
+﻿@model InternalTrainingSystem.WebApp.Models.DTOs.LoginRequestDto
+@{
+    ViewData["Title"] = "Đăng Nhập";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/dangnhap.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="row g-0">
+            <!-- Login Image/Info Column -->
+            <div class="col-lg-6 login-image">
+                <div class="px-lg-4">
+                    <div class="company-name">HỆ THỐNG ĐÀO TẠO NĂNG LỰC</div>
+                    <div class="company-slogan mb-4">Phát triển chuyên môn - Nâng cao năng lực</div>
+                    <div class="d-none d-lg-block">
+                        <div class="feature-item">
+                            <div class="feature-icon"><i class="bi bi-mortarboard"></i></div>
+                            <div>
+                                <h5 class="mb-0">Quản lý khóa đào tạo</h5>
+                                <small class="text-white-50">Đăng ký và theo dõi các khóa học</small>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon"><i class="bi bi-calendar-check"></i></div>
+                            <div>
+                                <h5 class="mb-0">Theo dõi tiến độ phát triển</h5>
+                                <small class="text-white-50">Quản lý và hoạch định lộ trình</small>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon"><i class="bi bi-graph-up"></i></div>
+                            <div>
+                                <h5 class="mb-0">Báo cáo phát triển chuyên môn</h5>
+                                <small class="text-white-50">Thống kê và phân tích hiệu quả</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Login Form Column -->
+            <div class="col-lg-6 login-form-container">
+                <div class="text-center mb-4">
+                    <img class="login-logo" src="/images/logo.png" alt="Logo" onerror="this.src='https://placehold.co/200x60?text=COMPANY+LOGO';this.onerror='';">
+                </div>
+                <h1 class="login-title text-center">Đăng Nhập</h1>
+                <p class="login-subtitle text-center">Vui lòng đăng nhập để truy cập vào hệ thống</p>
+
+                <form asp-controller="Auth" asp-action="DangNhap" method="post" class="needs-validation" novalidate id="loginForm">
+                    <input type="hidden" name="ReturnUrl" value="@ViewBag.ReturnUrl" />
+
+                    <div class="mb-4">
+                        <div class="form-floating">
+                            <input asp-for="Email" type="email" class="form-control form-control-lg" id="email" placeholder="Email" required>
+                            <label for="email"><i class="bi bi-envelope-fill me-2"></i>Email</label>
+                        </div>
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="input-group">
+                            <div class="form-floating flex-grow-1">
+                                <input asp-for="Password" type="password" class="form-control form-control-lg" id="password" placeholder="Mật khẩu" required>
+                                <label for="password"><i class="bi bi-lock-fill me-2"></i>Mật khẩu</label>
+                            </div>
+                            <span class="password-toggle" id="togglePassword">
+                                <i class="bi bi-eye-slash"></i>
+                            </span>
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="login-options">
+                        <div class="form-check form-switch">
+                            <input asp-for="RememberMe" class="form-check-input" type="checkbox" role="switch" id="rememberMe">
+                            <label class="form-check-label" for="rememberMe">
+                                Ghi nhớ đăng nhập
+                            </label>
+                        </div>
+                        <a asp-controller="Auth" asp-action="QuenMatKhau" class="forgot-password">Quên mật khẩu?</a>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary btn-login" type="submit" id="loginButton">
+                            <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true" id="loginSpinner"></span>
+                            <span id="loginText">Đăng nhập</span>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="login-footer">
+                    <p>© @DateTime.Now.Year - Hệ thống đào tạo nội bộ</p>
+                    <p>Liên hệ hỗ trợ: <a href="mailto:support@company.com">support@company.com</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <partial name="_Notification" />
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        // Toggle password visibility
+        document.getElementById('togglePassword').addEventListener('click', function () {
+            const password = document.getElementById('password');
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            
+            // Toggle icon
+            const icon = this.querySelector('i');
+            icon.classList.toggle('bi-eye');
+            icon.classList.toggle('bi-eye-slash');
+        });
+
+        // Form validation
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            if (!this.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            this.classList.add('was-validated');
+        });
+    </script>
+</body>
+</html>
