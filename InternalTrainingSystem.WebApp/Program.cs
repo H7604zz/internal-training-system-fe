@@ -1,4 +1,7 @@
 using InternalTrainingSystem.WebApp.Helpers;
+using InternalTrainingSystem.WebApp.Middleware;
+using InternalTrainingSystem.WebApp.Services.Implement;
+using InternalTrainingSystem.WebApp.Services.Interface;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +13,30 @@ builder.Services.Configure<RouteOptions>(options =>
 {
     options.ConstraintMap.Add("slugify", typeof(SlugifyParameterTransformer));
 });
+
+// Add session support
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(60); // Session timeout after 60 minutes
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+});
+
+// Add HttpContextAccessor
+builder.Services.AddHttpContextAccessor();
+
+// Configure HttpClient for API calls
+builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
+{
+    var baseUrl = builder.Configuration.GetValue<string>("ApiSettings:BaseUrl") 
+                 ?? "https://localhost:7001"; // Default API URL
+    client.BaseAddress = new Uri(baseUrl);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
+
+// Register services
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 
