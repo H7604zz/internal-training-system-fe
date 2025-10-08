@@ -1,4 +1,6 @@
 using InternalTrainingSystem.WebApp.Helpers;
+using InternalTrainingSystem.WebApp.Services.Implement;
+using InternalTrainingSystem.WebApp.Services.Interface;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,28 @@ builder.Services.Configure<RouteOptions>(options =>
 {
     options.ConstraintMap.Add("slugify", typeof(SlugifyParameterTransformer));
 });
+
+builder.Services.AddHttpContextAccessor();
+
+// Configure HttpClient for API calls
+var baseUrl = builder.Configuration.GetValue<string>("ApiSettings:BaseUrl")
+             ?? "https://localhost:7001";
+
+Action<HttpClient> configureClient = client =>
+{
+    client.BaseAddress = new Uri(baseUrl);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+};
+
+builder.Services.AddHttpClient<IUserService, UserService>(configureClient);
+builder.Services.AddHttpClient<ICourseService, CourseService>(configureClient);
+builder.Services.AddHttpClient<INotificationService, NotificationService>(configureClient);
+
+// Register services
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ICourseService, CourseService>();
+builder.Services.AddScoped<ICourseEnrollmentService, CourseEnrollmentService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 var app = builder.Build();
 

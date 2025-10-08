@@ -1,0 +1,36 @@
+﻿.course-detail-container {
+    background: #fff;
+    border-radius: 12px;
+}
+
+.card {
+    border-radius: 10px;
+}
+
+table th {
+    background-color: #f8f9fa;
+}
+
+.badge {
+    font-size: 0.9rem;
+    padding: 6px 10px;
+    border-radius: 8px;
+}
+
+.btn-success {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-outline-secondary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.modal-content {
+    border-radius: 10px;
+}
