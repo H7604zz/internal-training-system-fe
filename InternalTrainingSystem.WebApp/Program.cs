@@ -28,12 +28,14 @@ Action<HttpClient> configureClient = client =>
 builder.Services.AddHttpClient<IUserService, UserService>(configureClient);
 builder.Services.AddHttpClient<ICourseService, CourseService>(configureClient);
 builder.Services.AddHttpClient<INotificationService, NotificationService>(configureClient);
+builder.Services.AddHttpClient<IClassService, ClassService>(configureClient);
 
 // Register services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<ICourseEnrollmentService, CourseEnrollmentService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IClassService, ClassService>();
 
 var app = builder.Build();
 
