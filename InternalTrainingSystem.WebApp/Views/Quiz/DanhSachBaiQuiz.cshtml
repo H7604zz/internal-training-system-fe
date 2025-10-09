@@ -1,0 +1,108 @@
+@{
+    ViewData["Title"] = "Danh Sách Bài Kiểm Tra";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="fas fa-clipboard-check me-2"></i>Danh Sách Bài Kiểm Tra</h2>
+                </div>
+                <div>
+                    <a asp-action="TaoQuiz" class="btn btn-success btn-lg">
+                        <i class="fas fa-plus me-2"></i>Tạo Bài Kiểm Tra
+                    </a>
+                </div>
+            </div>
+            
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            
+            <hr />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-code me-2 text-primary"></i>Bài Kiểm Tra Lập Trình C#
+                    </h5>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>Thời gian: 60 phút<br>
+                            <i class="fas fa-question-circle me-1"></i>Số câu hỏi: 5<br>
+                            <i class="fas fa-star me-1"></i>Mức độ: Trung bình
+                        </small>
+                    </p>
+                    <a asp-action="LamQuiz" asp-route-id="1" class="btn btn-primary">
+                        <i class="fas fa-play me-1"></i>Bắt Đầu Làm Bài
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-database me-2 text-success"></i>Bài Kiểm Tra Database
+                    </h5>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>Thời gian: 45 phút<br>
+                            <i class="fas fa-question-circle me-1"></i>Số câu hỏi: 10<br>
+                            <i class="fas fa-star me-1"></i>Mức độ: Khó
+                        </small>
+                    </p>
+                    <a href="#" class="btn btn-success">
+                        <i class="fas fa-play me-1"></i>Bắt Đầu Làm Bài
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-globe me-2 text-warning"></i>Bài Kiểm Tra Web Development
+                    </h5>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>Thời gian: 90 phút<br>
+                            <i class="fas fa-question-circle me-1"></i>Số câu hỏi: 15<br>
+                            <i class="fas fa-star me-1"></i>Mức độ: Dễ
+                        </small>
+                    </p>
+                    <a href="#" class="btn btn-warning">
+                        <i class="fas fa-play me-1"></i>Bắt Đầu Làm Bài
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Thêm hiệu ứng hover cho cards
+        $(document).ready(function() {
+            $('.card').hover(
+                function() {
+                    $(this).addClass('shadow-lg').removeClass('shadow-sm');
+                },
+                function() {
+                    $(this).addClass('shadow-sm').removeClass('shadow-lg');
+                }
+            );
+        });
+    </script>
+}
