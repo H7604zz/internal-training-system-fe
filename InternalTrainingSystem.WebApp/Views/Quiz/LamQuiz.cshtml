@@ -1,0 +1,132 @@
+@using InternalTrainingSystem.WebApp.Models
+@using InternalTrainingSystem.WebApp.Models.Quiz
+@model QuizViewModel
+@{
+    ViewData["Title"] = "Làm Bài Kiểm Tra";
+}
+
+<link rel="stylesheet" href="~/css/quiz.css" asp-append-version="true" />
+
+<div class="container-fluid quiz-container">
+    <div class="row no-gutters h-100">
+        <!-- Left Panel - Timer and Question List -->
+        <div class="col-md-4 col-lg-3 left-panel">
+            <div class="timer-section text-center mb-4">
+                <h5 class="mb-2">
+                    <i class="fas fa-clock text-danger"></i> Thời Gian Còn Lại
+                </h5>
+                <div class="timer-display" id="timer">
+                    <span id="minutes">60</span>:<span id="seconds">00</span>
+                </div>
+                <div class="progress mt-2">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" 
+                         role="progressbar" style="width: 100%" id="timeProgress"></div>
+                </div>
+            </div>
+
+            <div class="quiz-info mb-4">
+                <h6><i class="fas fa-clipboard-list"></i> @Model.Title</h6>
+                <small class="text-muted">@Model.Questions.Count câu hỏi</small>
+            </div>
+
+            <div class="question-list">
+                <h6 class="mb-3">Danh Sách Câu Hỏi</h6>
+                @for (int i = 0; i < Model.Questions.Count; i++)
+                {
+                    <div class="question-item @(i == 0 ? "active" : "")" data-question-id="@Model.Questions[i].Id">
+                        <span class="question-number">@(i + 1)</span>
+                        <span class="question-status">
+                            <i class="fas fa-circle text-secondary"></i>
+                        </span>
+                    </div>
+                }
+            </div>
+
+            <div class="mt-4">
+                <button type="button" class="btn btn-success btn-block" onclick="submitQuiz()">
+                    <i class="fas fa-paper-plane"></i> Nộp Bài
+                </button>
+            </div>
+        </div>
+
+        <!-- Right Panel - Question Content -->
+        <div class="col-md-8 col-lg-9 right-panel">
+            <div class="question-content">
+                <form id="quizForm" asp-action="SubmitQuiz" method="post">
+                    <input type="hidden" name="QuizId" value="@Model.Id" />
+                    
+                    @for (int i = 0; i < Model.Questions.Count; i++)
+                    {
+                        <div class="question-card @(i == 0 ? "active" : "")" data-question-id="@Model.Questions[i].Id">
+                            <div class="question-header">
+                                <h4>Câu @(i + 1)</h4>
+                                <span class="question-progress">@(i + 1)/@Model.Questions.Count</span>
+                            </div>
+                            
+                            <div class="question-text">
+                                <p>@Model.Questions[i].Content</p>
+                            </div>
+
+                            <div class="options-list">
+                                @for (int j = 0; j < Model.Questions[i].Options.Count; j++)
+                                {
+                                    <div class="option-item">
+                                        <input type="radio" 
+                                               id="q@(Model.Questions[i].Id)_option@(j)" 
+                                               name="Answers[@Model.Questions[i].Id]" 
+                                               value="@j" 
+                                               onchange="markAnswered(@Model.Questions[i].Id)"/>
+                                        <label for="q@(Model.Questions[i].Id)_option@(j)" class="option-label">
+                                            <span class="option-letter">@((char)('A' + j))</span>
+                                            <span class="option-text">@Model.Questions[i].Options[j]</span>
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="navigation-buttons mt-4">
+                                @if (i > 0)
+                                {
+                                    <button type="button" class="btn btn-outline-secondary" onclick="previousQuestion()">
+                                        <i class="fas fa-chevron-left"></i> Câu Trước
+                                    </button>
+                                }
+                                @if (i < Model.Questions.Count - 1)
+                                {
+                                    <button type="button" class="btn btn-primary float-right" onclick="nextQuestion()">
+                                        Câu Tiếp <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xác nhận nộp bài -->
+<div class="modal fade" id="submitModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác Nhận Nộp Bài</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn nộp bài không?</p>
+                <p><strong>Lưu ý:</strong> Sau khi nộp bài, bạn không thể thay đổi câu trả lời.</p>
+                <div id="submitSummary"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-success" onclick="confirmSubmit()">Nộp Bài</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/quiz.js" asp-append-version="true"></script>
+}
