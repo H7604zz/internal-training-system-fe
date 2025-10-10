@@ -59,7 +59,15 @@ namespace InternalTrainingSystem.WebApp.Controllers
         public async Task<IActionResult> NotifyEligibleUsers(int courseId)
         {
             var result = await _notificationService.NotifyEligibleUsersAsync(courseId);
-            TempData["NotificationMessage"] = result.Message;
+
+            if (result.Success)
+            {
+                TempData["Success"] = result.Message;
+            }
+            else
+            {
+                TempData["Error"] = result.Message;
+            }
             return RedirectToAction("ChiTietKhoaHoc", new { courseId });
         }
     }

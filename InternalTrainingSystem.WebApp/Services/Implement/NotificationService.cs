@@ -59,21 +59,42 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
             try
             {
                 var response = await _httpClient.PostAsync($"/api/notification/{courseId}/notify-eligible-users", null);
-                response.EnsureSuccessStatusCode();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new NotificationResponse
+                    {
+                        Success = false,
+                        Message = "Gửi thông báo thất bại!"
+                    };
+                }
 
                 var responseContent = await response.Content.ReadAsStringAsync();
-
                 var result = JsonSerializer.Deserialize<NotificationResponse>(responseContent, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
                 });
 
-                return result ?? new NotificationResponse { Message = "Không có phản hồi từ server!" };
+                if (result != null && !string.IsNullOrWhiteSpace(result.Message))
+                {
+                    result.Success = true;
+                    return result;
+                }
+
+                return new NotificationResponse
+                {
+                    Success = false,
+                    Message = "Gửi thông báo thất bại!"
+                };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi khi gửi thông báo cho khóa học {CourseId}", courseId);
-                return new NotificationResponse { Message = "Gửi thông báo thất bại!" };
+                _logger.LogError(ex, "Lỗi khi gửi thông báo cho courseId {CourseId}", courseId);
+                return new NotificationResponse
+                {
+                    Success = false,
+                    Message = "Gửi thông báo thất bại!"
+                };
             }
         }
 
