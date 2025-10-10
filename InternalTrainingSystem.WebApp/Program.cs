@@ -1,4 +1,5 @@
 using InternalTrainingSystem.WebApp.Helpers;
+using InternalTrainingSystem.WebApp.Middleware;
 using InternalTrainingSystem.WebApp.Services.Implement;
 using InternalTrainingSystem.WebApp.Services.Interface;
 
@@ -13,24 +14,29 @@ builder.Services.Configure<RouteOptions>(options =>
     options.ConstraintMap.Add("slugify", typeof(SlugifyParameterTransformer));
 });
 
+// Add session support
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(60); // Session timeout after 60 minutes
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+});
+
+// Add HttpContextAccessor
 builder.Services.AddHttpContextAccessor();
 
 // Configure HttpClient for API calls
-var baseUrl = builder.Configuration.GetValue<string>("ApiSettings:BaseUrl")
-             ?? "https://localhost:7001";
-
-Action<HttpClient> configureClient = client =>
+builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
 {
+    var baseUrl = builder.Configuration.GetValue<string>("ApiSettings:BaseUrl") 
+                 ?? "https://localhost:7001"; // Default API URL
     client.BaseAddress = new Uri(baseUrl);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
-};
-
-builder.Services.AddHttpClient<IUserService, UserService>(configureClient);
-builder.Services.AddHttpClient<ICourseService, CourseService>(configureClient);
-builder.Services.AddHttpClient<INotificationService, NotificationService>(configureClient);
-builder.Services.AddHttpClient<IClassService, ClassService>(configureClient);
+});
 
 // Register services
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<ICourseEnrollmentService, CourseEnrollmentService>();
@@ -50,7 +56,13 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+// Use session
+app.UseSession();
+
 app.UseRouting();
+
+// Use custom authentication middleware
+app.UseMiddleware<AuthenticationMiddleware>();
 
 app.UseAuthorization();
 

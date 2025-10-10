@@ -1,0 +1,140 @@
+@model InternalTrainingSystem.WebApp.Models.DTOs.ChangePasswordRequestDto
+@{
+    ViewData["Title"] = "Đổi Mật Khẩu";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Đổi Mật Khẩu</h4>
+                </div>
+                <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form asp-controller="Auth" asp-action="DoiMatKhau" method="post" class="needs-validation" novalidate>
+                        <div asp-validation-summary="All" class="alert alert-danger d-none"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="CurrentPassword" class="form-label">Mật khẩu hiện tại</label>
+                            <div class="input-group">
+                                <input asp-for="CurrentPassword" type="password" class="form-control" id="currentPassword" required>
+                                <button class="btn btn-outline-secondary" type="button" id="toggleCurrentPassword">
+                                    <i class="bi bi-eye-slash"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="CurrentPassword" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="NewPassword" class="form-label">Mật khẩu mới</label>
+                            <div class="input-group">
+                                <input asp-for="NewPassword" type="password" class="form-control" id="newPassword" required>
+                                <button class="btn btn-outline-secondary" type="button" id="toggleNewPassword">
+                                    <i class="bi bi-eye-slash"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">
+                                Mật khẩu phải có ít nhất 6 ký tự
+                            </div>
+                            <span asp-validation-for="NewPassword" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="ConfirmPassword" class="form-label">Xác nhận mật khẩu mới</label>
+                            <div class="input-group">
+                                <input asp-for="ConfirmPassword" type="password" class="form-control" id="confirmPassword" required>
+                                <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+                                    <i class="bi bi-eye-slash"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary" id="submitButton">
+                                <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true" id="submitSpinner"></span>
+                                <span id="submitText">Đổi Mật Khẩu</span>
+                            </button>
+                            <a asp-controller="Home" asp-action="TrangChu" class="btn btn-secondary">Hủy</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Toggle password visibility functions
+        function togglePassword(inputId, buttonId) {
+            const input = document.getElementById(inputId);
+            const button = document.getElementById(buttonId);
+            const icon = button.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            }
+        }
+
+        // Add event listeners for password toggle buttons
+        document.getElementById('toggleCurrentPassword').addEventListener('click', function() {
+            togglePassword('currentPassword', 'toggleCurrentPassword');
+        });
+
+        document.getElementById('toggleNewPassword').addEventListener('click', function() {
+            togglePassword('newPassword', 'toggleNewPassword');
+        });
+
+        document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
+            togglePassword('confirmPassword', 'toggleConfirmPassword');
+        });
+
+        // Form submission with loading state
+        document.querySelector('form').addEventListener('submit', function(e) {
+            if (this.checkValidity()) {
+                document.getElementById('submitSpinner').classList.remove('d-none');
+                document.getElementById('submitText').textContent = 'Đang xử lý...';
+                document.getElementById('submitButton').disabled = true;
+            }
+        });
+
+        // Password strength validation
+        document.getElementById('newPassword').addEventListener('input', function() {
+            const password = this.value;
+            const confirmPassword = document.getElementById('confirmPassword');
+            
+            // Check if passwords match when confirm password has value
+            if (confirmPassword.value && password !== confirmPassword.value) {
+                confirmPassword.setCustomValidity('Mật khẩu xác nhận không khớp');
+            } else {
+                confirmPassword.setCustomValidity('');
+            }
+        });
+
+        document.getElementById('confirmPassword').addEventListener('input', function() {
+            const newPassword = document.getElementById('newPassword').value;
+            
+            if (this.value !== newPassword) {
+                this.setCustomValidity('Mật khẩu xác nhận không khớp');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    </script>
+}

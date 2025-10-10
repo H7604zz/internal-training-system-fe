@@ -7,8 +7,9 @@
     <title>@ViewData["Title"] - Hệ Thống Đào Tạo Nội Bộ</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/InternalTrainingSystem.WebApp.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
     @RenderSection("Styles", required: false)
 </head>
 
@@ -26,25 +27,67 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Index">
-                                <i class="fas fa-home me-1"></i>Dashboard
+                            <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="TrangChu">
+                                <i class="fas fa-home me-1"></i>Trang Chủ
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white" asp-area="" asp-controller="Courses" asp-action="Index">
-                                <i class="fas fa-book me-1"></i>Khóa Học
+                            <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="GioiThieu">
+                                <i class="fas fa-info-circle me-1"></i>Giới Thiệu
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white" asp-area="" asp-controller="Users" asp-action="Index">
-                                <i class="fas fa-users me-1"></i>Người Dùng
+                            <a class="nav-link text-white" asp-area="" asp-controller="Quiz" asp-action="DanhSachBaiQuiz">
+                                <i class="fas fa-clipboard-check me-1"></i>Bài Kiểm Tra
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white" asp-area="" asp-controller="Class" asp-action="Index">
-                                <i class="fas fa-chalkboard-teacher me-1"></i>Lớp Học
+                            <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="LienHe">
+                                <i class="fas fa-envelope me-1"></i>Liên Hệ
                             </a>
                         </li>
+                    </ul>
+                    <ul class="navbar-nav">
+                        @{
+                            var userFullName = Context.Session.GetString("UserFullName");
+                            var userEmail = Context.Session.GetString("UserEmail");
+                        }
+                        @if (!string.IsNullOrEmpty(userFullName))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user-circle me-1"></i>@userFullName
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                    <li><h6 class="dropdown-header">@userEmail</h6></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" href="#" onclick="getUserProfile()">
+                                            <i class="fas fa-user me-2"></i>Thông tin cá nhân
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Auth" asp-action="DoiMatKhau">
+                                            <i class="fas fa-key me-2"></i>Đổi mật khẩu
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" href="#" onclick="logout()">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-white" asp-controller="Auth" asp-action="DangNhap">
+                                    <i class="fas fa-sign-in-alt me-1"></i>Đăng Nhập
+                                </a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
@@ -52,6 +95,7 @@
     </header>
     <div class="container">
         <main role="main" class="pb-3">
+            <partial name="_Notification" />
             @RenderBody()
         </main>
     </div>
@@ -64,6 +108,55 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        // Logout function
+        function logout() {
+            if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                window.location.href = '@Url.Action("DangXuat", "Auth")';
+            }
+        }
+
+        // Get user profile function
+        function getUserProfile() {
+            fetch('@Url.Action("GetCurrentUser", "Auth")')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Display user profile in modal or redirect to profile page
+                        alert('Thông tin người dùng: ' + JSON.stringify(data.data, null, 2));
+                    } else {
+                        alert('Không thể lấy thông tin người dùng: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Đã xảy ra lỗi khi lấy thông tin người dùng');
+                });
+        }
+
+        // Auto logout when session expires
+        function checkSessionExpiry() {
+            fetch('@Url.Action("GetCurrentUser", "Auth")')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success && data.message.includes('hết hạn')) {
+                        alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                        window.location.href = '@Url.Action("DangNhap", "Auth")';
+                    }
+                })
+                .catch(error => {
+                    console.error('Session check error:', error);
+                });
+        }
+
+        // Check session every 5 minutes
+        @if (!string.IsNullOrEmpty(Context.Session.GetString("UserFullName")))
+        {
+            <text>
+            setInterval(checkSessionExpiry, 5 * 60 * 1000);
+            </text>
+        }
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 

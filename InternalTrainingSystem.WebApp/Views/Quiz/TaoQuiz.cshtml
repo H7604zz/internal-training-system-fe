@@ -1,0 +1,199 @@
+@using InternalTrainingSystem.WebApp.Models
+@using InternalTrainingSystem.WebApp.Models.Quiz
+@model CreateQuizViewModel
+@{
+    ViewData["Title"] = "Tạo Bài Kiểm Tra";
+}
+
+<link rel="stylesheet" href="~/css/create-quiz.css" asp-append-version="true" />
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-header">
+                <h2><i class="fas fa-plus-circle me-2 text-primary"></i>Tạo Bài Kiểm Tra Mới</h2>
+                <p class="text-muted">Tạo bài kiểm tra cho học sinh với các thiết lập tùy chỉnh</p>
+            </div>
+        </div>
+    </div>
+
+    <form asp-action="Create" method="post" id="createQuizForm">
+        <div class="row">
+            <!-- Left Panel - Basic Information -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Thông Tin Cơ Bản</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label asp-for="Title" class="form-label fw-bold">
+                                    <i class="fas fa-heading me-1"></i>Tiêu Đề Bài Kiểm Tra
+                                </label>
+                                <input asp-for="Title" class="form-control form-control-lg" placeholder="VD: Kiểm tra giữa kỳ - Lập trình C#" required />
+                                <span asp-validation-for="Title" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label asp-for="Description" class="form-label fw-bold">
+                                    <i class="fas fa-align-left me-1"></i>Mô Tả
+                                </label>
+                                <textarea asp-for="Description" class="form-control" rows="3" placeholder="Mô tả ngắn gọn về nội dung bài kiểm tra..."></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chapter and Session Selection -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-book me-2"></i>Chọn Nội Dung</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="SelectedChapterId" class="form-label fw-bold">
+                                    <i class="fas fa-bookmark me-1"></i>Chương
+                                </label>
+                                <select asp-for="SelectedChapterId" class="form-select form-select-lg" id="chapterSelect" required>
+                                    <option value="">-- Chọn Chương --</option>
+                                    @foreach (var chapter in Model.Chapters)
+                                    {
+                                        <option value="@chapter.Id" data-description="@chapter.Description">@chapter.Name</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="SelectedChapterId" class="text-danger"></span>
+                                <div id="chapterDescription" class="form-text mt-2"></div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="SelectedSessionId" class="form-label fw-bold">
+                                    <i class="fas fa-play-circle me-1"></i>Session
+                                </label>
+                                <select asp-for="SelectedSessionId" class="form-select form-select-lg" id="sessionSelect" required disabled>
+                                    <option value="">-- Chọn Session --</option>
+                                </select>
+                                <span asp-validation-for="SelectedSessionId" class="text-danger"></span>
+                                <div id="sessionInfo" class="form-text mt-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quiz Settings -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Cài Đặt Bài Kiểm Tra</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="QuestionCount" class="form-label fw-bold">
+                                    <i class="fas fa-question-circle me-1"></i>Số Lượng Câu Hỏi
+                                </label>
+                                <div class="input-group">
+                                    <input asp-for="QuestionCount" type="number" class="form-control form-control-lg" min="1" max="50" required />
+                                    <span class="input-group-text">câu</span>
+                                </div>
+                                <span asp-validation-for="QuestionCount" class="text-danger"></span>
+                                <div class="form-text">Tối đa: <span id="maxQuestions">0</span> câu</div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Duration" class="form-label fw-bold">
+                                    <i class="fas fa-clock me-1"></i>Thời Gian Làm Bài
+                                </label>
+                                <div class="input-group">
+                                    <input asp-for="Duration" type="number" class="form-control form-control-lg" min="5" max="180" required />
+                                    <span class="input-group-text">phút</span>
+                                </div>
+                                <span asp-validation-for="Duration" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-random me-1"></i>Tùy Chọn
+                                </label>
+                                <div class="form-check form-switch">
+                                    <input asp-for="IsRandomQuestions" class="form-check-input" type="checkbox" />
+                                    <label asp-for="IsRandomQuestions" class="form-check-label">
+                                        Trộn câu hỏi ngẫu nhiên
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Schedule & Preview -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Lịch Trình</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="StartDate" class="form-label fw-bold">
+                                <i class="fas fa-play me-1"></i>Ngày Bắt Đầu
+                            </label>
+                            <input asp-for="StartDate" type="datetime-local" class="form-control" required />
+                            <span asp-validation-for="StartDate" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="EndDate" class="form-label fw-bold">
+                                <i class="fas fa-stop me-1"></i>Ngày Kết Thúc
+                            </label>
+                            <input asp-for="EndDate" type="datetime-local" class="form-control" required />
+                            <span asp-validation-for="EndDate" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0"><i class="fas fa-eye me-2"></i>Xem Trước</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="quizPreview">
+                            <div class="preview-item">
+                                <strong>Tiêu đề:</strong> <span id="previewTitle">Chưa nhập</span>
+                            </div>
+                            <div class="preview-item">
+                                <strong>Chương:</strong> <span id="previewChapter">Chưa chọn</span>
+                            </div>
+                            <div class="preview-item">
+                                <strong>Session:</strong> <span id="previewSession">Chưa chọn</span>
+                            </div>
+                            <div class="preview-item">
+                                <strong>Số câu hỏi:</strong> <span id="previewQuestions">10</span> câu
+                            </div>
+                            <div class="preview-item">
+                                <strong>Thời gian:</strong> <span id="previewDuration">60</span> phút
+                            </div>
+                            <div class="preview-item">
+                                <strong>Ngày bắt đầu:</strong> <span id="previewStartDate">@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <button type="submit" class="btn btn-primary btn-lg w-100 mb-2">
+                            <i class="fas fa-save me-2"></i>Tạo Bài Kiểm Tra
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-arrow-left me-2"></i>Quay Lại
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script src="~/js/create-quiz.js" asp-append-version="true"></script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
