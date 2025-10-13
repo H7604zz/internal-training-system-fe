@@ -6,5 +6,7 @@ namespace InternalTrainingSystem.WebApp.Services.Interface
     {
         Task<List<EligibleStaffResponse>> GetUserRoleEligibleStaff(int courseId);
         Task<List<StaffConfirmCourseResponse>> GetUserRoleStaffConfirmCourse(int courseId);
+        Task<List<MentorResponse>> GetMentors();
+        Task<List<StaffResponse>> GetAllStaff();
     }
 }
