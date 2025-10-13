@@ -32,13 +32,6 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public List<string> StaffIds { get; set; } = new();
     }
 
-    public class CourseDto
-    {
-        public int CourseId { get; set; }
-        public string CourseName { get; set; } = string.Empty;
-        public string CourseCode { get; set; } = string.Empty;
-    }
-
     public class CreateClassRequest
     {
         public int CourseId { get; set; }
