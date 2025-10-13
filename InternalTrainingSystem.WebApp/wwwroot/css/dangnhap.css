@@ -108,6 +108,12 @@ body {
     height: 60px;
     margin-bottom: 2rem;
     animation: fadeInDown 0.8s ease;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    transition: transform 0.3s ease;
+}
+
+.login-logo:hover {
+    transform: scale(1.05);
 }
 
 .login-title {

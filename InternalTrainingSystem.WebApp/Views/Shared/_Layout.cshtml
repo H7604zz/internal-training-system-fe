@@ -5,6 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Hệ Thống Đào Tạo Nội Bộ</title>
+    <link rel="icon" type="image/svg+xml" href="~/images/favicon.svg">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
@@ -18,7 +19,7 @@
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-primary border-bottom box-shadow mb-3">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    <i class="fas fa-graduation-cap me-2"></i>Hệ Thống Đào Tạo Nội Bộ
+                    <img src="~/images/logo_company.png" alt="Hệ thống Đào tạo Năng lực">
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
                     aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,12 +38,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white" asp-area="" asp-controller="Course" asp-action="Index">
+                            <a class="nav-link text-white" asp-area="" asp-controller="Course" asp-action="DanhSachKhoaHoc">
                                 <i class="fas fa-book me-1"></i>Khóa Học
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white" asp-area="" asp-controller="Class" asp-action="Index">
+                            <a class="nav-link text-white" asp-area="" asp-controller="Class" asp-action="DanhSachLopHoc">
                                 <i class="fas fa-users me-1"></i>Lớp Học
                             </a>
                         </li>
