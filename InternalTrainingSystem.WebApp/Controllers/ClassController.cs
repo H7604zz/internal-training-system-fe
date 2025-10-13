@@ -7,11 +7,16 @@ namespace InternalTrainingSystem.WebApp.Controllers
     public class ClassController : Controller
     {
         private readonly IClassService _classService;
+        private readonly ICourseService _courseService;
+        private readonly IUserService _userService;
         private readonly ILogger<ClassController> _logger;
 
-        public ClassController(IClassService classService, ILogger<ClassController> logger)
+        public ClassController(IClassService classService, ICourseService courseService,
+            IUserService userService, ILogger<ClassController> logger)
         {
             _classService = classService;
+            _courseService = courseService;
+            _userService = userService;
             _logger = logger;
         }
 
@@ -30,9 +35,27 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
         }
 
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            return View();
+            try
+            {
+                // Load danh sách courses, mentors và staff
+                var courses = await _courseService.GetAllCoursesAsync();
+                var mentors = await _userService.GetMentors();
+                var staff = await _userService.GetAllStaff();
+
+                ViewBag.Courses = courses;
+                ViewBag.Mentors = mentors;
+                ViewBag.Staff = staff;
+
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading create class page");
+                TempData["ErrorMessage"] = "Có lỗi xảy ra khi tải trang tạo lớp học";
+                return RedirectToAction("Index");
+            }
         }
 
         [HttpPost]
@@ -69,6 +92,8 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 return Json(new { success = false, message = "Có lỗi xảy ra khi tải danh sách lớp học" });
             }
         }
+
+
 
 
     }
