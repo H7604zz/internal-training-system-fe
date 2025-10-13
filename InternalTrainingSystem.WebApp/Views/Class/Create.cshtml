@@ -1,0 +1,446 @@
+@{
+    ViewData["Title"] = "Tạo Lớp học";
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@section Styles {
+    <style>
+        body {
+            background-color: #f4f7f6;
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border-bottom: 1px solid #e9ecef;
+            padding: 1.25rem 1.5rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control,
+        .form-select {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0056b3, #004085);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            border: none;
+        }
+
+        .class-item {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .class-item:hover {
+            border-color: #007bff;
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.1);
+        }
+
+        .class-item.active {
+            border-color: #007bff;
+            background: #f8f9ff;
+        }
+
+        .class-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .class-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #007bff;
+            margin: 0;
+        }
+
+        .remove-class {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .remove-class:hover {
+            background: #c82333;
+            transform: scale(1.1);
+        }
+
+        .staff-selection {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .staff-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border-radius: 6px;
+            background: #f8f9fa;
+            transition: all 0.2s ease;
+        }
+
+        .staff-item:hover {
+            background: #e9ecef;
+        }
+
+        .staff-item input[type="checkbox"] {
+            margin-right: 0.75rem;
+            transform: scale(1.2);
+        }
+
+        .staff-info {
+            flex-grow: 1;
+        }
+
+        .staff-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .staff-email {
+            font-size: 0.9rem;
+            color: #777;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #777;
+        }
+
+        .alert {
+            border-radius: 8px;
+            border: none;
+        }
+
+        .add-class-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .add-class-btn:hover {
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            transform: translateY(-1px);
+        }
+
+        .form-text {
+            color: #6c757d;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+    </style>
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-plus-circle me-2"></i>Tạo Lớp học mới
+                </div>
+                <div class="card-body">
+                    <form id="createClassForm">
+                        <div id="alertContainer"></div>
+
+                        <button type="button" class="add-class-btn" onclick="addNewClass()">
+                            <i class="fas fa-plus me-2"></i>Thêm lớp học
+                        </button>
+
+                        <div id="classesContainer">
+                            <!-- Classes will be added here dynamically -->
+                        </div>
+
+                        <div class="d-flex gap-3 mt-4">
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="fas fa-save me-2"></i>Tạo Lớp học
+                            </button>
+                            <a href="@Url.Action("Index")" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Hủy
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let classCount = 0;
+        let courses = [];
+        let mentors = [];
+
+        // Load data from ViewBag
+        courses = @Html.Raw(Json.Serialize(ViewBag.Courses ?? new List<object>()));
+        mentors = @Html.Raw(Json.Serialize(ViewBag.Mentors ?? new List<object>()));
+        let allStaff = @Html.Raw(Json.Serialize(ViewBag.Staff ?? new List<object>()));
+
+        // Initialize page
+        $(document).ready(function () {
+            addNewClass(); // Add first class by default
+        });
+
+        function addNewClass() {
+            classCount++;
+            const classHtml = generateClassHtml(classCount);
+            $('#classesContainer').append(classHtml);
+
+            // Populate dropdowns
+            populateCourseDropdown(classCount);
+            populateMentorDropdown(classCount);
+            populateStaffList(classCount);
+        }
+
+        function generateClassHtml(index) {
+            return `
+                        <div class="class-item" id="class-${index}">
+                            <div class="class-header">
+                                <h5 class="class-title">Lớp học #${index}</h5>
+                                ${index > 1 ? `<button type="button" class="remove-class" onclick="removeClass(${index})"><i class="fas fa-times"></i></button>` : ''}
+                            </div>
+                    
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label" for="course-${index}">
+                                            <i class="fas fa-book me-2"></i>Khóa học <span class="text-danger">*</span>
+                                        </label>
+                                        <select class="form-select" id="course-${index}" name="classes[${index - 1}].courseId" required>
+                                            <option value="">-- Chọn khóa học --</option>
+                                        </select>
+                                        <div class="form-text">Chọn khóa học để tạo lớp</div>
+                                    </div>
+                                </div>
+                        
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label" for="mentor-${index}">
+                                            <i class="fas fa-user-tie me-2"></i>Mentor <span class="text-danger">*</span>
+                                        </label>
+                                        <select class="form-select" id="mentor-${index}" name="classes[${index - 1}].mentorId" required>
+                                            <option value="">-- Chọn mentor --</option>
+                                        </select>
+                                        <div class="form-text">Chọn mentor hướng dẫn lớp học</div>
+                                    </div>
+                                </div>
+                            </div>
+                    
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-users me-2"></i>Danh sách học viên <span class="text-danger">*</span>
+                                </label>
+                                <div class="staff-selection" id="staff-selection-${index}">
+                                    <!-- Staff list will be populated here -->
+                                </div>
+                                <div class="form-text">Chọn các học viên tham gia lớp học</div>
+                            </div>
+                        </div>
+                    `;
+        }
+
+        function populateCourseDropdown(index) {
+            const courseSelect = $(`#course-${index}`);
+            courseSelect.empty().append('<option value="">-- Chọn khóa học --</option>');
+
+            if (courses && Array.isArray(courses)) {
+                courses.forEach(course => {
+                    courseSelect.append(`<option value="${course.courseId}">${course.courseName}</option>`);
+                });
+            }
+        }
+
+        function populateMentorDropdown(index) {
+            const mentorSelect = $(`#mentor-${index}`);
+            mentorSelect.empty().append('<option value="">-- Chọn mentor --</option>');
+
+            if (mentors && Array.isArray(mentors)) {
+                mentors.forEach(mentor => {
+                    mentorSelect.append(`<option value="${mentor.id}">${mentor.fullName} (${mentor.email})</option>`);
+                });
+            }
+        }
+
+        function populateStaffList(index) {
+            const staffContainer = $(`#staff-selection-${index}`);
+
+            if (allStaff && Array.isArray(allStaff) && allStaff.length > 0) {
+                let staffHtml = '';
+                allStaff.forEach(member => {
+                    staffHtml += `
+                            <div class="staff-item">
+                                <input type="checkbox" id="staff-${index}-${member.id}" 
+                                       name="classes[${index - 1}].staffIds" 
+                                       value="${member.id}">
+                                <div class="staff-info">
+                                    <div class="staff-name">${member.fullName}</div>
+                                    <div class="staff-email">${member.email} - ${member.department || 'N/A'}</div>
+                                </div>
+                            </div>
+                        `;
+                });
+                staffContainer.html(staffHtml);
+            } else {
+                staffContainer.html('<div class="loading">Không có nhân viên nào trong hệ thống</div>');
+            }
+        }
+
+
+
+        function removeClass(index) {
+            $(`#class-${index}`).remove();
+        }
+
+        function showAlert(type, message) {
+            const alertHtml = `
+                        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                            ${message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    `;
+            $('#alertContainer').html(alertHtml);
+        }
+
+        // Form submission
+        $('#createClassForm').on('submit', async function (e) {
+            e.preventDefault();
+
+            const submitBtn = $('#submitBtn');
+            const originalText = submitBtn.html();
+            submitBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>Đang tạo...').prop('disabled', true);
+
+            try {
+                // Collect form data
+                const classes = [];
+                $('.class-item').each(function () {
+                    const classElement = $(this);
+                    const index = classElement.attr('id').split('-')[1];
+
+                    const courseId = $(`#course-${index}`).val();
+                    const mentorId = $(`#mentor-${index}`).val();
+                    const staffIds = [];
+
+                    $(`input[name="classes[${index - 1}].staffIds"]:checked`).each(function () {
+                        staffIds.push($(this).val());
+                    });
+
+                    if (courseId && mentorId && staffIds.length > 0) {
+                        classes.push({
+                            courseId: parseInt(courseId),
+                            mentorId: mentorId,
+                            staffIds: staffIds
+                        });
+                    }
+                });
+
+                if (classes.length === 0) {
+                    showAlert('warning', 'Vui lòng tạo ít nhất một lớp học với đầy đủ thông tin');
+                    return;
+                }
+
+                const requestData = { classes: classes };
+
+                const response = await fetch('@Url.Action("CreateClasses")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('success', result.message || 'Tạo lớp học thành công!');
+                    setTimeout(() => {
+                        window.location.href = '@Url.Action("Index")';
+                    }, 2000);
+                } else {
+                    showAlert('danger', result.message || 'Có lỗi xảy ra khi tạo lớp học');
+                }
+
+            } catch (error) {
+                console.error('Error creating classes:', error);
+                showAlert('danger', 'Có lỗi xảy ra khi tạo lớp học');
+            } finally {
+                submitBtn.html(originalText).prop('disabled', false);
+            }
+        });
+    </script>
+}

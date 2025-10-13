@@ -272,8 +272,11 @@
 
 <div class="container-fluid py-4">
     <div class="card">
-        <div class="card-header">
-            <i class="fas fa-school mr-2"></i>Danh sách Lớp học
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-school mr-2"></i>Danh sách Lớp học</span>
+            <a href="@Url.Action("Create")" class="btn btn-success btn-sm">
+                <i class="fas fa-plus mr-2"></i>Tạo Lớp học mới
+            </a>
         </div>
         <div class="card-body">
             @if (TempData["ErrorMessage"] != null)
@@ -438,58 +441,58 @@
 
             const studentsHtml = classItem.students.length > 0
                 ? classItem.students.map(student => `
-                        <li class="student-item">
-                            <div class="student-avatar" style="background-color: ${stringToColor(student.studentName)};">
-                                ${getInitials(student.studentName)}
-                            </div>
-                            <div class="student-info">
-                                <div class="student-name">${student.studentName}</div>
-                                <div class="student-email">${student.studentEmail}</div>
-                            </div>
-                        </li>
-                    `).join('')
+                            <li class="student-item">
+                                <div class="student-avatar" style="background-color: ${stringToColor(student.studentName)};">
+                                    ${getInitials(student.studentName)}
+                                </div>
+                                <div class="student-info">
+                                    <div class="student-name">${student.studentName}</div>
+                                    <div class="student-email">${student.studentEmail}</div>
+                                </div>
+                            </li>
+                        `).join('')
                 : `<div class="no-students-placeholder">
-                           <i class="fas fa-user-graduate"></i>
-                           <p>Chưa có học viên nào trong lớp.</p>
-                       </div>`;
+                               <i class="fas fa-user-graduate"></i>
+                               <p>Chưa có học viên nào trong lớp.</p>
+                           </div>`;
 
             const detailsHtml = `
-                    <div class="modal-content-wrapper">
-                        <div class="details-panel">
-                            <div class="class-header">
-                                <div class="class-icon"><i class="fas fa-chalkboard-teacher"></i></div>
-                                <h4 class="class-title">${classItem.className}</h4>
-                                ${classItem.isActive
+                        <div class="modal-content-wrapper">
+                            <div class="details-panel">
+                                <div class="class-header">
+                                    <div class="class-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                                    <h4 class="class-title">${classItem.className}</h4>
+                                    ${classItem.isActive
                     ? '<span class="status-badge status-active"><i class="fas fa-check-circle mr-1"></i>Hoạt động</span>'
                     : '<span class="status-badge status-inactive"><i class="fas fa-times-circle mr-1"></i>Tạm dừng</span>'}
+                                </div>
+                                <div class="class-body">
+                                    <div class="info-item">
+                                        <label><i class="fas fa-book-open"></i> Khóa học</label>
+                                        <p>${classItem.courseName}</p>
+                                    </div>
+                                    <div class="info-item">
+                                        <label><i class="fas fa-user-tie"></i> Mentor</label>
+                                        <p>${classItem.mentorName}</p>
+                                    </div>
+                                    <div class="info-item">
+                                        <label><i class="fas fa-calendar-alt"></i> Ngày tạo</label>
+                                        <p>${new Date(classItem.createdDate).toLocaleString('vi-VN')}</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="class-body">
-                                <div class="info-item">
-                                    <label><i class="fas fa-book-open"></i> Khóa học</label>
-                                    <p>${classItem.courseName}</p>
+                            <div class="students-panel">
+                                <div class="students-header">
+                                    <h5><i class="fas fa-users"></i> Danh sách học viên (${classItem.students.length})</h5>
                                 </div>
-                                <div class="info-item">
-                                    <label><i class="fas fa-user-tie"></i> Mentor</label>
-                                    <p>${classItem.mentorName}</p>
+                                <div class="search-wrapper">
+                                    <i class="fas fa-search search-icon"></i>
+                                    <input type="text" id="studentSearchInput" class="form-control" placeholder="Tìm kiếm học viên..." onkeyup="filterStudents()">
                                 </div>
-                                <div class="info-item">
-                                    <label><i class="fas fa-calendar-alt"></i> Ngày tạo</label>
-                                    <p>${new Date(classItem.createdDate).toLocaleString('vi-VN')}</p>
-                                </div>
+                                <ul class="students-list" id="studentList">${studentsHtml}</ul>
                             </div>
                         </div>
-                        <div class="students-panel">
-                            <div class="students-header">
-                                <h5><i class="fas fa-users"></i> Danh sách học viên (${classItem.students.length})</h5>
-                            </div>
-                            <div class="search-wrapper">
-                                <i class="fas fa-search search-icon"></i>
-                                <input type="text" id="studentSearchInput" class="form-control" placeholder="Tìm kiếm học viên..." onkeyup="filterStudents()">
-                            </div>
-                            <ul class="students-list" id="studentList">${studentsHtml}</ul>
-                        </div>
-                    </div>
-                `;
+                    `;
 
             $('#classDetailsContent').html(detailsHtml);
             $('#classDetailsModal').modal('show');
