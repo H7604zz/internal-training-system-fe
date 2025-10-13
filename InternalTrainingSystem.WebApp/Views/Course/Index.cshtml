@@ -301,15 +301,15 @@
             if (visibleCount === 0) {
                 if ($('#noResultsRow').length === 0) {
                     $('#courseTable tbody').append(`
-                            <tr id="noResultsRow">
-                                <td colspan="8" class="text-center py-5">
-                                    <div class="text-muted">
-                                        <i class="fas fa-search fa-3x mb-3"></i>
-                                        <p class="mb-0">Không tìm thấy khóa học phù hợp với tiêu chí tìm kiếm</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        `);
+                                <tr id="noResultsRow">
+                                    <td colspan="8" class="text-center py-5">
+                                        <div class="text-muted">
+                                            <i class="fas fa-search fa-3x mb-3"></i>
+                                            <p class="mb-0">Không tìm thấy khóa học phù hợp với tiêu chí tìm kiếm</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `);
                 }
             } else {
                 $('#noResultsRow').remove();
@@ -321,8 +321,7 @@
         }
 
         function viewCourseDetails(courseId) {
-            // Implement view course details functionality
-            alert('Xem chi tiết khóa học ID: ' + courseId);
+            window.location.href = '@Url.Action("Details", "Course")/' + courseId;
         }
 
         function enrollCourse(courseId) {

@@ -64,5 +64,25 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 return Json(new { success = false, message = "Có lỗi xảy ra khi tải danh sách khóa học" });
             }
         }
+
+        public async Task<IActionResult> Details(int id)
+        {
+            try
+            {
+                var course = await _courseService.GetCourseByIdAsync(id);
+                if (course == null)
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy khóa học";
+                    return RedirectToAction(nameof(Index));
+                }
+                return View(course);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error loading course details for id {id}");
+                TempData["ErrorMessage"] = "Có lỗi xảy ra khi tải chi tiết khóa học";
+                return RedirectToAction(nameof(Index));
+            }
+        }
     }
 }
