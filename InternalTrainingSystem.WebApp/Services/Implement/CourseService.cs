@@ -76,5 +76,37 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
                 return new List<CourseDto>();
             }
         }
+
+        public async Task<CourseDetailDto?> GetCourseByIdAsync(int courseId)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/Course/{courseId}"));
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonString = await response.Content.ReadAsStringAsync();
+                    var course = JsonSerializer.Deserialize<CourseDetailDto>(jsonString, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                    return course;
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    return null;
+                }
+                else
+                {
+                    _logger.LogError($"Failed to get course by id {courseId}. Status: {response.StatusCode}");
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error occurred while getting course by id {courseId}");
+                return null;
+            }
+        }
     }
 }

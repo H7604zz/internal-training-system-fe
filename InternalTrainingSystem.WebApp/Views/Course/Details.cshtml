@@ -1,0 +1,403 @@
+@model InternalTrainingSystem.WebApp.Models.DTOs.CourseDetailDto
+@{
+    ViewData["Title"] = "Chi Tiết Khóa Học";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="@Url.Action("Index", "Course")" class="text-decoration-none">
+                            <i class="fas fa-book me-1"></i>Danh Sách Khóa Học
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Chi Tiết Khóa Học</li>
+                </ol>
+            </nav>
+
+            <!-- Course Details Card -->
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-1">
+                                <i class="fas fa-graduation-cap me-2"></i>@Model.CourseName
+                            </h3>
+                            <small class="opacity-75">ID: @Model.CourseId</small>
+                        </div>
+                        <div class="d-flex gap-2">
+                            @if (Model.IsActive)
+                            {
+                                <span class="badge bg-success fs-6 px-3 py-2">
+                                    <i class="fas fa-check-circle me-1"></i>Đang Hoạt Động
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary fs-6 px-3 py-2">
+                                    <i class="fas fa-pause-circle me-1"></i>Tạm Dừng
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="row">
+                        <!-- Left Column - Course Information -->
+                        <div class="col-lg-8">
+                            <!-- Course Description -->
+                            <div class="mb-4">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-info-circle me-2"></i>Mô Tả Khóa Học
+                                </h5>
+                                <div class="card bg-light border-0">
+                                    <div class="card-body">
+                                        <p class="mb-0 text-muted lh-lg">
+                                            @if (!string.IsNullOrEmpty(Model.Description))
+                                            {
+                                                @Model.Description
+                                            }
+                                            else
+                                            {
+                                                <em>Không có mô tả chi tiết cho khóa học này.</em>
+                                            }
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Course Features -->
+                            <div class="mb-4">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-star me-2"></i>Đặc Điểm Nổi Bật
+                                </h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center p-3 bg-light rounded">
+                                            <div class="flex-shrink-0 me-3">
+                                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                    <i class="fas fa-clock text-white"></i>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">Thời Lượng</h6>
+                                                <span class="text-muted">@Model.Duration giờ học</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center p-3 bg-light rounded">
+                                            <div class="flex-shrink-0 me-3">
+                                                <div class="bg-success rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                    <i class="fas fa-layer-group text-white"></i>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">Cấp Độ</h6>
+                                                <span class="text-muted">
+                                                    @{
+                                                        var levelText = Model.Level switch
+                                                        {
+                                                            "Beginner" => "Cơ Bản",
+                                                            "Intermediate" => "Trung Cấp",
+                                                            "Advanced" => "Nâng Cao",
+                                                            _ => Model.Level
+                                                        };
+                                                    }
+                                                    @levelText
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center p-3 bg-light rounded">
+                                            <div class="flex-shrink-0 me-3">
+                                                <div class="bg-info rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                    <i class="fas fa-tags text-white"></i>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">Danh Mục</h6>
+                                                <span class="text-muted">@Model.CategoryName</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center p-3 bg-light rounded">
+                                            <div class="flex-shrink-0 me-3">
+                                                <div class="bg-warning rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                    <i class="fas fa-calendar text-white"></i>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">Ngày Tạo</h6>
+                                                <span class="text-muted">@Model.CreatedDate.ToString("dd/MM/yyyy")</span>
+                                                @if (Model.UpdatedDate.HasValue)
+                                                {
+                                                    <br><small class="text-info">Cập nhật: @Model.UpdatedDate.Value.ToString("dd/MM/yyyy")</small>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column - Actions and Statistics -->
+                        <div class="col-lg-4">
+                            <!-- Action Buttons -->
+                            <div class="mb-4">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-cogs me-2"></i>Thao Tác
+                                </h5>
+                                <div class="d-grid gap-2">
+                                    @if (Model.IsActive)
+                                    {
+                                        <button type="button" class="btn btn-success btn-lg" onclick="enrollCourse(@Model.CourseId)">
+                                            <i class="fas fa-user-plus me-2"></i>Đăng Ký Khóa Học
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn btn-secondary btn-lg" disabled>
+                                            <i class="fas fa-pause-circle me-2"></i>Khóa Học Tạm Dừng
+                                        </button>
+                                    }
+                                    
+                                    <button type="button" class="btn btn-outline-primary" onclick="addToWishlist(@Model.CourseId)">
+                                        <i class="fas fa-heart me-2"></i>Thêm Vào Yêu Thích
+                                    </button>
+                                    
+                                    <button type="button" class="btn btn-outline-info" onclick="shareCourse(@Model.CourseId)">
+                                        <i class="fas fa-share-alt me-2"></i>Chia Sẻ Khóa Học
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Course Statistics -->
+                            <div class="mb-4">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-chart-bar me-2"></i>Thống Kê
+                                </h5>
+                                <div class="card bg-gradient-light border-0">
+                                    <div class="card-body">
+                                        <div class="row text-center">
+                                            <div class="col-6">
+                                                <div class="border-end">
+                                                    <h4 class="text-primary mb-1">@Model.EnrollmentCount</h4>
+                                                    <small class="text-muted">Học Viên</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <h4 class="text-success mb-1">@Model.AverageRating.ToString("F1")</h4>
+                                                <small class="text-muted">Đánh Giá</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Course Level Badge -->
+                            <div class="mb-4">
+                                <h5 class="text-primary mb-3">
+                                    <i class="fas fa-medal me-2"></i>Cấp Độ Khóa Học
+                                </h5>
+                                @{
+                                    var (levelClass, levelIcon, levelDescription) = Model.Level switch
+                                    {
+                                        "Beginner" => ("bg-success", "fas fa-seedling", "Phù hợp cho người mới bắt đầu"),
+                                        "Intermediate" => ("bg-warning text-dark", "fas fa-chart-line", "Cần có kiến thức cơ bản"),
+                                        "Advanced" => ("bg-danger", "fas fa-trophy", "Dành cho người có kinh nghiệm"),
+                                        _ => ("bg-secondary", "fas fa-question", "Cấp độ chưa xác định")
+                                    };
+                                }
+                                <div class="card border-0 @levelClass text-white">
+                                    <div class="card-body text-center">
+                                        <i class="@levelIcon fa-2x mb-2"></i>
+                                        <h6 class="mb-1">@levelText</h6>
+                                        <small class="opacity-75">@levelDescription</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Footer with Navigation -->
+                <div class="card-footer bg-light border-top-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="@Url.Action("Index", "Course")" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Quay Lại Danh Sách
+                        </a>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="printCourse()">
+                                <i class="fas fa-print me-1"></i>In
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="exportToPDF()">
+                                <i class="fas fa-file-pdf me-1"></i>Xuất PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function enrollCourse(courseId) {
+            if (confirm('Bạn có chắc chắn muốn đăng ký khóa học này không?')) {
+                // TODO: Implement enrollment logic
+                alert('Chức năng đăng ký khóa học đang được phát triển');
+            }
+        }
+
+        function addToWishlist(courseId) {
+            // TODO: Implement wishlist logic
+            alert('Chức năng thêm vào yêu thích đang được phát triển');
+        }
+
+        function shareCourse(courseId) {
+            const url = window.location.href;
+            if (navigator.share) {
+                navigator.share({
+                    title: '@Model.CourseName',
+                    text: 'Khóa học này rất hay, bạn nên tham gia!',
+                    url: url
+                }).then(() => {
+                    console.log('Successful share');
+                }).catch((error) => {
+                    console.log('Error sharing:', error);
+                    copyToClipboard(url);
+                });
+            } else {
+                copyToClipboard(url);
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Đã sao chép link khóa học vào clipboard!');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    alert('Đã sao chép link khóa học vào clipboard!');
+                } catch (err) {
+                    alert('Không thể sao chép link');
+                }
+                document.body.removeChild(textArea);
+            });
+        }
+
+        function printCourse() {
+            window.print();
+        }
+
+        function exportToPDF() {
+            // TODO: Implement PDF export logic
+            alert('Chức năng xuất PDF đang được phát triển');
+        }
+
+        // Animation on page load
+        $(document).ready(function() {
+            $('.card').hide().fadeIn(800);
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        .bg-gradient-primary {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+        }
+
+        .bg-gradient-light {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+        }
+
+        .card {
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            border-radius: 15px 15px 0 0 !important;
+        }
+
+        .breadcrumb {
+            background: none;
+            padding: 0;
+        }
+
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: "›";
+            font-size: 1.2em;
+            color: #6c757d;
+        }
+
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .btn-lg {
+            padding: 12px 24px;
+        }
+
+        .badge {
+            border-radius: 6px;
+        }
+
+        .rounded-circle {
+            border-radius: 50% !important;
+        }
+
+        .shadow-lg {
+            box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
+        }
+
+        .lh-lg {
+            line-height: 1.8 !important;
+        }
+
+        .opacity-75 {
+            opacity: 0.75 !important;
+        }
+
+        .border-end {
+            border-right: 1px solid #dee2e6 !important;
+        }
+
+        @@media print {
+            .btn, .breadcrumb, .card-footer {
+                display: none !important;
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .col-md-6 {
+                margin-bottom: 1rem;
+            }
+            
+            .d-flex.gap-2 {
+                flex-direction: column;
+            }
+            
+            .d-flex.gap-2 > * {
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+}

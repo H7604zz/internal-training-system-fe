@@ -6,5 +6,6 @@ namespace InternalTrainingSystem.WebApp.Services.Interface
     {
         Task<List<CourseDto>> GetAllCoursesAsync();
         Task<List<CourseDto>> GetCoursesByIdentifiersAsync(List<string> identifiers);
+        Task<CourseDetailDto?> GetCourseByIdAsync(int courseId);
     }
 }
