@@ -167,14 +167,6 @@
                                             <i class="fas fa-pause-circle me-2"></i>Khóa Học Tạm Dừng
                                         </button>
                                     }
-                                    
-                                    <button type="button" class="btn btn-outline-primary" onclick="addToWishlist(@Model.CourseId)">
-                                        <i class="fas fa-heart me-2"></i>Thêm Vào Yêu Thích
-                                    </button>
-                                    
-                                    <button type="button" class="btn btn-outline-info" onclick="shareCourse(@Model.CourseId)">
-                                        <i class="fas fa-share-alt me-2"></i>Chia Sẻ Khóa Học
-                                    </button>
                                 </div>
                             </div>
 
@@ -233,15 +225,6 @@
                         <a href="@Url.Action("Index", "Course")" class="btn btn-outline-secondary">
                             <i class="fas fa-arrow-left me-2"></i>Quay Lại Danh Sách
                         </a>
-                        
-                        <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="printCourse()">
-                                <i class="fas fa-print me-1"></i>In
-                            </button>
-                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="exportToPDF()">
-                                <i class="fas fa-file-pdf me-1"></i>Xuất PDF
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -256,58 +239,6 @@
                 // TODO: Implement enrollment logic
                 alert('Chức năng đăng ký khóa học đang được phát triển');
             }
-        }
-
-        function addToWishlist(courseId) {
-            // TODO: Implement wishlist logic
-            alert('Chức năng thêm vào yêu thích đang được phát triển');
-        }
-
-        function shareCourse(courseId) {
-            const url = window.location.href;
-            if (navigator.share) {
-                navigator.share({
-                    title: '@Model.CourseName',
-                    text: 'Khóa học này rất hay, bạn nên tham gia!',
-                    url: url
-                }).then(() => {
-                    console.log('Successful share');
-                }).catch((error) => {
-                    console.log('Error sharing:', error);
-                    copyToClipboard(url);
-                });
-            } else {
-                copyToClipboard(url);
-            }
-        }
-
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Đã sao chép link khóa học vào clipboard!');
-            }).catch(() => {
-                // Fallback for older browsers
-                const textArea = document.createElement('textarea');
-                textArea.value = text;
-                document.body.appendChild(textArea);
-                textArea.focus();
-                textArea.select();
-                try {
-                    document.execCommand('copy');
-                    alert('Đã sao chép link khóa học vào clipboard!');
-                } catch (err) {
-                    alert('Không thể sao chép link');
-                }
-                document.body.removeChild(textArea);
-            });
-        }
-
-        function printCourse() {
-            window.print();
-        }
-
-        function exportToPDF() {
-            // TODO: Implement PDF export logic
-            alert('Chức năng xuất PDF đang được phát triển');
         }
 
         // Animation on page load
