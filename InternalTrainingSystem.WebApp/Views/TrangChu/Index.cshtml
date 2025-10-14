@@ -1,0 +1,407 @@
+﻿@{
+    ViewData["Title"] = "Trang Chủ";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/trangchu.css" asp-append-version="true" />
+}
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <div class="hero-content fade-in-up">
+                    <h1 class="hero-title">Phát Triển Chuyên Môn</h1>
+                    <p class="hero-subtitle">
+                        Nâng cao năng lực và kỹ năng chuyên môn thông qua các chương trình đào tạo hiện đại, 
+                        phù hợp với xu hướng công nghệ và yêu cầu thực tế của doanh nghiệp.
+                    </p>
+                    <div class="d-flex gap-3 flex-wrap">
+                  
+                        <a asp-controller="Course" asp-action="DanhSachKhoaHoc" class="btn btn-light btn-lg px-4 py-3">
+                            <i class="fas fa-play me-2"></i>Khám Phá Khóa Học
+                        </a>
+                        <a href="#features" class="btn btn-outline-light btn-lg px-4 py-3">
+                            <i class="fas fa-info-circle me-2"></i>Tìm Hiểu Thêm
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="row hero-stats">
+                    <div class="col-6 col-md-3">
+                        <div class="stat-item">
+                            <span class="stat-number">150+</span>
+                            <span class="stat-label">Khóa Học</span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-item">
+                            <span class="stat-number">2,500+</span>
+                            <span class="stat-label">Học Viên</span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-item">
+                            <span class="stat-number">50+</span>
+                            <span class="stat-label">Giảng Viên</span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-item">
+                            <span class="stat-number">95%</span>
+                            <span class="stat-label">Hài Lòng</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="features-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Tại Sao Chọn Hệ Thống Của Chúng Tôi?</h2>
+            <p>Chúng tôi cung cấp giải pháp đào tạo toàn diện, hiện đại và hiệu quả nhất cho doanh nghiệp</p>
+        </div>
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="feature-card text-center">
+                    <div class="feature-icon primary">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h4 class="feature-title">Chương Trình Chất Lượng</h4>
+                    <p class="feature-description">
+                        Các khóa học được thiết kế bởi chuyên gia, cập nhật theo xu hướng công nghệ mới nhất
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="feature-card text-center">
+                    <div class="feature-icon success">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h4 class="feature-title">Học Tập Tương Tác</h4>
+                    <p class="feature-description">
+                        Môi trường học tập tương tác với các bài thực hành, dự án thực tế và hỗ trợ 24/7
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="feature-card text-center">
+                    <div class="feature-icon warning">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <h4 class="feature-title">Chứng Chỉ Quốc Tế</h4>
+                    <p class="feature-description">
+                        Nhận chứng chỉ được công nhận quốc tế sau khi hoàn thành khóa học thành công
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="feature-card text-center">
+                    <div class="feature-icon info">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4 class="feature-title">Theo Dõi Tiến Độ</h4>
+                    <p class="feature-description">
+                        Hệ thống báo cáo chi tiết giúp theo dõi tiến độ học tập và đánh giá hiệu quả
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Programs Section -->
+<section class="programs-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Chương Trình Đào Tạo Nổi Bật</h2>
+            <p>Khám phá các chương trình đào tạo được thiết kế riêng cho từng cấp độ và chuyên môn</p>
+        </div>
+        <div class="row">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="program-card">
+                    <div class="program-image">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <div class="program-content">
+                        <h4 class="program-title">Lập Trình Full-Stack</h4>
+                        <p class="program-description">
+                            Học các công nghệ web hiện đại như React, Node.js, MongoDB. Từ cơ bản đến nâng cao 
+                            với các dự án thực tế.
+                        </p>
+                        <div class="program-meta">
+                            <span><i class="fas fa-clock me-1"></i> 3 tháng</span>
+                            <span><i class="fas fa-users me-1"></i> 25 học viên</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="program-card">
+                    <div class="program-image">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <div class="program-content">
+                        <h4 class="program-title">Quản Trị Dữ Liệu</h4>
+                        <p class="program-description">
+                            Nắm vững SQL, NoSQL, Data Analytics và các công cụ Business Intelligence 
+                            cho việc phân tích dữ liệu.
+                        </p>
+                        <div class="program-meta">
+                            <span><i class="fas fa-clock me-1"></i> 2 tháng</span>
+                            <span><i class="fas fa-users me-1"></i> 20 học viên</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="program-card">
+                    <div class="program-image">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="program-content">
+                        <h4 class="program-title">An Toàn Thông Tin</h4>
+                        <p class="program-description">
+                            Đào tạo về bảo mật mạng, phòng chống tấn công mạng và quản lý rủi ro 
+                            trong môi trường số.
+                        </p>
+                        <div class="program-meta">
+                            <span><i class="fas fa-clock me-1"></i> 4 tháng</span>
+                            <span><i class="fas fa-users me-1"></i> 15 học viên</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="program-card">
+                    <div class="program-image">
+                        <i class="fas fa-cloud"></i>
+                    </div>
+                    <div class="program-content">
+                        <h4 class="program-title">Cloud Computing</h4>
+                        <p class="program-description">
+                            Làm quen với AWS, Azure, Google Cloud. Học cách triển khai và quản lý 
+                            ứng dụng trên cloud.
+                        </p>
+                        <div class="program-meta">
+                            <span><i class="fas fa-clock me-1"></i> 3 tháng</span>
+                            <span><i class="fas fa-users me-1"></i> 30 học viên</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="program-card">
+                    <div class="program-image">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <div class="program-content">
+                        <h4 class="program-title">Phát Triển Mobile</h4>
+                        <p class="program-description">
+                            Xây dựng ứng dụng di động với React Native, Flutter. Từ giao diện 
+                            đến tích hợp API và publish app.
+                        </p>
+                        <div class="program-meta">
+                            <span><i class="fas fa-clock me-1"></i> 4 tháng</span>
+                            <span><i class="fas fa-users me-1"></i> 20 học viên</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="program-card">
+                    <div class="program-image">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="program-content">
+                        <h4 class="program-title">AI & Machine Learning</h4>
+                        <p class="program-description">
+                            Khám phá thế giới AI với Python, TensorFlow, PyTorch. Xây dựng các 
+                            mô hình ML cho bài toán thực tế.
+                        </p>
+                        <div class="program-meta">
+                            <span><i class="fas fa-clock me-1"></i> 5 tháng</span>
+                            <span><i class="fas fa-users me-1"></i> 18 học viên</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-4">
+            <a asp-controller="Course" asp-action="" class="btn btn-primary btn-lg px-5">
+                <i class="fas fa-eye me-2"></i>Xem Tất Cả Khóa Học
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- News Section -->
+<section class="news-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Tin Tức & Thông Báo</h2>
+            <p>Cập nhật những thông tin mới nhất về chương trình đào tạo và hoạt động nội bộ</p>
+        </div>
+        <div class="row">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="news-card">
+                    <div class="news-date">
+                        <i class="fas fa-calendar me-2"></i>14 Tháng 10, 2025
+                    </div>
+                    <div class="news-content">
+                        <h5 class="news-title">
+                            Ra Mắt Chương Trình Đào Tạo AI & Machine Learning
+                        </h5>
+                        <p class="news-excerpt">
+                            Chương trình đào tạo mới về AI và ML được thiết kế với nội dung cập nhật, 
+                            phù hợp với xu hướng công nghệ hiện tại...
+                        </p>
+                        <a href="#" class="news-link">Đọc thêm <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="news-card">
+                    <div class="news-date">
+                        <i class="fas fa-calendar me-2"></i>12 Tháng 10, 2025
+                    </div>
+                    <div class="news-content">
+                        <h5 class="news-title">
+                            Kết Quả Thi Chứng Chỉ Cloud Computing Q3/2025
+                        </h5>
+                        <p class="news-excerpt">
+                            Chúc mừng 45 học viên đã vượt qua kỳ thi chứng chỉ AWS Solutions Architect 
+                            với tỷ lệ đậu 98%...
+                        </p>
+                        <a href="#" class="news-link">Đọc thêm <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="news-card">
+                    <div class="news-date">
+                        <i class="fas fa-calendar me-2"></i>10 Tháng 10, 2025
+                    </div>
+                    <div class="news-content">
+                        <h5 class="news-title">
+                            Workshop: "Xu Hướng Công Nghệ 2025"
+                        </h5>
+                        <p class="news-excerpt">
+                            Tham gia workshop miễn phí về các xu hướng công nghệ mới nhất. 
+                            Đăng ký ngay để đảm bảo chỗ tham dự...
+                        </p>
+                        <a href="#" class="news-link">Đọc thêm <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-4">
+            <a href="#" class="btn btn-outline-primary btn-lg px-5">
+                <i class="fas fa-newspaper me-2"></i>Xem Tất Cả Tin Tức
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2 class="cta-title">Sẵn Sàng Nâng Cao Kỹ Năng?</h2>
+                <p class="cta-description">
+                    Tham gia cùng hàng nghìn học viên đã và đang phát triển sự nghiệp 
+                    thông qua các chương trình đào tạo chất lượng cao của chúng tôi.
+                </p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a asp-controller="Auth" asp-action="DangNhap" class="btn btn-light btn-lg px-4 py-3">
+                        <i class="fas fa-sign-in-alt me-2"></i>Đăng Nhập Ngay
+                    </a>
+                    <a asp-action="LienHe" class="btn btn-outline-light btn-lg px-4 py-3">
+                        <i class="fas fa-phone me-2"></i>Liên Hệ Tư Vấn
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in-up');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all cards and sections
+        document.querySelectorAll('.feature-card, .program-card, .news-card').forEach(card => {
+            observer.observe(card);
+        });
+
+        // Counter animation for stats
+        function animateCounters() {
+            const counters = document.querySelectorAll('.stat-number');
+            
+            counters.forEach(counter => {
+                const target = parseInt(counter.textContent.replace(/[+%]/g, ''));
+                const suffix = counter.textContent.match(/[+%]/g)?.[0] || '';
+                let current = 0;
+                const increment = target / 50;
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        counter.textContent = target + suffix;
+                        clearInterval(timer);
+                    } else {
+                        counter.textContent = Math.floor(current) + suffix;
+                    }
+                }, 40);
+            });
+        }
+
+        // Start counter animation when hero section is visible
+        const heroObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounters();
+                    heroObserver.unobserve(entry.target);
+                }
+            });
+        });
+
+        const heroStats = document.querySelector('.hero-stats');
+        if (heroStats) {
+            heroObserver.observe(heroStats);
+        }
+    </script>
+}
