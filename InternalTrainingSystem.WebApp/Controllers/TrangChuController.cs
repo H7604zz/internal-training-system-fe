@@ -18,7 +18,11 @@ namespace InternalTrainingSystem.WebApp.Controllers
             return View();
         }
 
-      
+        public IActionResult GioiThieu()
+        {
+            ViewBag.Message = "Tìm hiểu về hệ thống đào tạo chuyên nghiệp của chúng tôi";
+            return View();
+        }
 
     }
 }
