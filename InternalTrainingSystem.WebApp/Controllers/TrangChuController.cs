@@ -24,5 +24,11 @@ namespace InternalTrainingSystem.WebApp.Controllers
             return View();
         }
 
+        public IActionResult LienHe()
+        {
+            ViewBag.Message = "Liên hệ với chúng tôi để được tư vấn và hỗ trợ";
+            return View();
+        }
+
     }
 }

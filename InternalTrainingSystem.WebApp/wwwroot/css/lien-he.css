@@ -1,0 +1,393 @@
+/* =============================================
+   TRANG LIÊN HỆ - CONTACT PAGE
+   ============================================= */
+
+/* Hero Section */
+.contact-hero {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 4rem 0;
+    color: white;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.contact-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="contactPattern" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="15" cy="15" r="1.5" fill="white" opacity="0.15"/></pattern></defs><rect width="100" height="100" fill="url(%23contactPattern)"/></svg>');
+    pointer-events: none;
+}
+
+.contact-hero .container {
+    position: relative;
+    z-index: 2;
+}
+
+/* Contact Sections */
+.contact-section {
+    padding: 4rem 0;
+}
+
+/* Contact Cards */
+.contact-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 2.5rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    margin-bottom: 2rem;
+    height: 100%;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.contact-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.contact-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 1.8rem;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.contact-card:hover .contact-icon {
+    transform: scale(1.1);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.contact-icon.primary { 
+    background: linear-gradient(135deg, #667eea, #764ba2); 
+}
+
+.contact-icon.success { 
+    background: linear-gradient(135deg, #56ab2f, #a8e6cf); 
+}
+
+.contact-icon.info { 
+    background: linear-gradient(135deg, #4facfe, #00f2fe); 
+}
+
+.contact-icon.warning { 
+    background: linear-gradient(135deg, #f093fb, #f5576c); 
+}
+
+.contact-card h5 {
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.contact-card p {
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+
+.contact-card strong {
+    color: #2c3e50;
+}
+
+/* Contact Form */
+.contact-form-section .contact-card {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.form-control,
+.form-select {
+    border-radius: 0.5rem;
+    border: 2px solid #e9ecef;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    transform: translateY(-1px);
+}
+
+.form-label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.form-control::placeholder {
+    color: #adb5bd;
+    font-style: italic;
+}
+
+/* Contact Form Buttons */
+.btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #5a67d8, #6b46c1);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+}
+
+/* FAQ Section */
+.faq-section {
+    background-color: #f8f9fa;
+}
+
+.faq-item {
+    border: none;
+    margin-bottom: 1rem;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.faq-item:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.faq-header {
+    background: white;
+    border: none;
+    padding: 1.5rem 2rem;
+    font-weight: 600;
+    text-align: left;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+    color: #2c3e50;
+    font-size: 1.05rem;
+}
+
+.faq-header:hover {
+    background-color: #f8f9fa;
+    color: #667eea;
+}
+
+.faq-header:focus {
+    box-shadow: none;
+    background-color: #f8f9fa;
+}
+
+.faq-header i {
+    transition: transform 0.3s ease;
+    color: #667eea;
+}
+
+.faq-header[aria-expanded="true"] i {
+    transform: rotate(180deg);
+}
+
+.faq-body {
+    background: white;
+    border-top: 1px solid #e9ecef;
+    padding: 1.5rem 2rem;
+    color: #6c757d;
+    line-height: 1.6;
+}
+
+/* Animation for FAQ */
+.collapse {
+    transition: height 0.3s ease;
+}
+
+/* Loading Animation */
+.btn .fa-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Success/Error States */
+.form-control.is-valid {
+    border-color: #28a745;
+}
+
+.form-control.is-invalid {
+    border-color: #dc3545;
+}
+
+.valid-feedback {
+    color: #28a745;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.invalid-feedback {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .contact-hero {
+        padding: 3rem 0;
+    }
+    
+    .contact-section {
+        padding: 3rem 0;
+    }
+    
+    .contact-card {
+        padding: 2rem;
+    }
+    
+    .contact-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .contact-hero {
+        padding: 2rem 0;
+    }
+    
+    .contact-hero h1 {
+        font-size: 2rem;
+    }
+    
+    .contact-section {
+        padding: 2rem 0;
+    }
+    
+    .contact-card {
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .contact-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+    }
+    
+    .faq-header {
+        padding: 1rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    .faq-body {
+        padding: 1rem 1.5rem;
+    }
+    
+    .form-control,
+    .form-select {
+        padding: 0.6rem 0.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .contact-hero .lead {
+        font-size: 1rem;
+    }
+    
+    .contact-card {
+        padding: 1.25rem;
+    }
+    
+    .faq-header {
+        padding: 0.875rem 1.25rem;
+        font-size: 0.95rem;
+    }
+    
+    .faq-body {
+        padding: 0.875rem 1.25rem;
+        font-size: 0.9rem;
+    }
+    
+    .btn-primary {
+        padding: 0.6rem 1.5rem;
+        font-size: 0.95rem;
+    }
+}
+
+/* Additional Enhancements */
+.contact-card .fas,
+.contact-card .far {
+    margin-right: 0.5rem;
+    color: #667eea;
+}
+
+.contact-section .section-title {
+    margin-bottom: 3rem;
+}
+
+.contact-section .section-title h2 {
+    color: #2c3e50;
+    font-weight: 700;
+}
+
+.contact-section .section-title p {
+    color: #6c757d;
+    font-size: 1.1rem;
+}
+
+/* Hover effects for better UX */
+.form-group {
+    position: relative;
+}
+
+.form-floating {
+    position: relative;
+}
+
+.form-floating .form-control:focus ~ label,
+.form-floating .form-control:not(:placeholder-shown) ~ label {
+    opacity: 0.65;
+    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+}
+
+/* Custom scrollbar for textarea */
+.form-control[rows] {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.form-control[rows]::-webkit-scrollbar {
+    width: 6px;
+}
+
+.form-control[rows]::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.form-control[rows]::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.form-control[rows]::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}

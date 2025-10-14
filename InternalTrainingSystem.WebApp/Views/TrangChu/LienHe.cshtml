@@ -1,0 +1,281 @@
+@{
+    ViewData["Title"] = "Liên Hệ";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/lien-he.css" asp-append-version="true" />
+}
+
+<!-- Hero Section -->
+<section class="contact-hero">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-4">Liên Hệ Với Chúng Tôi</h1>
+        <p class="lead">
+            Chúng tôi luôn sẵn sàng hỗ trợ và tư vấn cho bạn về các chương trình đào tạo. 
+            Hãy liên hệ qua các kênh bên dưới hoặc gửi tin nhắn cho chúng tôi.
+        </p>
+    </div>
+</section>
+
+<!-- Contact Information -->
+<section class="contact-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="contact-card text-center">
+                    <div class="contact-icon primary">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Địa Chỉ</h5>
+                    <p class="mb-2">FPT Software Building</p>
+                    <p class="mb-2">Lô E2a-7, Đường D1, Khu Công nghệ cao</p>
+                    <p class="mb-0">Quận 9, TP.HCM</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="contact-card text-center">
+                    <div class="contact-icon success">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Điện Thoại</h5>
+                    <p class="mb-2">Hotline: <strong>1900 1234</strong></p>
+                    <p class="mb-2">Phòng Đào tạo: <strong>(028) 7300 1234</strong></p>
+                    <p class="mb-0">Thời gian: 8:00 - 17:30</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="contact-card text-center">
+                    <div class="contact-icon info">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Email</h5>
+                    <p class="mb-2">Tổng đài: <strong>support@training.com</strong></p>
+                    <p class="mb-2">Đào tạo: <strong>training@company.com</strong></p>
+                    <p class="mb-0">Phản hồi trong 24h</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="contact-card text-center">
+                    <div class="contact-icon warning">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Giờ Làm Việc</h5>
+                    <p class="mb-2"><strong>Thứ 2 - Thứ 6:</strong> 8:00 - 17:30</p>
+                    <p class="mb-2"><strong>Thứ 7:</strong> 8:00 - 12:00</p>
+                    <p class="mb-0"><strong>Chủ nhật:</strong> Nghỉ</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Form -->
+<section class="contact-section bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="contact-card">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold">Gửi Tin Nhắn</h2>
+                        <p class="text-muted">
+                            Điền thông tin bên dưới và chúng tôi sẽ phản hồi trong thời gian sớm nhất
+                        </p>
+                    </div>
+                    
+                    <form id="contactForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="fullName" class="form-label">Họ và Tên *</label>
+                                <input type="text" class="form-control" id="fullName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email *</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">Số Điện Thoại</label>
+                                <input type="tel" class="form-control" id="phone">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="department" class="form-label">Phòng Ban</label>
+                                <input type="text" class="form-control" id="department">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Chủ Đề *</label>
+                            <select class="form-select" id="subject" required>
+                                <option value="">Chọn chủ đề...</option>
+                                <option value="course-info">Thông tin khóa học</option>
+                                <option value="enrollment">Đăng ký học</option>
+                                <option value="technical-support">Hỗ trợ kỹ thuật</option>
+                                <option value="certification">Chứng chỉ</option>
+                                <option value="feedback">Góp ý/Phản hồi</option>
+                                <option value="other">Khác</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="message" class="form-label">Nội Dung *</label>
+                            <textarea class="form-control" id="message" rows="5" 
+                                      placeholder="Mô tả chi tiết yêu cầu của bạn..." required></textarea>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>Gửi Tin Nhắn
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="contact-section faq-section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Câu Hỏi Thường Gặp</h2>
+            <p class="lead text-muted">
+                Tìm hiểu câu trả lời cho những câu hỏi phổ biến nhất
+            </p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <div class="accordion" id="faqAccordion">
+                    <div class="faq-item">
+                        <button class="faq-header" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#faq1" aria-expanded="true">
+                            <span>Làm thế nào để đăng ký khóa học?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div id="faq1" class="collapse show" data-bs-parent="#faqAccordion">
+                            <div class="faq-body">
+                                Bạn có thể đăng ký khóa học bằng cách đăng nhập vào hệ thống, 
+                                chọn khóa học mong muốn và click "Đăng ký". Hệ thống sẽ tự động 
+                                xử lý đăng ký và gửi thông báo xác nhận qua email.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <button class="faq-header" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#faq2">
+                            <span>Có cần phải có kiến thức nền không?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div id="faq2" class="collapse" data-bs-parent="#faqAccordion">
+                            <div class="faq-body">
+                                Mỗi khóa học có yêu cầu kiến thức khác nhau. Chúng tôi có các khóa học 
+                                từ cơ bản đến nâng cao. Bạn có thể xem chi tiết yêu cầu trong mô tả khóa học 
+                                hoặc liên hệ với tư vấn viên để được hỗ trợ chọn khóa học phù hợp.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <button class="faq-header" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#faq3">
+                            <span>Thời gian học của mỗi khóa là bao lâu?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div id="faq3" class="collapse" data-bs-parent="#faqAccordion">
+                            <div class="faq-body">
+                                Thời gian học tùy thuộc vào từng khóa học, thường từ 2-6 tháng. 
+                                Bạn có thể học theo lịch trình linh hoạt phù hợp với công việc. 
+                                Hệ thống hỗ trợ học online và offline.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <button class="faq-header" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#faq4">
+                            <span>Có được cấp chứng chỉ sau khi hoàn thành không?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div id="faq4" class="collapse" data-bs-parent="#faqAccordion">
+                            <div class="faq-body">
+                                Có, sau khi hoàn thành khóa học và vượt qua bài kiểm tra cuối khóa, 
+                                bạn sẽ nhận được chứng chỉ hoàn thành. Một số khóa học có chứng chỉ 
+                                quốc tế được công nhận rộng rãi.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <button class="faq-header" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#faq5">
+                            <span>Có hỗ trợ kỹ thuật trong quá trình học không?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div id="faq5" class="collapse" data-bs-parent="#faqAccordion">
+                            <div class="faq-body">
+                                Có, chúng tôi có đội ngũ hỗ trợ kỹ thuật 24/7 và mentor chuyên môn 
+                                để giúp bạn giải đáp thắc mắc. Bạn có thể liên hệ qua chat, email 
+                                hoặc hotline.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        // Contact form submission
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = {
+                fullName: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                department: document.getElementById('department').value,
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value
+            };
+            
+            // Simple validation
+            if (!formData.fullName || !formData.email || !formData.subject || !formData.message) {
+                alert('Vui lòng điền đầy đủ các trường bắt buộc (*)');
+                return;
+            }
+            
+            // Simulate form submission
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang gửi...';
+            submitBtn.disabled = true;
+            
+            setTimeout(() => {
+                alert('Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi trong vòng 24 giờ.');
+                this.reset();
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 2000);
+        });
+        
+        // FAQ accordion icons
+        document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(button => {
+            button.addEventListener('click', function() {
+                const icon = this.querySelector('i');
+                setTimeout(() => {
+                    const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                    icon.classList.toggle('fa-chevron-down', !isExpanded);
+                    icon.classList.toggle('fa-chevron-up', isExpanded);
+                }, 100);
+            });
+        });
+    </script>
+}
