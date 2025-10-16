@@ -20,8 +20,14 @@ html {
     }
 }
 
+html, body {
+    height: 100%;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Header Styles */
@@ -124,6 +130,14 @@ body {
     margin-top: auto;
     background-color: var(--light-color) !important;
     border-top: 1px solid #dee2e6;
+    flex-shrink: 0;
+}
+
+/* Main content wrapper */
+.content-wrapper {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Utility Classes */
