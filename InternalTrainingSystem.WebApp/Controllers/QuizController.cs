@@ -31,7 +31,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 // TODO: Lưu vào database
                 
                 TempData["SuccessMessage"] = "Tạo bài kiểm tra thành công!";
-                return RedirectToAction("Index");
+                return RedirectToAction("DanhSachBaiQuiz");
             }
 
             // Nếu có lỗi, load lại data
@@ -162,7 +162,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         public IActionResult SubmitQuiz(QuizSubmissionModel submission)
         {
             // Xử lý nộp bài
-            return RedirectToAction("Result", new { id = submission.QuizId });
+            return RedirectToAction("KetQua", new { id = submission.QuizId });
         }
 
         public IActionResult KetQua(int id)

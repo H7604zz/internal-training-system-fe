@@ -73,7 +73,7 @@ app.MapControllerRoute(
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=TrangChu}/{action=Index}/{id?}");
+    pattern: "{controller:slugify=TrangChu}/{action:slugify=Index}/{id?}");
 
 // Initialize Utilities with configuration
 Utilities.Initialize(app.Configuration);
