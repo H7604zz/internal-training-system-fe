@@ -54,7 +54,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi tải danh sách khóa học sắp mở lớp");
-                TempData["ErrorMessage"] = "Có lỗi xảy ra khi tải danh sách khóa học";
+                TempData["Error"] = "Có lỗi xảy ra khi tải danh sách khóa học";
                 return View(new List<CourseDto>());
             }
         }
@@ -71,7 +71,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 var course = GetMockCourse(courseId);
                 if (course == null)
                 {
-                    TempData["ErrorMessage"] = "Không tìm thấy khóa học";
+                    TempData["Error"] = "Không tìm thấy khóa học";
                     return RedirectToAction("DanhSachKhoaHocSapMo");
                 }
 
@@ -94,7 +94,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi lấy danh sách staff đủ điều kiện cho khóa học {CourseId}", courseId);
-                TempData["ErrorMessage"] = "Có lỗi xảy ra khi tải danh sách nhân viên";
+                TempData["Error"] = "Có lỗi xảy ra khi tải danh sách nhân viên";
                 return RedirectToAction("DanhSachKhoaHocSapMo");
             }
         }
@@ -113,7 +113,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi mời staff {StaffId} tham gia khóa học {CourseId}", staffId, courseId);
-                TempData["ErrorMessage"] = "Có lỗi xảy ra khi gửi lời mời";
+                TempData["Error"] = "Có lỗi xảy ra khi gửi lời mời";
             }
 
             return RedirectToAction("DanhSachStaffDuDieuKien", new { courseId });
@@ -133,7 +133,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi gửi thông báo cho tất cả staff của khóa học {CourseId}", courseId);
-                TempData["ErrorMessage"] = "Có lỗi xảy ra khi gửi thông báo";
+                TempData["Error"] = "Có lỗi xảy ra khi gửi thông báo";
             }
 
             return RedirectToAction("DanhSachStaffDuDieuKien", new { courseId });
