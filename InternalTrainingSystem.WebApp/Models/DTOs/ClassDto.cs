@@ -11,6 +11,13 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public List<ClassStudentDto> Students { get; set; } = new();
         public DateTime CreatedDate { get; set; }
         public bool IsActive { get; set; }
+        public int MaxStudents { get; set; } = 30; // Số lượng sinh viên tối đa
+        public string CreatedBy { get; set; } = string.Empty; // Người tạo lớp
+        
+        // Computed properties
+        public int CurrentStudentCount => Students?.Count ?? 0;
+        public string Status => IsActive ? "Hoạt động" : "Không hoạt động";
+        public string StudentCountDisplay => $"{CurrentStudentCount}/{MaxStudents}";
     }
 
     public class ClassStudentDto

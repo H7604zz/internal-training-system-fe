@@ -1,0 +1,236 @@
+/* Lop Hoc Styles */
+.class-list-container {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    padding: 2rem 0;
+}
+
+.class-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .class-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+.class-table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+    .class-table thead {
+        background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+    }
+
+        .class-table thead th {
+            border: none;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.875rem;
+        }
+
+    .class-table tbody tr {
+        transition: background-color 0.2s ease;
+    }
+
+        .class-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+.class-status-badge {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.class-detail-btn {
+    background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+    border: none;
+    border-radius: 20px;
+    padding: 0.375rem 1rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+    .class-detail-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+    }
+
+.class-pagination {
+    margin-top: 2rem;
+}
+
+    .class-pagination .page-link {
+        border: none;
+        border-radius: 8px;
+        margin: 0 0.2rem;
+        font-weight: 600;
+        color: #0d6efd;
+        transition: all 0.2s ease;
+    }
+
+        .class-pagination .page-link:hover {
+            background-color: #e9ecef;
+            transform: translateY(-1px);
+        }
+
+    .class-pagination .page-item.active .page-link {
+        background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+        border-color: transparent;
+        box-shadow: 0 2px 8px rgba(13, 110, 253, 0.3);
+    }
+
+.class-detail-modal .modal-header {
+    background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+}
+
+.class-detail-modal .modal-content {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.class-info-card {
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    transition: transform 0.2s ease;
+}
+
+    .class-info-card:hover {
+        transform: translateY(-2px);
+    }
+
+.class-students-table {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+    .class-students-table thead {
+        background-color: #f8f9fa;
+    }
+
+    .class-students-table tbody tr:nth-child(even) {
+        background-color: #fbfbfb;
+    }
+
+.student-count-badge {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.empty-state {
+    padding: 3rem 2rem;
+    text-align: center;
+    color: #6c757d;
+}
+
+    .empty-state i {
+        color: #dee2e6;
+    }
+
+.loading-spinner {
+    display: inline-block;
+    width: 2rem;
+    height: 2rem;
+    border: 0.25rem solid rgba(13, 110, 253, 0.2);
+    border-right-color: #0d6efd;
+    border-radius: 50%;
+    animation: spinner-border 0.75s linear infinite;
+}
+
+@keyframes spinner-border {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.page-size-selector {
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.375rem 0.75rem;
+    transition: border-color 0.2s ease;
+}
+
+    .page-size-selector:focus {
+        outline: none;
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .class-table thead {
+        display: none;
+    }
+
+    .class-table tbody tr {
+        display: block;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background-color: white;
+    }
+
+    .class-table tbody td {
+        display: block;
+        text-align: left !important;
+        border: none;
+        padding: 0.25rem 0;
+    }
+
+        .class-table tbody td:before {
+            content: attr(data-label) ": ";
+            font-weight: bold;
+            color: #495057;
+        }
+
+    .class-detail-modal .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    .class-info-card {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Animation for cards */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.class-card,
+.class-info-card {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+/* Tooltip styles */
+.tooltip-inner {
+    background-color: #495057;
+    border-radius: 6px;
+    font-size: 0.875rem;
+}
+
+.tooltip.bs-tooltip-top .tooltip-arrow::before {
+    border-top-color: #495057;
+}

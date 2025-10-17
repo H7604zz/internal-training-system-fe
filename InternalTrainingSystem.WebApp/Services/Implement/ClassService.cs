@@ -49,6 +49,36 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
             }
         }
 
+        public async Task<ClassDto?> GetClassByIdAsync(int classId)
+        {
+            try
+            {
+                var apiUrl = Utilities.GetAbsoluteUrl($"api/Class/{classId}");
+                var response = await _httpClient.GetAsync(apiUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonString = await response.Content.ReadAsStringAsync();
+                    var classDto = JsonSerializer.Deserialize<ClassDto>(jsonString, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    return classDto;
+                }
+                else
+                {
+                    _logger.LogError("Failed to get class by ID: {ClassId}. Status: {StatusCode}", classId, response.StatusCode);
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting class by ID: {ClassId}", classId);
+                return null;
+            }
+        }
+
         public async Task<List<ClassDto>> CreateClassesAsync(CreateClassesDto createClassesDto)
         {
             try
