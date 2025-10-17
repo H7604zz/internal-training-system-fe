@@ -1,0 +1,288 @@
+﻿@model List<InternalTrainingSystem.WebApp.Models.DTOs.CourseDto>
+@{
+    ViewData["Title"] = "Danh Sách Khóa Học";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/khoa-hoc.css" asp-append-version="true" />
+}
+
+<div class="course-container">
+    <div class="container-fluid">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="page-title">
+                        <i class="fas fa-graduation-cap me-3"></i>Danh Sách Khóa Học
+                    </h1>
+                    <p class="page-subtitle">Quản lý và theo dõi các khóa học đào tạo nội bộ</p>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <a href="@Url.Action("Them")" class="add-course-btn">
+                        <i class="fas fa-plus"></i>
+                        Thêm Khóa Học
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats-container">
+            <div class="row">
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="stat-card">
+                        <div class="stat-number">@ViewBag.TotalItems</div>
+                        <div class="stat-label">Tổng khóa học</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="stat-card">
+                        <div class="stat-number">@(Model?.Count(c => c.IsActive) ?? 0)</div>
+                        <div class="stat-label">Đang hoạt động</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="stat-card">
+                        <div class="stat-number">@(ViewBag.Categories?.Count ?? 0)</div>
+                        <div class="stat-label">Danh mục</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="stat-card">
+                        <div class="stat-number">@(ViewBag.Departments?.Count ?? 0)</div>
+                        <div class="stat-label">Phòng ban</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <h5 class="filter-title">
+                <i class="fas fa-filter me-2"></i>Bộ Lọc & Tìm Kiếm
+            </h5>
+            <form method="get" class="filter-form">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Tìm kiếm khóa học</label>
+                        <input type="text" class="form-control" name="searchTerm" 
+                               value="@ViewBag.SearchTerm" placeholder="Nhập tên khóa học...">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Danh mục</label>
+                        <select class="form-select" name="categoryId">
+                            <option value="0">Tất cả danh mục</option>
+                            @if (ViewBag.Categories != null)
+                            {
+                                @foreach (dynamic category in ViewBag.Categories)
+                                {
+                                    <option value="@category.Id" selected="@(ViewBag.CategoryId == category.Id)">
+                                        @category.Name
+                                    </option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Phòng ban</label>
+                        <select class="form-select" name="departmentId">
+                            <option value="0">Tất cả phòng ban</option>
+                            @if (ViewBag.Departments != null)
+                            {
+                                @foreach (var dept in ViewBag.Departments)
+                                {
+                                    <option value="@dept.Id" selected="@(ViewBag.DepartmentId == dept.Id)">
+                                        @dept.Name
+                                    </option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn filter-btn flex-fill">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            <a href="@Url.Action("Index")" class="btn reset-btn">
+                                <i class="fas fa-undo"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Course Cards -->
+        <div class="row">
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var course in Model)
+                {
+                    <div class="col-lg-6 col-xl-4 mb-4">
+                        <div class="card course-card">
+                            <div class="course-header">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h3 class="course-title">@course.CourseName</h3>
+                                    <span class="course-code">@course.Code</span>
+                                </div>
+                            </div>
+                            <div class="course-body">
+                                <p class="course-description">@course.Description</p>
+                                
+                                <div class="course-meta">
+                                    <div class="meta-item">
+                                        <i class="fas fa-tag meta-icon"></i>
+                                        <span>@course.CategoryName</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <i class="fas fa-clock meta-icon"></i>
+                                        <span>@course.DurationDisplay</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <i class="fas fa-signal meta-icon"></i>
+                                        <span class="level-badge @(course.Level.ToLower() switch 
+                                        {
+                                            "cơ bản" => "level-basic",
+                                            "trung cấp" => "level-intermediate", 
+                                            "nâng cao" => "level-advanced",
+                                            _ => "level-basic"
+                                        })">@course.Level</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span class="status-badge @(course.IsActive ? "status-active" : "status-inactive")">
+                                            <i class="fas @(course.IsActive ? "fa-check-circle" : "fa-pause-circle") me-1"></i>
+                                            @course.StatusDisplay
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <strong class="d-block mb-2">
+                                        <i class="fas fa-building me-1"></i>Phòng ban áp dụng:
+                                    </strong>
+                                    <div class="departments-list">@course.DepartmentsDisplay</div>
+                                </div>
+
+                                <div class="course-actions">
+                                    <a href="@Url.Action("ChiTiet", new { id = course.CourseId })" 
+                                       class="action-btn btn-detail">
+                                        <i class="fas fa-eye"></i>
+                                        Chi tiết
+                                    </a>
+                                    <a href="@Url.Action("ChinhSua", new { id = course.CourseId })" 
+                                       class="action-btn btn-edit">
+                                        <i class="fas fa-edit"></i>
+                                        Chỉnh sửa
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12">
+                    <div class="empty-state">
+                        <i class="fas fa-graduation-cap"></i>
+                        <h3>Không có khóa học nào</h3>
+                        <p>Hiện tại chưa có khóa học nào phù hợp với bộ lọc của bạn.</p>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Pagination -->
+        @if (ViewBag.TotalPages > 1)
+        {
+            <nav aria-label="Page navigation" class="course-pagination">
+                <ul class="pagination justify-content-center">
+                    <!-- Previous button -->
+                    <li class="page-item @(ViewBag.CurrentPage <= 1 ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { 
+                            page = ViewBag.CurrentPage - 1, 
+                            pageSize = ViewBag.PageSize,
+                            searchTerm = ViewBag.SearchTerm,
+                            categoryId = ViewBag.CategoryId,
+                            departmentId = ViewBag.DepartmentId
+                        })">
+                            <i class="fas fa-chevron-left"></i> Trước
+                        </a>
+                    </li>
+
+                    <!-- Page numbers -->
+                    @{
+                        int startPage = Math.Max(1, ViewBag.CurrentPage - 2);
+                        int endPage = Math.Min(ViewBag.TotalPages, ViewBag.CurrentPage + 2);
+                    }
+
+                    @if (startPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Index", new { 
+                                page = 1, 
+                                pageSize = ViewBag.PageSize,
+                                searchTerm = ViewBag.SearchTerm,
+                                categoryId = ViewBag.CategoryId,
+                                departmentId = ViewBag.DepartmentId
+                            })">1</a>
+                        </li>
+                        @if (startPage > 2)
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        }
+                    }
+
+                    @for (int i = startPage; i <= endPage; i++)
+                    {
+                        <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { 
+                                page = i, 
+                                pageSize = ViewBag.PageSize,
+                                searchTerm = ViewBag.SearchTerm,
+                                categoryId = ViewBag.CategoryId,
+                                departmentId = ViewBag.DepartmentId
+                            })">@i</a>
+                        </li>
+                    }
+
+                    @if (endPage < ViewBag.TotalPages)
+                    {
+                        @if (endPage < ViewBag.TotalPages - 1)
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        }
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Index", new { 
+                                page = ViewBag.TotalPages, 
+                                pageSize = ViewBag.PageSize,
+                                searchTerm = ViewBag.SearchTerm,
+                                categoryId = ViewBag.CategoryId,
+                                departmentId = ViewBag.DepartmentId
+                            })">@ViewBag.TotalPages</a>
+                        </li>
+                    }
+
+                    <!-- Next button -->
+                    <li class="page-item @(ViewBag.CurrentPage >= ViewBag.TotalPages ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { 
+                            page = ViewBag.CurrentPage + 1, 
+                            pageSize = ViewBag.PageSize,
+                            searchTerm = ViewBag.SearchTerm,
+                            categoryId = ViewBag.CategoryId,
+                            departmentId = ViewBag.DepartmentId
+                        })">
+                            Sau <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        }
+    </div>
+</div>
