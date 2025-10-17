@@ -4,7 +4,6 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
     {
         public int Id { get; set; }
         public int CourseId { get; set; }
-        public string Name { get; set; } = string.Empty;
         public string CourseName { get; set; } = string.Empty;
         public string? Code { get; set; }
         public string? Description { get; set; }
@@ -19,6 +18,23 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string? Status { get; set; }
         public int? MaxParticipants { get; set; }
         public int? CurrentParticipants { get; set; }
+        public List<DepartmentDto> Departments { get; set; } = new();
+        public string? CreatedBy { get; set; } = string.Empty;
+        public DateTime? UpdatedDate { get; set; }
+        public string? UpdatedBy { get; set; } = string.Empty;
+        
+        // Computed properties
+        public string StatusDisplay => IsActive ? "Hoạt động" : "Không hoạt động";
+        public string DurationDisplay => Duration > 0 ? $"{Duration} giờ" : "Chưa xác định";
+        public string DepartmentsDisplay => Departments.Any() ? string.Join(", ", Departments.Select(d => d.Name)) : "Tất cả phòng ban";
+    }
+
+    public class DepartmentDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Code { get; set; } = string.Empty;
+        public bool IsActive { get; set; }
     }
 
     public class CourseDetailDto

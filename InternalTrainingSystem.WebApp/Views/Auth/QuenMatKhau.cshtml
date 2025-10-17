@@ -66,19 +66,6 @@
                 }
 
                 <form asp-controller="Auth" asp-action="QuenMatKhau" method="post" class="needs-validation" novalidate id="forgotPasswordForm">
-                    <div class="alert-container">
-                        @if (!ViewData.ModelState.IsValid)
-                        {
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-                                {
-                                    <div>@error.ErrorMessage</div>
-                                }
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        }
-                    </div>
-
                     <div class="mb-4">
                         <div class="form-floating">
                             <input asp-for="Email" type="email" class="form-control form-control-lg" id="email" placeholder="Email" required>

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace InternalTrainingSystem.WebApp.Controllers
 {
+    [Route("lop-hoc")]
     public class LopHocController : Controller
     {
         private readonly IClassService _classService;
@@ -15,6 +16,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             _logger = logger;
         }
 
+        [HttpGet("")]
         public async Task<IActionResult> Index(int page = 1, int pageSize = 10)
         {
             try
@@ -45,6 +47,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
         }
 
+        [HttpGet("chi-tiet/{id}")]
         public async Task<IActionResult> ChiTiet(int id)
         {
             try
@@ -55,7 +58,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
                 if (classDetail == null)
                 {
-                    TempData["ErrorMessage"] = "Không tìm thấy lớp học.";
+                    TempData["Error"] = "Không tìm thấy lớp học.";
                     return RedirectToAction("Index");
                 }
 
@@ -64,7 +67,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while getting class detail with ID: {ClassId}", id);
-                TempData["ErrorMessage"] = "Đã xảy ra lỗi khi tải chi tiết lớp học.";
+                TempData["Error"] = "Đã xảy ra lỗi khi tải chi tiết lớp học.";
                 return RedirectToAction("Index");
             }
         }

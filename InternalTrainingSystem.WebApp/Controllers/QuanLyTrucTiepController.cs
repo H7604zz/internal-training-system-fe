@@ -168,20 +168,20 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             var allCourses = new List<CourseDto>
             {
-                new CourseDto { Id = 1, Name = "C# Programming Fundamentals", Code = "CS001", Description = "Học lập trình C# từ cơ bản đến nâng cao", Category = "lap-trinh", Level = "co-ban", StartDate = DateTime.Now.AddDays(10) },
-                new CourseDto { Id = 2, Name = "Project Management Essentials", Code = "PM001", Description = "Kỹ năng quản lý dự án hiệu quả", Category = "quan-ly", Level = "trung-binh", StartDate = DateTime.Now.AddDays(15) },
-                new CourseDto { Id = 3, Name = "Digital Marketing Strategy", Code = "MK001", Description = "Chiến lược marketing kỹ thuật số", Category = "ky-nang-mem", Level = "nang-cao", StartDate = DateTime.Now.AddDays(20) },
-                new CourseDto { Id = 4, Name = "Leadership Development", Code = "LD001", Description = "Phát triển kỹ năng lãnh đạo", Category = "quan-ly", Level = "nang-cao", StartDate = DateTime.Now.AddDays(25) },
-                new CourseDto { Id = 5, Name = "Data Analytics with Python", Code = "DA001", Description = "Phân tích dữ liệu với Python", Category = "cong-nghe", Level = "trung-binh", StartDate = DateTime.Now.AddDays(30) },
-                new CourseDto { Id = 6, Name = "Business English Communication", Code = "EN001", Description = "Giao tiếp tiếng Anh trong kinh doanh", Category = "ngoai-ngu", Level = "co-ban", StartDate = DateTime.Now.AddDays(35) },
-                new CourseDto { Id = 7, Name = "Advanced SQL Database", Code = "DB001", Description = "Quản lý cơ sở dữ liệu SQL nâng cao", Category = "cong-nghe", Level = "nang-cao", StartDate = DateTime.Now.AddDays(40) },
-                new CourseDto { Id = 8, Name = "Agile Software Development", Code = "AG001", Description = "Phương pháp phát triển phần mềm Agile", Category = "lap-trinh", Level = "trung-binh", StartDate = DateTime.Now.AddDays(45) }
+                new CourseDto { Id = 1, CourseName = "C# Programming Fundamentals", Code = "CS001", Description = "Học lập trình C# từ cơ bản đến nâng cao", Category = "lap-trinh", Level = "co-ban", StartDate = DateTime.Now.AddDays(10) },
+                new CourseDto { Id = 2, CourseName = "Project Management Essentials", Code = "PM001", Description = "Kỹ năng quản lý dự án hiệu quả", Category = "quan-ly", Level = "trung-binh", StartDate = DateTime.Now.AddDays(15) },
+                new CourseDto { Id = 3, CourseName = "Digital Marketing Strategy", Code = "MK001", Description = "Chiến lược marketing kỹ thuật số", Category = "ky-nang-mem", Level = "nang-cao", StartDate = DateTime.Now.AddDays(20) },
+                new CourseDto { Id = 4, CourseName = "Leadership Development", Code = "LD001", Description = "Phát triển kỹ năng lãnh đạo", Category = "quan-ly", Level = "nang-cao", StartDate = DateTime.Now.AddDays(25) },
+                new CourseDto { Id = 5, CourseName = "Data Analytics with Python", Code = "DA001", Description = "Phân tích dữ liệu với Python", Category = "cong-nghe", Level = "trung-binh", StartDate = DateTime.Now.AddDays(30) },
+                new CourseDto { Id = 6, CourseName = "Business English Communication", Code = "EN001", Description = "Giao tiếp tiếng Anh trong kinh doanh", Category = "ngoai-ngu", Level = "co-ban", StartDate = DateTime.Now.AddDays(35) },
+                new CourseDto { Id = 7, CourseName = "Advanced SQL Database", Code = "DB001", Description = "Quản lý cơ sở dữ liệu SQL nâng cao", Category = "cong-nghe", Level = "nang-cao", StartDate = DateTime.Now.AddDays(40) },
+                new CourseDto { Id = 8, CourseName = "Agile Software Development", Code = "AG001", Description = "Phương pháp phát triển phần mềm Agile", Category = "lap-trinh", Level = "trung-binh", StartDate = DateTime.Now.AddDays(45) }
             };
 
             // Filter by search
             if (!string.IsNullOrEmpty(search))
             {
-                allCourses = allCourses.Where(c => c.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                allCourses = allCourses.Where(c => c.CourseName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
                                                    (c.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
             }
 
