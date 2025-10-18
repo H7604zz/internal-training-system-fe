@@ -17,7 +17,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpGet("")]
-        public async Task<IActionResult> Index(int page = 1, int pageSize = 10, string searchTerm = "", int categoryId = 0, int departmentId = 0)
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 9, string searchTerm = "", int categoryId = 0, int departmentId = 0)
         {
             try
             {
@@ -156,16 +156,16 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
         }
 
-        [HttpGet("them")]
-        public IActionResult Them()
+        [HttpGet("tao-moi")]
+        public IActionResult TaoMoi()
         {
             ViewBag.Categories = GetCategories();
             ViewBag.Departments = GetDepartments();
             return View(new CourseDto());
         }
 
-        [HttpPost("them")]
-        public async Task<IActionResult> Them(CourseDto model)
+        [HttpPost("tao-moi")]
+        public async Task<IActionResult> TaoMoi(CourseDto model)
         {
             try
             {

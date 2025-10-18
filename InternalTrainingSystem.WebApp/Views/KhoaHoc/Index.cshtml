@@ -19,7 +19,7 @@
                     <p class="page-subtitle">Quản lý và theo dõi các khóa học đào tạo nội bộ</p>
                 </div>
                 <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                    <a href="@Url.Action("Them")" class="add-course-btn">
+                    <a href="@Url.Action("TaoMoi")" class="add-course-btn">
                         <i class="fas fa-plus"></i>
                         Thêm Khóa Học
                     </a>
@@ -195,7 +195,7 @@
         </div>
 
         <!-- Pagination -->
-        @if (ViewBag.TotalPages > 1)
+        @if (ViewBag.TotalPages >= 1)
         {
             <nav aria-label="Page navigation" class="course-pagination">
                 <ul class="pagination justify-content-center">
