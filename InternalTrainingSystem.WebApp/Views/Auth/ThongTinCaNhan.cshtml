@@ -1,0 +1,238 @@
+@model InternalTrainingSystem.WebApp.Models.DTOs.UserProfileDto
+@{
+    ViewData["Title"] = "Thông Tin Cá Nhân";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/profile.css" asp-append-version="true" />
+}
+
+<div class="profile-container">
+    <div class="container">
+        <div class="row">
+            <!-- Profile Info -->
+            <div class="col-lg-8 mb-4">
+                <div class="profile-card">
+                    <!-- Profile Header -->
+                    <div class="profile-header">
+                        <div class="profile-avatar">
+                            @if (!string.IsNullOrEmpty(Model.Avatar))
+                            {
+                                <img src="@Model.Avatar" alt="Avatar" class="w-100 h-100 rounded-circle object-cover">
+                            }
+                            else
+                            {
+                                <i class="fas fa-user"></i>
+                            }
+                        </div>
+                        <h1 class="profile-name">@Model.FullName</h1>
+                        <p class="profile-role">@Model.CurrentRole</p>
+                    </div>
+
+                    <!-- Basic Information -->
+                    <div class="info-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-info-circle"></i>Thông Tin Cơ Bản
+                        </h3>
+                        
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Mã nhân viên</span>
+                                <span class="info-value">@Model.EmployeeId</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Email</span>
+                                <span class="info-value">@Model.Email</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Số điện thoại</span>
+                                <span class="info-value">@(Model.PhoneNumber ?? "Chưa cập nhật")</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Phòng ban</span>
+                                <span class="info-value">@Model.Department</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Chức vụ</span>
+                                <span class="info-value">@Model.Position</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Kinh nghiệm</span>
+                                <span class="info-value">@(Model.YearsOfExperience?.ToString() ?? "Chưa cập nhật") năm</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Ngày gia nhập</span>
+                                <span class="info-value">@(Model.JoinDate?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Lần đăng nhập cuối</span>
+                                <span class="info-value">@(Model.LastLoginDate?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa có thông tin")</span>
+                            </div>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="button" class="edit-profile-btn" onclick="toggleUpdateForm()">
+                                <i class="fas fa-edit"></i>Chỉnh Sửa Thông Tin
+                            </button>
+                        </div>
+
+                        <!-- Update Form -->
+                        <div class="update-form" id="updateForm">
+                            <h4 class="mb-3">
+                                <i class="fas fa-edit me-2"></i>Cập Nhật Thông Tin
+                            </h4>
+                            <form asp-action="CapNhatThongTin" method="post">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="fullName" name="FullName" 
+                                           value="@Model.FullName" placeholder="Họ và tên" required>
+                                    <label for="fullName">Họ và tên *</label>
+                                </div>
+                                <div class="form-floating">
+                                    <input type="tel" class="form-control" id="phoneNumber" name="PhoneNumber" 
+                                           value="@Model.PhoneNumber" placeholder="Số điện thoại">
+                                    <label for="phoneNumber">Số điện thoại</label>
+                                </div>
+                                <div class="text-center">
+                                    <button type="submit" class="btn-update">
+                                        <i class="fas fa-save me-2"></i>Lưu Thay Đổi
+                                    </button>
+                                    <button type="button" class="btn-cancel" onclick="toggleUpdateForm()">
+                                        <i class="fas fa-times me-2"></i>Hủy
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Role History -->
+                <div class="profile-card role-history-card">
+                    <div class="info-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-history"></i>Lịch Sử Vai Trò
+                        </h3>
+                        
+                        <div class="role-timeline">
+                            @foreach (var role in Model.RoleHistory.OrderByDescending(r => r.StartDate))
+                            {
+                                <div class="timeline-item @(role.IsCurrent ? "current" : "ended")">
+                                    <div class="role-name">@role.RoleName</div>
+                                    <div class="role-description">@role.RoleDescription</div>
+                                    <div class="role-meta">
+                                        <span>
+                                            <i class="fas fa-calendar"></i>
+                                            @role.DurationText
+                                        </span>
+                                        <span>
+                                            <i class="fas fa-user-tie"></i>
+                                            Được giao bởi: @role.AssignedBy
+                                        </span>
+                                        <span class="status-badge @(role.IsCurrent ? "status-current" : "status-ended")">
+                                            @role.Status
+                                        </span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Quick Actions -->
+                <div class="profile-card">
+                    <div class="info-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-bolt"></i>Thao Tác Nhanh
+                        </h3>
+                        
+                        <div class="d-grid gap-3">
+                            <a href="#changePasswordSection" class="btn btn-outline-warning">
+                                <i class="fas fa-key me-2"></i>Đổi Mật Khẩu
+                            </a>
+                            <a href="@Url.Action("Index", "TrangChu")" class="btn btn-outline-primary">
+                                <i class="fas fa-home me-2"></i>Về Trang Chủ
+                            </a>
+                            <a href="#" class="btn btn-outline-info">
+                                <i class="fas fa-download me-2"></i>Tải CV
+                            </a>
+                            <a href="#" class="btn btn-outline-success">
+                                <i class="fas fa-chart-line me-2"></i>Báo Cáo Học Tập
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Roles -->
+                <div class="profile-card">
+                    <div class="info-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-user-tag"></i>Vai Trò Hiện Tại
+                        </h3>
+                        
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach (var role in Model.Roles)
+                            {
+                                <span class="badge bg-primary fs-6 p-2">
+                                    <i class="fas fa-shield-alt me-1"></i>@role
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Change Password Section -->
+                <div class="profile-card" id="changePasswordSection">
+                    <div class="info-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-lock"></i>Đổi Mật Khẩu
+                        </h3>
+                        
+                        <div class="change-password-section">
+                            <p class="mb-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Để bảo mật tài khoản, hãy thường xuyên thay đổi mật khẩu.
+                            </p>
+                            <a href="@Url.Action("DoiMatKhau")" class="btn btn-warning w-100">
+                                <i class="fas fa-key me-2"></i>Đổi Mật Khẩu
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleUpdateForm() {
+            const form = document.getElementById('updateForm');
+            if (form.classList.contains('show')) {
+                form.classList.remove('show');
+            } else {
+                form.classList.add('show');
+            }
+        }
+
+        // Smooth scroll to change password section
+        document.querySelector('a[href="#changePasswordSection"]').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('changePasswordSection').scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+
+        // Auto-hide alerts after 5 seconds
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                if (alert.classList.contains('show')) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            });
+        }, 5000);
+    </script>
+}
