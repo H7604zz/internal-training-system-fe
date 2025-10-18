@@ -13,15 +13,32 @@
         <div class="form-header">
             <div class="row align-items-center">
                 <div class="col-md-8">
-                    <h1 class="form-title">
-                        <i class="fas fa-edit me-3"></i>Chỉnh Sửa Khóa Học
-                    </h1>
-                    <p class="form-subtitle">Cập nhật thông tin khóa học đào tạo</p>
+                    <div class="header-content">
+                        <h1 class="form-title">
+                            <i class="fas fa-edit me-3"></i>Chỉnh Sửa Khóa Học
+                        </h1>
+                        <p class="form-subtitle">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Cập nhật thông tin khóa học đào tạo nội bộ
+                        </p>
+                        <div class="course-meta-inline mt-3">
+                            <span class="meta-item">
+                                <i class="fas fa-code"></i>
+                                <span>@Model.Code</span>
+                            </span>
+                            <span class="meta-item">
+                                <i class="fas fa-calendar-plus"></i>
+                                <span>@(Model.CreatedDate.ToString("dd/MM/yyyy"))</span>
+                            </span>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-4 text-md-end">
-                    <a href="@Url.Action("ChiTiet", new { id = Model.CourseId })" class="btn btn-back">
-                        <i class="fas fa-arrow-left me-2"></i>Quay Lại
-                    </a>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <div class="action-buttons">
+                        <a href="@Url.Action("ChiTiet", new { id = Model.CourseId })" class="btn btn-back">
+                            <i class="fas fa-arrow-left me-2"></i>Quay Lại
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -42,29 +59,43 @@
                         
                         <div class="row">
                             <div class="col-md-8 mb-3">
-                                <label asp-for="CourseName" class="form-label required">Tên khóa học</label>
-                                <input asp-for="CourseName" class="form-control" placeholder="Nhập tên khóa học">
+                                <label asp-for="CourseName" class="form-label required">
+                                    <i class="fas fa-graduation-cap me-1"></i>Tên khóa học
+                                </label>
+                                <input asp-for="CourseName" class="form-control" 
+                                       placeholder="Nhập tên khóa học (VD: Khóa học lập trình C#)">
                                 <span asp-validation-for="CourseName" class="text-danger"></span>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label asp-for="Code" class="form-label required">Mã khóa học</label>
-                                <input asp-for="Code" class="form-control" placeholder="VD: IT-001">
+                                <label asp-for="Code" class="form-label required">
+                                    <i class="fas fa-barcode me-1"></i>Mã khóa học
+                                </label>
+                                <input asp-for="Code" class="form-control" 
+                                       placeholder="VD: IT-001">
                                 <span asp-validation-for="Code" class="text-danger"></span>
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="Description" class="form-label">Mô tả khóa học</label>
+                            <label asp-for="Description" class="form-label">
+                                <i class="fas fa-align-left me-1"></i>Mô tả khóa học
+                            </label>
                             <textarea asp-for="Description" class="form-control" rows="4" 
-                                      placeholder="Nhập mô tả chi tiết về khóa học..."></textarea>
+                                      placeholder="Nhập mô tả chi tiết về nội dung, mục tiêu và lợi ích của khóa học..."></textarea>
                             <span asp-validation-for="Description" class="text-danger"></span>
+                            <div class="form-text">
+                                <i class="fas fa-lightbulb me-1"></i>
+                                Mô tả nên bao gồm mục tiêu học tập, nội dung chính và đối tượng học viên
+                            </div>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label asp-for="Category" class="form-label required">Danh mục</label>
+                                <label asp-for="Category" class="form-label required">
+                                    <i class="fas fa-folder me-1"></i>Danh mục
+                                </label>
                                 <select asp-for="Category" class="form-select">
-                                    <option value="">Chọn danh mục</option>
+                                    <option value="">-- Chọn danh mục khóa học --</option>
                                     @if (ViewBag.Categories != null)
                                     {
                                         @foreach (dynamic category in ViewBag.Categories)
@@ -76,12 +107,14 @@
                                 <span asp-validation-for="Category" class="text-danger"></span>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label asp-for="Level" class="form-label required">Cấp độ</label>
+                                <label asp-for="Level" class="form-label required">
+                                    <i class="fas fa-layer-group me-1"></i>Cấp độ
+                                </label>
                                 <select asp-for="Level" class="form-select">
-                                    <option value="">Chọn cấp độ</option>
-                                    <option value="Cơ bản">Cơ bản</option>
-                                    <option value="Trung cấp">Trung cấp</option>
-                                    <option value="Nâng cao">Nâng cao</option>
+                                    <option value="">-- Chọn cấp độ --</option>
+                                    <option value="Cơ bản">🟢 Cơ bản</option>
+                                    <option value="Trung cấp">🟡 Trung cấp</option>
+                                    <option value="Nâng cao">🔴 Nâng cao</option>
                                 </select>
                                 <span asp-validation-for="Level" class="text-danger"></span>
                             </div>
@@ -89,17 +122,27 @@
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label asp-for="Duration" class="form-label required">Thời lượng (giờ)</label>
-                                <input asp-for="Duration" type="number" class="form-control" min="1"
+                                <label asp-for="Duration" class="form-label required">
+                                    <i class="fas fa-stopwatch me-1"></i>Thời lượng (giờ)
+                                </label>
+                                <input asp-for="Duration" type="number" class="form-control" min="1" max="500"
                                        placeholder="VD: 40">
                                 <span asp-validation-for="Duration" class="text-danger"></span>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Tổng thời gian học bao gồm lý thuyết và thực hành
+                                </div>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Trạng thái</label>
-                                <div class="form-check form-switch">
+                                <label class="form-label">
+                                    <i class="fas fa-toggle-on me-1"></i>Trạng thái hoạt động
+                                </label>
+                                <div class="form-check form-switch mt-2">
                                     <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch">
                                     <label asp-for="IsActive" class="form-check-label">
-                                        Khóa học đang hoạt động
+                                        <span class="fw-semibold">Khóa học đang hoạt động</span>
+                                        <br>
+                                        <small class="text-muted">Cho phép tạo lớp học và đăng ký mới</small>
                                     </label>
                                 </div>
                             </div>
@@ -111,7 +154,10 @@
                         <h3 class="form-section-title">
                             <i class="fas fa-building me-2"></i>Phòng Ban Áp Dụng
                         </h3>
-                        <p class="form-help-text">Chọn các phòng ban mà khóa học này sẽ được áp dụng</p>
+                        <div class="form-help-text">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Chọn các phòng ban mà khóa học này sẽ được áp dụng. Nhân viên thuộc các phòng ban được chọn sẽ có thể đăng ký tham gia khóa học.
+                        </div>
                         
                         <div class="departments-selection">
                             @if (ViewBag.Departments != null)
@@ -125,10 +171,24 @@
                                                checked="@(Model.Departments?.Any(d => d.Id == dept.Id) == true)">
                                         <label class="form-check-label" for="dept_@dept.Id">
                                             <i class="fas fa-building me-2"></i>
-                                            @dept.Name
+                                            <span class="fw-semibold">@dept.Name</span>
+                                            <br>
+                                            <small class="text-muted">Phòng ban trong tổ chức</small>
                                         </label>
                                     </div>
                                 }
+                                
+                                <div class="departments-help text-info small mt-3">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    <span class="department-counter">@(Model.Departments?.Count ?? 0) phòng ban được chọn</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Không có dữ liệu phòng ban. Vui lòng liên hệ quản trị viên.
+                                </div>
                             }
                         </div>
                     </div>
@@ -137,12 +197,12 @@
                 <!-- Side Panel -->
                 <div class="col-lg-4 mb-4">
                     <!-- Form Actions -->
-                    <div class="form-card sticky-top">
+                    <div class="form-card">
                         <h3 class="form-section-title">
-                            <i class="fas fa-save me-2"></i>Thao Tác
+                            <i class="fas fa-save me-2"></i>Lưu Thay Đổi
                         </h3>
                         
-                        <div class="d-grid gap-2">
+                        <div class="d-grid gap-3">
                             <button type="submit" class="btn btn-save">
                                 <i class="fas fa-save me-2"></i>Lưu Thay Đổi
                             </button>
@@ -151,18 +211,41 @@
                                 <i class="fas fa-times me-2"></i>Hủy Bỏ
                             </a>
                         </div>
+                        
+                        <div class="mt-3 p-3" style="background: #f8f9fa; border-radius: 8px; border-left: 4px solid #28a745;">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                <strong>Lưu ý:</strong> Các thay đổi sẽ được áp dụng ngay lập tức và có thể ảnh hưởng đến các lớp học đang diễn ra.
+                            </small>
+                        </div>
+                    </div>
 
-                        <hr class="my-3">
-
-                        <div class="form-info">
-                            <div class="info-item">
-                                <label>Ngày tạo:</label>
-                                <span>@(Model.CreatedDate.ToString("dd/MM/yyyy HH:mm") ?? "Không xác định")</span>
+                    <!-- Course Status -->
+                    <div class="form-card">
+                        <h3 class="form-section-title">
+                            <i class="fas fa-chart-pie me-2"></i>Trạng Thái Khóa Học
+                        </h3>
+                        
+                        <div class="help-list">
+                            <div class="help-item">
+                                <i class="fas fa-check-circle text-success"></i>
+                                <span>
+                                    <strong>Đã tạo:</strong><br>
+                                    <small class="text-muted">@(Model.CreatedDate.ToString("dd/MM/yyyy HH:mm"))</small>
+                                </span>
                             </div>
-                            <div class="info-item">
-                                <label>Trạng thái hiện tại:</label>
-                                <span class="status-badge @(Model.IsActive ? "status-active" : "status-inactive")">
-                                    @Model.StatusDisplay
+                            <div class="help-item">
+                                <i class="fas fa-@(Model.IsActive ? "play-circle text-success" : "pause-circle text-warning")"></i>
+                                <span>
+                                    <strong>Trạng thái:</strong><br>
+                                    <small class="text-muted">@(Model.IsActive ? "Đang hoạt động" : "Tạm dừng")</small>
+                                </span>
+                            </div>
+                            <div class="help-item">
+                                <i class="fas fa-users text-info"></i>
+                                <span>
+                                    <strong>Phòng ban:</strong><br>
+                                    <small class="text-muted">@(Model.Departments?.Count ?? 0) phòng ban được chọn</small>
                                 </span>
                             </div>
                         </div>
@@ -171,25 +254,39 @@
                     <!-- Form Help -->
                     <div class="form-card">
                         <h3 class="form-section-title">
-                            <i class="fas fa-question-circle me-2"></i>Hướng Dẫn
+                            <i class="fas fa-question-circle me-2"></i>Hướng Dẫn Chỉnh Sửa
                         </h3>
                         
                         <div class="help-list">
                             <div class="help-item">
                                 <i class="fas fa-lightbulb"></i>
-                                <span>Tên khóa học nên ngắn gọn và dễ hiểu</span>
+                                <span>
+                                    <strong>Tên khóa học:</strong> Nên ngắn gọn, dễ hiểu và phản ánh đúng nội dung
+                                </span>
                             </div>
                             <div class="help-item">
                                 <i class="fas fa-lightbulb"></i>
-                                <span>Mã khóa học nên theo chuẩn: ABC-123</span>
+                                <span>
+                                    <strong>Mã khóa học:</strong> Theo định dạng chuẩn: ABC-123 (không được trùng)
+                                </span>
                             </div>
                             <div class="help-item">
                                 <i class="fas fa-lightbulb"></i>
-                                <span>Chọn cấp độ phù hợp với nội dung khóa học</span>
+                                <span>
+                                    <strong>Cấp độ:</strong> Chọn phù hợp với độ khó và kiến thức yêu cầu
+                                </span>
                             </div>
                             <div class="help-item">
                                 <i class="fas fa-lightbulb"></i>
-                                <span>Thời lượng tính bằng giờ học lý thuyết</span>
+                                <span>
+                                    <strong>Thời lượng:</strong> Tính theo giờ học thực tế (bao gồm lý thuyết + thực hành)
+                                </span>
+                            </div>
+                            <div class="help-item">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>
+                                    <strong>Phòng ban:</strong> Chọn ít nhất 1 phòng ban để nhân viên có thể đăng ký
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -216,21 +313,142 @@
                         const code = words.map(word => word.charAt(0).toUpperCase()).join('') + 
                                    '-' + String(Math.floor(Math.random() * 100) + 1).padStart(3, '0');
                         courseCodeInput.value = code;
+                        
+                        // Add visual feedback
+                        courseCodeInput.style.background = '#e8f5e8';
+                        setTimeout(() => {
+                            courseCodeInput.style.background = '';
+                        }, 1000);
                     }
                 });
             }
 
-            // Department selection counter
+            // Department selection counter and feedback
             const departmentCheckboxes = document.querySelectorAll('input[name="SelectedDepartmentIds"]');
-            const updateCounter = () => {
+            const updateDepartmentCounter = () => {
                 const selected = document.querySelectorAll('input[name="SelectedDepartmentIds"]:checked').length;
-                console.log(`Selected departments: ${selected}`);
+                const counterElement = document.querySelector('.department-counter');
+                if (counterElement) {
+                    counterElement.textContent = `${selected} phòng ban được chọn`;
+                }
+                
+                // Update help text
+                const helpText = document.querySelector('.departments-help');
+                if (helpText) {
+                    if (selected === 0) {
+                        helpText.innerHTML = '<i class="fas fa-exclamation-triangle text-warning me-1"></i>Vui lòng chọn ít nhất 1 phòng ban';
+                        helpText.className = 'text-warning small mt-2 departments-help';
+                    } else {
+                        helpText.innerHTML = `<i class="fas fa-check-circle text-success me-1"></i>Đã chọn ${selected} phòng ban`;
+                        helpText.className = 'text-success small mt-2 departments-help';
+                    }
+                }
             };
             
             departmentCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', updateCounter);
+                checkbox.addEventListener('change', function() {
+                    updateDepartmentCounter();
+                    
+                    // Add visual feedback to the department card
+                    const card = this.closest('.department-check');
+                    if (this.checked) {
+                        card.style.background = 'linear-gradient(135deg, #e8f5e8, #f0f8f0)';
+                        card.style.borderColor = '#28a745';
+                        card.style.transform = 'translateY(-2px)';
+                    } else {
+                        card.style.background = '';
+                        card.style.borderColor = '';
+                        card.style.transform = '';
+                    }
+                });
             });
-            updateCounter();
+            updateDepartmentCounter();
+
+            // Form submission enhancement
+            const form = document.querySelector('.course-edit-form');
+            const submitBtn = document.querySelector('.btn-save');
+            
+            if (form && submitBtn) {
+                form.addEventListener('submit', function(e) {
+                    // Show loading state
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang lưu...';
+                    submitBtn.disabled = true;
+                    
+                    // Validate department selection
+                    const selectedDepts = document.querySelectorAll('input[name="SelectedDepartmentIds"]:checked').length;
+                    if (selectedDepts === 0) {
+                        e.preventDefault();
+                        alert('Vui lòng chọn ít nhất 1 phòng ban để áp dụng khóa học!');
+                        submitBtn.innerHTML = '<i class="fas fa-save me-2"></i>Lưu Thay Đổi';
+                        submitBtn.disabled = false;
+                        return false;
+                    }
+                    
+                    // Add a small delay to show the loading state
+                    setTimeout(() => {
+                        // Form will be submitted
+                    }, 500);
+                });
+            }
+
+            // Enhanced form validation feedback
+            const inputs = document.querySelectorAll('.form-control, .form-select');
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    if (this.value.trim() !== '') {
+                        this.classList.add('is-valid');
+                        this.classList.remove('is-invalid');
+                    }
+                });
+
+                input.addEventListener('input', function() {
+                    this.classList.remove('is-invalid');
+                });
+            });
+
+            // Level selection with visual feedback
+            const levelSelect = document.querySelector('#Level');
+            if (levelSelect) {
+                levelSelect.addEventListener('change', function() {
+                    const value = this.value.toLowerCase();
+                    let color = '#6c757d';
+                    
+                    switch(value) {
+                        case 'cơ bản':
+                            color = '#28a745';
+                            break;
+                        case 'trung cấp':
+                            color = '#ffc107';
+                            break;
+                        case 'nâng cao':
+                            color = '#dc3545';
+                            break;
+                    }
+                    
+                    this.style.borderColor = color;
+                    this.style.boxShadow = `0 0 0 0.2rem ${color}25`;
+                    
+                    setTimeout(() => {
+                        this.style.borderColor = '';
+                        this.style.boxShadow = '';
+                    }, 2000);
+                });
+            }
+
+            // Status toggle enhancement
+            const statusToggle = document.querySelector('#IsActive');
+            if (statusToggle) {
+                statusToggle.addEventListener('change', function() {
+                    const label = this.nextElementSibling.querySelector('span');
+                    if (this.checked) {
+                        label.textContent = 'Khóa học đang hoạt động';
+                        label.className = 'fw-semibold text-success';
+                    } else {
+                        label.textContent = 'Khóa học tạm dừng';
+                        label.className = 'fw-semibold text-warning';
+                    }
+                });
+            }
         });
     </script>
 }
