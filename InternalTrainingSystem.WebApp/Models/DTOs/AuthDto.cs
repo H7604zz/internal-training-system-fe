@@ -2,6 +2,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace InternalTrainingSystem.WebApp.Models.DTOs
 {
+    /// <summary>
+    /// DTO cho request đăng nhập
+    /// </summary>
     public class LoginRequestDto
     {
         [Required(ErrorMessage = "Email là bắt buộc")]
@@ -18,6 +21,9 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public bool RememberMe { get; set; } = false;
     }
 
+    /// <summary>
+    /// DTO cho response đăng nhập
+    /// </summary>
     public class LoginResponseDto
     {
         public bool Success { get; set; }
@@ -28,19 +34,9 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public DateTime ExpiresAt { get; set; }
     }
 
-    public class UserProfileDto
-    {
-        public string Id { get; set; } = string.Empty;
-        public string FullName { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string? EmployeeId { get; set; }
-        public string? Department { get; set; }
-        public string? Position { get; set; }
-        public List<string> Roles { get; set; } = new List<string>();
-        public bool IsActive { get; set; }
-        public DateTime? LastLoginDate { get; set; }
-    }
-
+    /// <summary>
+    /// DTO cho request đổi mật khẩu
+    /// </summary>
     public class ChangePasswordRequestDto
     {
         [Required(ErrorMessage = "Mật khẩu hiện tại là bắt buộc")]
@@ -61,6 +57,9 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string ConfirmPassword { get; set; } = string.Empty;
     }
 
+    /// <summary>
+    /// DTO cho request quên mật khẩu
+    /// </summary>
     public class ForgotPasswordRequestDto
     {
         [Required(ErrorMessage = "Email là bắt buộc")]
@@ -69,6 +68,9 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string Email { get; set; } = string.Empty;
     }
 
+    /// <summary>
+    /// DTO cho response API chung
+    /// </summary>
     public class ApiResponseDto
     {
         public bool Success { get; set; }

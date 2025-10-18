@@ -124,7 +124,7 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
 
                 _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-                var response = await _httpClient.GetAsync("/api/auth/profile");
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/auth/profile"));
                 var responseContent = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
@@ -176,7 +176,7 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
                 var json = JsonSerializer.Serialize(changePasswordRequest);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PostAsync("/api/auth/change-password", content);
+                var response = await _httpClient.PostAsync("api/auth/change-password", content);
                 var responseContent = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
@@ -213,7 +213,7 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
                 var json = JsonSerializer.Serialize(refreshRequest);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PostAsync("/api/auth/refresh-token", content);
+                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl("api/auth/refresh-token"), content);
                 var responseContent = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)

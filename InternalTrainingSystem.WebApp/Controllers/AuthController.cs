@@ -6,12 +6,10 @@ namespace InternalTrainingSystem.WebApp.Controllers
 {
     public class AuthController : Controller
     {
-        private readonly ILogger<AuthController> _logger;
         private readonly IAuthService _authService;
 
-        public AuthController(ILogger<AuthController> logger, IAuthService authService)
+        public AuthController(IAuthService authService)
         {
-            _logger = logger;
             _authService = authService;
         }
 
@@ -27,7 +25,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 {
                     return Redirect(returnUrl);
                 }
-                return RedirectToAction("TrangChu", "Home");
+                return RedirectToAction("Index", "TrangChu");
             }
 
             ViewBag.ReturnUrl = returnUrl;
@@ -52,8 +50,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
                 if (result.Success)
                 {
-                    _logger.LogInformation("Người dùng {Email} đã đăng nhập thành công", model.Email);
-                    
                     // Lưu thông tin user vào session nếu cần
                     if (result.User != null)
                     {
@@ -70,7 +66,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                         return Redirect(returnUrl);
                     }
                     
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Index", "TrangChu");
                 }
                 else
                 {
@@ -79,7 +75,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     return View(model);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 TempData["Error"] = "Đã xảy ra lỗi trong quá trình đăng nhập. Vui lòng thử lại.";
                 ViewBag.ReturnUrl = returnUrl;
@@ -112,19 +108,18 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
                 if (result.Success)
                 {
-                    TempData["SuccessMessage"] = "Nếu email này tồn tại trong hệ thống, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu đến email của bạn.";
+                    TempData["Success"] = "Nếu email này tồn tại trong hệ thống, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu đến email của bạn.";
                     return View();
                 }
                 else
                 {
-                    ModelState.AddModelError("", result.Message);
+                    TempData["Error"] = result.Message;
                     return View(model);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi khi xử lý quên mật khẩu");
-                ModelState.AddModelError("", "Đã xảy ra lỗi trong quá trình xử lý. Vui lòng thử lại.");
+                TempData["Error"] = "Đã xảy ra lỗi trong quá trình xử lý. Vui lòng thử lại.";
                 return View(model);
             }
         }
@@ -147,7 +142,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi khi lấy thông tin người dùng");
                 return Json(new { success = false, message = "Đã xảy ra lỗi khi lấy thông tin người dùng" });
             }
         }
@@ -160,8 +154,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
             try
             {
                 await _authService.LogoutAsync();
-                _logger.LogInformation("Người dùng đã đăng xuất");
-                
                 // Xóa thông tin user khỏi session
                 HttpContext.Session.Clear();
                 
@@ -169,7 +161,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi khi đăng xuất");
                 // Vẫn redirect về trang đăng nhập dù có lỗi
                 HttpContext.Session.Clear();
                 return RedirectToAction("DangNhap");
@@ -207,17 +198,16 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
                 if (result.Success)
                 {
-                    TempData["SuccessMessage"] = "Đổi mật khẩu thành công";
+                    TempData["Success"] = "Đổi mật khẩu thành công";
                     return RedirectToAction("DoiMatKhau");
                 }
                 else
                 {
-                    ModelState.AddModelError("", result.Message);
                     if (result.Errors != null && result.Errors.Any())
                     {
                         foreach (var error in result.Errors)
                         {
-                            ModelState.AddModelError("", error);
+                            TempData["Error"] = error;
                         }
                     }
                     return View(model);
@@ -225,10 +215,131 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi khi đổi mật khẩu");
-                ModelState.AddModelError("", "Đã xảy ra lỗi trong quá trình đổi mật khẩu. Vui lòng thử lại.");
+                TempData["Error"] = "Đã xảy ra lỗi trong quá trình đổi mật khẩu. Vui lòng thử lại.";
                 return View(model);
             }
+        }
+
+        /// <summary>
+        /// Trang thông tin cá nhân
+        /// </summary>
+        public async Task<IActionResult> ThongTinCaNhan()
+        {
+            try
+            {
+                // Kiểm tra đăng nhập
+                if (_authService.IsTokenExpired())
+                {
+                    return RedirectToAction("DangNhap");
+                }
+
+                // Lấy thông tin user từ session hoặc API
+                var userProfile = GetSampleUserProfile(); // Dùng data mẫu để test
+                
+                return View(userProfile);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Đã xảy ra lỗi khi tải thông tin cá nhân.";
+                return RedirectToAction("Index", "TrangChu");
+            }
+        }
+
+        /// <summary>
+        /// Cập nhật thông tin cá nhân
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> CapNhatThongTin(UpdateProfileDto model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var userProfile = GetSampleUserProfile();
+                    ViewBag.ShowUpdateForm = true;
+                    return View("ThongTinCaNhan", userProfile);
+                }
+
+                // var result = await _authService.UpdateProfileAsync(model);
+                // Simulate success for testing
+                TempData["Success"] = "Cập nhật thông tin thành công!";
+                return RedirectToAction("ThongTinCaNhan");
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Đã xảy ra lỗi khi cập nhật thông tin.";
+                return RedirectToAction("ThongTinCaNhan");
+            }
+        }
+
+        /// <summary>
+        /// Sample data for testing user profile
+        /// </summary>
+        private UserProfileDto GetSampleUserProfile()
+        {
+            return new UserProfileDto
+            {
+                Id = "USR001",
+                EmployeeId = "EMP2024001", 
+                FullName = "Nguyễn Văn An",
+                Email = "nguyenvanan@company.com",
+                PhoneNumber = "0123456789",
+                Department = "IT Department",
+                Position = "Senior Developer",
+                CurrentRole = "System Administrator",
+                YearsOfExperience = 5,
+                JoinDate = DateTime.Now.AddYears(-3),
+                LastLoginDate = DateTime.Now.AddHours(-2),
+                IsActive = true,
+                Roles = new List<string> { "Admin", "Developer", "Trainer" },
+                RoleHistory = new List<UserRoleHistoryDto>
+                {
+                    new UserRoleHistoryDto
+                    {
+                        Id = 1,
+                        RoleName = "System Administrator",
+                        RoleDescription = "Quản trị hệ thống toàn quyền",
+                        StartDate = DateTime.Now.AddMonths(-6),
+                        EndDate = null,
+                        AssignedBy = "HR Manager",
+                        IsCurrent = true,
+                        Status = "Đang hoạt động"
+                    },
+                    new UserRoleHistoryDto
+                    {
+                        Id = 2,
+                        RoleName = "Senior Developer",
+                        RoleDescription = "Phát triển và duy trì hệ thống",
+                        StartDate = DateTime.Now.AddYears(-2),
+                        EndDate = DateTime.Now.AddMonths(-6),
+                        AssignedBy = "Technical Lead",
+                        IsCurrent = false,
+                        Status = "Đã kết thúc"
+                    },
+                    new UserRoleHistoryDto
+                    {
+                        Id = 3,
+                        RoleName = "Developer",
+                        RoleDescription = "Phát triển tính năng mới",
+                        StartDate = DateTime.Now.AddYears(-3),
+                        EndDate = DateTime.Now.AddYears(-2),
+                        AssignedBy = "Project Manager",
+                        IsCurrent = false,
+                        Status = "Đã kết thúc"
+                    },
+                    new UserRoleHistoryDto
+                    {
+                        Id = 4,
+                        RoleName = "Trainee",
+                        RoleDescription = "Thực tập sinh phát triển phần mềm",
+                        StartDate = DateTime.Now.AddYears(-3).AddMonths(-6),
+                        EndDate = DateTime.Now.AddYears(-3),
+                        AssignedBy = "HR Department",
+                        IsCurrent = false,
+                        Status = "Đã hoàn thành"
+                    }
+                }
+            };
         }
     }
 }
