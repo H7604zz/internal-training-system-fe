@@ -197,92 +197,19 @@
         <!-- Pagination -->
         @if (ViewBag.TotalPages >= 1)
         {
-            <nav aria-label="Page navigation" class="course-pagination">
-                <ul class="pagination justify-content-center">
-                    <!-- Previous button -->
-                    <li class="page-item @(ViewBag.CurrentPage <= 1 ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Action("Index", new { 
-                            page = ViewBag.CurrentPage - 1, 
-                            pageSize = ViewBag.PageSize,
-                            searchTerm = ViewBag.SearchTerm,
-                            categoryId = ViewBag.CategoryId,
-                            departmentId = ViewBag.DepartmentId
-                        })">
-                            <i class="fas fa-chevron-left"></i> Trước
-                        </a>
-                    </li>
-
-                    <!-- Page numbers -->
-                    @{
-                        int startPage = Math.Max(1, ViewBag.CurrentPage - 2);
-                        int endPage = Math.Min(ViewBag.TotalPages, ViewBag.CurrentPage + 2);
-                    }
-
-                    @if (startPage > 1)
-                    {
-                        <li class="page-item">
-                            <a class="page-link" href="@Url.Action("Index", new { 
-                                page = 1, 
-                                pageSize = ViewBag.PageSize,
-                                searchTerm = ViewBag.SearchTerm,
-                                categoryId = ViewBag.CategoryId,
-                                departmentId = ViewBag.DepartmentId
-                            })">1</a>
-                        </li>
-                        @if (startPage > 2)
-                        {
-                            <li class="page-item disabled">
-                                <span class="page-link">...</span>
-                            </li>
-                        }
-                    }
-
-                    @for (int i = startPage; i <= endPage; i++)
-                    {
-                        <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
-                            <a class="page-link" href="@Url.Action("Index", new { 
-                                page = i, 
-                                pageSize = ViewBag.PageSize,
-                                searchTerm = ViewBag.SearchTerm,
-                                categoryId = ViewBag.CategoryId,
-                                departmentId = ViewBag.DepartmentId
-                            })">@i</a>
-                        </li>
-                    }
-
-                    @if (endPage < ViewBag.TotalPages)
-                    {
-                        @if (endPage < ViewBag.TotalPages - 1)
-                        {
-                            <li class="page-item disabled">
-                                <span class="page-link">...</span>
-                            </li>
-                        }
-                        <li class="page-item">
-                            <a class="page-link" href="@Url.Action("Index", new { 
-                                page = ViewBag.TotalPages, 
-                                pageSize = ViewBag.PageSize,
-                                searchTerm = ViewBag.SearchTerm,
-                                categoryId = ViewBag.CategoryId,
-                                departmentId = ViewBag.DepartmentId
-                            })">@ViewBag.TotalPages</a>
-                        </li>
-                    }
-
-                    <!-- Next button -->
-                    <li class="page-item @(ViewBag.CurrentPage >= ViewBag.TotalPages ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Action("Index", new { 
-                            page = ViewBag.CurrentPage + 1, 
-                            pageSize = ViewBag.PageSize,
-                            searchTerm = ViewBag.SearchTerm,
-                            categoryId = ViewBag.CategoryId,
-                            departmentId = ViewBag.DepartmentId
-                        })">
-                            Sau <i class="fas fa-chevron-right"></i>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
+            @await Html.PartialAsync("_Pagination", new InternalTrainingSystem.WebApp.Models.ViewModels.PaginationViewModel(
+                ViewBag.CurrentPage ?? 1,
+                ViewBag.TotalPages ?? 1,
+                ViewBag.PageSize ?? 10,
+                "Index",
+                "KhoaHoc",
+                new Dictionary<string, object>
+                {
+                    ["searchTerm"] = ViewBag.SearchTerm ?? "",
+                    ["categoryId"] = ViewBag.CategoryId ?? 0,
+                    ["departmentId"] = ViewBag.DepartmentId ?? 0
+                }
+            ) { AriaLabel = "Phân trang khóa học", TotalItems = ViewBag.TotalItems })
         }
     </div>
 </div>

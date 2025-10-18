@@ -1,0 +1,131 @@
+@model InternalTrainingSystem.WebApp.Models.ViewModels.PaginationViewModel
+@{
+    int currentPage = Model.CurrentPage;
+    int totalPages = Model.TotalPages;
+    int pageSize = Model.PageSize;
+    string actionName = Model.ActionName;
+    string controllerName = Model.ControllerName;
+    var routeValues = Model.RouteValues ?? new Dictionary<string, object>();
+}
+
+@if (totalPages >= 1)
+{
+    <div class="row mt-4">
+        <div class="col-12">
+            <!-- Page Info -->
+            @if (Model.TotalItems.HasValue)
+            {
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="text-muted">
+                        <small>@Model.GetPageInfo()</small>
+                    </div>
+                    <div class="text-muted">
+                        <small>Trang @currentPage / @totalPages</small>
+                    </div>
+                </div>
+            }
+            
+            <!-- Only show pagination buttons if more than 1 page -->
+            @if (totalPages >= 1)
+            {
+                <nav aria-label="@Model.AriaLabel">
+                    <ul class="pagination justify-content-center">
+                        <!-- Previous button -->
+                        @if (currentPage > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@GetPageUrl(currentPage - 1)">
+                                    <i class="fas fa-chevron-left"></i>
+                                    Trước
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link">
+                                    <i class="fas fa-chevron-left"></i>
+                                    Trước
+                                </span>
+                            </li>
+                        }
+
+                        @{
+                            int startPage = Math.Max(1, currentPage - 2);
+                            int endPage = Math.Min(totalPages, currentPage + 2);
+                        }
+
+                        <!-- First page if not in range -->
+                        @if (startPage > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@GetPageUrl(1)">1</a>
+                            </li>
+                            @if (startPage > 2)
+                            {
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            }
+                        }
+
+                        <!-- Page numbers -->
+                        @for (int i = startPage; i <= endPage; i++)
+                        {
+                            <li class="page-item @(i == currentPage ? "active" : "")">
+                                <a class="page-link" href="@GetPageUrl(i)">@i</a>
+                            </li>
+                        }
+
+                        <!-- Last page if not in range -->
+                        @if (endPage < totalPages)
+                        {
+                            @if (endPage < totalPages - 1)
+                            {
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            }
+                            <li class="page-item">
+                                <a class="page-link" href="@GetPageUrl(totalPages)">@totalPages</a>
+                            </li>
+                        }
+
+                        <!-- Next button -->
+                        @if (currentPage < totalPages)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@GetPageUrl(currentPage + 1)">
+                                    Sau
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link">
+                                    Sau
+                                    <i class="fas fa-chevron-right"></i>
+                                </span>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            }
+        </div>
+    </div>
+}
+
+@functions {
+    string GetPageUrl(int page)
+    {
+        var values = new Dictionary<string, object>(Model.RouteValues ?? new Dictionary<string, object>())
+        {
+            ["page"] = page,
+            ["pageSize"] = Model.PageSize
+        };
+
+        return Url.Action(Model.ActionName, Model.ControllerName, values) ?? "#";
+    }
+}

@@ -47,8 +47,13 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 ViewBag.Level = level;
 
                 // Mock data for demo - replace with actual service call
+                var totalItems = GetMockUpcomingCoursesCount(search, category, level);
+                var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
                 var courses = GetMockUpcomingCourses(page, pageSize, search, category, level);
                 
+                ViewBag.TotalItems = (int?)totalItems;
+                ViewBag.TotalPages = totalPages;
+
                 return View(courses);
             }
             catch (Exception ex)
@@ -222,6 +227,42 @@ namespace InternalTrainingSystem.WebApp.Controllers
             };
 
             return allStaff.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+        }
+
+        private int GetMockUpcomingCoursesCount(string search, string category, string level)
+        {
+            var allCourses = new List<CourseDto>
+            {
+                new CourseDto { Id = 1, CourseName = "C# Programming Fundamentals", Code = "CS001", Description = "Học lập trình C# từ cơ bản đến nâng cao", Category = "lap-trinh", Level = "co-ban", StartDate = DateTime.Now.AddDays(10) },
+                new CourseDto { Id = 2, CourseName = "Project Management Essentials", Code = "PM001", Description = "Kỹ năng quản lý dự án hiệu quả", Category = "quan-ly", Level = "trung-binh", StartDate = DateTime.Now.AddDays(15) },
+                new CourseDto { Id = 3, CourseName = "Digital Marketing Strategy", Code = "MK001", Description = "Chiến lược marketing kỹ thuật số", Category = "ky-nang-mem", Level = "nang-cao", StartDate = DateTime.Now.AddDays(20) },
+                new CourseDto { Id = 4, CourseName = "Leadership Development", Code = "LD001", Description = "Phát triển kỹ năng lãnh đạo", Category = "quan-ly", Level = "nang-cao", StartDate = DateTime.Now.AddDays(25) },
+                new CourseDto { Id = 5, CourseName = "Data Analytics with Python", Code = "DA001", Description = "Phân tích dữ liệu với Python", Category = "cong-nghe", Level = "trung-binh", StartDate = DateTime.Now.AddDays(30) },
+                new CourseDto { Id = 6, CourseName = "Business English Communication", Code = "EN001", Description = "Giao tiếp tiếng Anh trong kinh doanh", Category = "ngoai-ngu", Level = "co-ban", StartDate = DateTime.Now.AddDays(35) },
+                new CourseDto { Id = 7, CourseName = "Advanced SQL Database", Code = "DB001", Description = "Quản lý cơ sở dữ liệu SQL nâng cao", Category = "cong-nghe", Level = "nang-cao", StartDate = DateTime.Now.AddDays(40) },
+                new CourseDto { Id = 8, CourseName = "Agile Software Development", Code = "AG001", Description = "Phương pháp phát triển phần mềm Agile", Category = "lap-trinh", Level = "trung-binh", StartDate = DateTime.Now.AddDays(45) }
+            };
+
+            // Filter by search
+            if (!string.IsNullOrEmpty(search))
+            {
+                allCourses = allCourses.Where(c => c.CourseName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                                                   (c.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
+            }
+
+            // Filter by category
+            if (!string.IsNullOrEmpty(category))
+            {
+                allCourses = allCourses.Where(c => c.Category == category).ToList();
+            }
+
+            // Filter by level
+            if (!string.IsNullOrEmpty(level))
+            {
+                allCourses = allCourses.Where(c => c.Level == level).ToList();
+            }
+
+            return allCourses.Count;
         }
     }
 }
