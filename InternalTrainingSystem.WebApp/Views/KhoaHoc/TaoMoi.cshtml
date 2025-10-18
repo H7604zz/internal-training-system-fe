@@ -1,0 +1,372 @@
+@model InternalTrainingSystem.WebApp.Models.DTOs.CourseDto
+@{
+    ViewData["Title"] = "Thêm Khóa Học Mới";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/khoa-hoc.css" asp-append-version="true" />
+}
+
+<div class="course-container">
+    <div class="container-fluid">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="course-breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="@Url.Action("Index", "TrangChu")">
+                        <i class="fas fa-home"></i> Trang chủ
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="@Url.Action("Index")">
+                        <i class="fas fa-graduation-cap"></i> Danh sách khóa học
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    Thêm khóa học mới
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Header Section -->
+        <div class="form-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="form-title">
+                        <i class="fas fa-plus-circle me-3"></i>Thêm Khóa Học Mới
+                    </h1>
+                    <p class="form-subtitle">Tạo mới khóa học đào tạo nội bộ</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="@Url.Action("Index")" class="btn btn-back">
+                        <i class="fas fa-arrow-left me-2"></i>Quay Lại
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Form -->
+        <form method="post" asp-action="TaoMoi" class="course-edit-form" novalidate>
+            @Html.AntiForgeryToken()
+
+            <div class="row">
+                <!-- Main Form -->
+                <div class="col-lg-8 mb-4">
+                    <div class="form-card">
+                        <h3 class="form-section-title">
+                            <i class="fas fa-info-circle me-2"></i>Thông Tin Cơ Bản
+                        </h3>
+                        
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label asp-for="CourseName" class="form-label required">Tên khóa học</label>
+                                <input asp-for="CourseName" class="form-control" placeholder="Nhập tên khóa học">
+                                <span asp-validation-for="CourseName" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Code" class="form-label required">Mã khóa học</label>
+                                <input asp-for="Code" class="form-control" placeholder="VD: IT-001">
+                                <span asp-validation-for="Code" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Mô tả khóa học</label>
+                            <textarea asp-for="Description" class="form-control" rows="4" 
+                                      placeholder="Nhập mô tả chi tiết về khóa học..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Category" class="form-label required">Danh mục</label>
+                                <select asp-for="Category" class="form-select">
+                                    <option value="">Chọn danh mục</option>
+                                    @if (ViewBag.Categories != null)
+                                    {
+                                        @foreach (dynamic category in ViewBag.Categories)
+                                        {
+                                            <option value="@category.Id">@category.Name</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="Category" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Level" class="form-label required">Cấp độ</label>
+                                <select asp-for="Level" class="form-select">
+                                    <option value="">Chọn cấp độ</option>
+                                    <option value="Cơ bản">Cơ bản</option>
+                                    <option value="Trung cấp">Trung cấp</option>
+                                    <option value="Nâng cao">Nâng cao</option>
+                                </select>
+                                <span asp-validation-for="Level" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Duration" class="form-label required">Thời lượng (giờ)</label>
+                                <input asp-for="Duration" type="number" class="form-control" min="1"
+                                       placeholder="VD: 40" value="1">
+                                <span asp-validation-for="Duration" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Trạng thái</label>
+                                <div class="form-check form-switch">
+                                    <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" checked>
+                                    <label asp-for="IsActive" class="form-check-label">
+                                        Khóa học đang hoạt động
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Department Selection -->
+                    <div class="form-card">
+                        <h3 class="form-section-title">
+                            <i class="fas fa-building me-2"></i>Phòng Ban Áp Dụng
+                        </h3>
+                        <p class="form-help-text">Chọn các phòng ban mà khóa học này sẽ được áp dụng</p>
+                        
+                        <div class="departments-selection">
+                            @if (ViewBag.Departments != null)
+                            {
+                                @foreach (var dept in ViewBag.Departments)
+                                {
+                                    <div class="form-check department-check">
+                                        <input class="form-check-input" type="checkbox" 
+                                               name="SelectedDepartmentIds" value="@dept.Id" 
+                                               id="dept_@dept.Id">
+                                        <label class="form-check-label" for="dept_@dept.Id">
+                                            <i class="fas fa-building me-2"></i>
+                                            @dept.Name
+                                        </label>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Side Panel -->
+                <div class="col-lg-4 mb-4">
+                    <!-- Form Actions -->
+                    <div class="form-card sticky-top">
+                        <h3 class="form-section-title">
+                            <i class="fas fa-save me-2"></i>Thao Tác
+                        </h3>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-save">
+                                <i class="fas fa-plus me-2"></i>Tạo Khóa Học
+                            </button>
+                            <a href="@Url.Action("Index")" class="btn btn-cancel">
+                                <i class="fas fa-times me-2"></i>Hủy Bỏ
+                            </a>
+                        </div>
+
+                        <hr class="my-3">
+
+                        <div class="form-preview">
+                            <h5>Xem trước:</h5>
+                            <div class="preview-item">
+                                <span class="preview-label">Tên:</span>
+                                <span class="preview-value" id="preview-name">Chưa nhập</span>
+                            </div>
+                            <div class="preview-item">
+                                <span class="preview-label">Mã:</span>
+                                <span class="preview-value" id="preview-code">Chưa nhập</span>
+                            </div>
+                            <div class="preview-item">
+                                <span class="preview-label">Cấp độ:</span>
+                                <span class="preview-value" id="preview-level">Chưa chọn</span>
+                            </div>
+                            <div class="preview-item">
+                                <span class="preview-label">Thời lượng:</span>
+                                <span class="preview-value" id="preview-duration">0 giờ</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Help -->
+                    <div class="form-card">
+                        <h3 class="form-section-title">
+                            <i class="fas fa-question-circle me-2"></i>Hướng Dẫn
+                        </h3>
+                        
+                        <div class="help-list">
+                            <div class="help-item">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>Tên khóa học nên ngắn gọn và dễ hiểu</span>
+                            </div>
+                            <div class="help-item">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>Mã khóa học nên theo chuẩn: ABC-123</span>
+                            </div>
+                            <div class="help-item">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>Chọn cấp độ phù hợp với nội dung khóa học</span>
+                            </div>
+                            <div class="help-item">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>Thời lượng tính bằng giờ học lý thuyết</span>
+                            </div>
+                            <div class="help-item">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>Chọn ít nhất 1 phòng ban để áp dụng khóa học</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Templates -->
+                    <div class="form-card">
+                        <h3 class="form-section-title">
+                            <i class="fas fa-templates me-2"></i>Mẫu Nhanh
+                        </h3>
+                        
+                        <div class="template-list">
+                            <button type="button" class="template-btn" data-template="it">
+                                <i class="fas fa-laptop-code"></i>
+                                <span>Khóa học IT</span>
+                            </button>
+                            <button type="button" class="template-btn" data-template="soft-skills">
+                                <i class="fas fa-users"></i>
+                                <span>Kỹ năng mềm</span>
+                            </button>
+                            <button type="button" class="template-btn" data-template="management">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Quản lý</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Form preview updates
+            const previewElements = {
+                name: document.getElementById('preview-name'),
+                code: document.getElementById('preview-code'),
+                level: document.getElementById('preview-level'),
+                duration: document.getElementById('preview-duration')
+            };
+
+            const formElements = {
+                name: document.getElementById('CourseName'),
+                code: document.getElementById('Code'),
+                level: document.getElementById('Level'),
+                duration: document.getElementById('DurationHours')
+            };
+
+            // Update preview on input change
+            if (formElements.name && previewElements.name) {
+                formElements.name.addEventListener('input', function() {
+                    previewElements.name.textContent = this.value || 'Chưa nhập';
+                });
+            }
+
+            if (formElements.code && previewElements.code) {
+                formElements.code.addEventListener('input', function() {
+                    previewElements.code.textContent = this.value || 'Chưa nhập';
+                });
+            }
+
+            if (formElements.level && previewElements.level) {
+                formElements.level.addEventListener('change', function() {
+                    previewElements.level.textContent = this.value || 'Chưa chọn';
+                });
+            }
+
+            if (formElements.duration && previewElements.duration) {
+                formElements.duration.addEventListener('input', function() {
+                    const value = this.value || 0;
+                    previewElements.duration.textContent = `${value} giờ`;
+                });
+            }
+
+            // Auto-generate course code from name
+            if (formElements.name && formElements.code) {
+                formElements.name.addEventListener('blur', function() {
+                    if (!formElements.code.value && this.value) {
+                        const words = this.value.split(' ').slice(0, 2);
+                        const code = words.map(word => word.charAt(0).toUpperCase()).join('') + 
+                                   '-' + String(Math.floor(Math.random() * 100) + 1).padStart(3, '0');
+                        formElements.code.value = code;
+                        previewElements.code.textContent = code;
+                    }
+                });
+            }
+
+            // Template buttons
+            const templateButtons = document.querySelectorAll('.template-btn');
+            templateButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const template = this.dataset.template;
+                    applyTemplate(template);
+                });
+            });
+
+            function applyTemplate(template) {
+                const templates = {
+                    'it': {
+                        name: 'Khóa học Lập trình Web',
+                        description: 'Khóa học về phát triển ứng dụng web hiện đại với các công nghệ mới nhất',
+                        level: 'Trung cấp',
+                        duration: 40
+                    },
+                    'soft-skills': {
+                        name: 'Kỹ năng Giao tiếp hiệu quả',
+                        description: 'Phát triển kỹ năng giao tiếp và làm việc nhóm trong môi trường doanh nghiệp',
+                        level: 'Cơ bản',
+                        duration: 16
+                    },
+                    'management': {
+                        name: 'Quản lý Dự án cơ bản',
+                        description: 'Tìm hiểu các phương pháp quản lý dự án hiệu quả và công cụ hỗ trợ',
+                        level: 'Trung cấp',
+                        duration: 24
+                    }
+                };
+
+                const templateData = templates[template];
+                if (templateData) {
+                    formElements.name.value = templateData.name;
+                    document.getElementById('Description').value = templateData.description;
+                    formElements.level.value = templateData.level;
+                    formElements.duration.value = templateData.duration;
+
+                    // Update preview
+                    previewElements.name.textContent = templateData.name;
+                    previewElements.level.textContent = templateData.level;
+                    previewElements.duration.textContent = `${templateData.duration} giờ`;
+
+                    // Generate code
+                    const words = templateData.name.split(' ').slice(0, 2);
+                    const code = words.map(word => word.charAt(0).toUpperCase()).join('') + 
+                               '-' + String(Math.floor(Math.random() * 100) + 1).padStart(3, '0');
+                    formElements.code.value = code;
+                    previewElements.code.textContent = code;
+                }
+            }
+
+            // Department selection counter
+            const departmentCheckboxes = document.querySelectorAll('input[name="SelectedDepartmentIds"]');
+            const updateCounter = () => {
+                const selected = document.querySelectorAll('input[name="SelectedDepartmentIds"]:checked').length;
+                console.log(`Selected departments: ${selected}`);
+            };
+            
+            departmentCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateCounter);
+            });
+        });
+    </script>
+}
