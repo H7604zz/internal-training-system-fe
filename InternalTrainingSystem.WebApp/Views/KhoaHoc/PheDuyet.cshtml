@@ -1,0 +1,554 @@
+﻿@model InternalTrainingSystem.WebApp.Models.DTOs.CourseDto
+@{
+    ViewData["Title"] = $"Phê Duyệt Khóa Học - {Model.CourseName}";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/khoa-hoc.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/phe-duyet.css" asp-append-version="true" />
+}
+
+<div class="approval-container">
+    <div class="container-fluid">
+        <!-- Header Section -->
+        <div class="approval-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="header-content">
+                        <h1 class="approval-title">
+                            <i class="fas fa-clipboard-check me-3"></i>Phê Duyệt Khóa Học
+                        </h1>
+                        <p class="approval-subtitle">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Xem xét và phê duyệt khóa học đào tạo mới
+                        </p>
+                        <div class="approval-meta">
+                            <span class="meta-item">
+                                <i class="fas fa-graduation-cap"></i>
+                                <span>@Model.CourseName</span>
+                            </span>
+                            <span class="meta-item">
+                                <i class="fas fa-code"></i>
+                                <span>@Model.Code</span>
+                            </span>
+                            <span class="meta-item">
+                                <i class="fas fa-calendar-plus"></i>
+                                <span>@(Model.CreatedDate.ToString("dd/MM/yyyy"))</span>
+                            </span>
+                            <span class="status-badge status-pending">
+                                <i class="fas fa-clock me-1"></i>
+                                Chờ phê duyệt
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <a href="@Url.Action("Index")" class="btn btn-back">
+                        <i class="fas fa-arrow-left me-2"></i>Quay Lại Danh Sách
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Course Information -->
+            <div class="col-lg-8 mb-4">
+                <!-- Basic Information -->
+                <div class="approval-card">
+                    <h3 class="card-title">
+                        <i class="fas fa-info-circle me-2"></i>Thông Tin Khóa Học
+                    </h3>
+                    
+                    <div class="course-info-grid">
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-barcode"></i>Mã khóa học
+                            </div>
+                            <div class="value">@Model.Code</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-folder"></i>Danh mục
+                            </div>
+                            <div class="value">@Model.CategoryName</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-layer-group"></i>Cấp độ
+                            </div>
+                            <div class="value">
+                                <span class="level-badge @(Model.Level.ToLower() switch 
+                                {
+                                    "cơ bản" => "level-basic",
+                                    "trung cấp" => "level-intermediate", 
+                                    "nâng cao" => "level-advanced",
+                                    _ => "level-basic"
+                                })">@Model.Level</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-stopwatch"></i>Thời lượng
+                            </div>
+                            <div class="value">@Model.DurationDisplay</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-user-plus"></i>Người tạo
+                            </div>
+                            <div class="value">@(ViewBag.CreatedBy ?? "Nhân viên đào tạo")</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-calendar-alt"></i>Ngày yêu cầu
+                            </div>
+                            <div class="value">@(Model.CreatedDate.ToString("dd/MM/yyyy HH:mm"))</div>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <div class="course-description">
+                            <h5 class="mb-3">
+                                <i class="fas fa-align-left me-2"></i>Mô tả khóa học
+                            </h5>
+                            <p>@Model.Description</p>
+                        </div>
+                    }
+
+                    @if (Model.Departments != null && Model.Departments.Any())
+                    {
+                        <div class="mt-4">
+                            <h5 class="mb-3">
+                                <i class="fas fa-building me-2"></i>Phòng ban áp dụng
+                            </h5>
+                            <div class="departments-display">
+                                @foreach (var dept in Model.Departments)
+                                {
+                                    <div class="department-tag">
+                                        <i class="fas fa-building me-1"></i>
+                                        @dept.Name
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Approval History -->
+                <div class="approval-card">
+                    <h3 class="card-title">
+                        <i class="fas fa-history me-2"></i>Lịch Sử Phê Duyệt
+                    </h3>
+                    
+                    <div class="approval-history">
+                        @if (ViewBag.ApprovalHistory != null)
+                        {
+                            @foreach (var historyItem in ViewBag.ApprovalHistory)
+                            {
+                                <div class="history-item">
+                                    <div class="history-icon @historyItem.ActionColor">
+                                        <i class="@historyItem.ActionIcon"></i>
+                                    </div>
+                                    <div class="history-content">
+                                        <div class="history-action">@historyItem.Description</div>
+                                        <div class="history-user">Bởi: @historyItem.ActionBy</div>
+                                        <div class="history-time">@historyItem.ActionDate.ToString("dd/MM/yyyy HH:mm")</div>
+                                        @if (!string.IsNullOrEmpty(historyItem.Note))
+                                        {
+                                            <div class="history-note">
+                                                <small class="text-muted">Ghi chú: @historyItem.Note</small>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="history-item">
+                                <div class="history-icon created">
+                                    <i class="fas fa-plus"></i>
+                                </div>
+                                <div class="history-content">
+                                    <div class="history-action">Khóa học được tạo</div>
+                                    <div class="history-user">Bởi: @(ViewBag.CreatedBy ?? "Nhân viên đào tạo")</div>
+                                    <div class="history-time">@(Model.CreatedDate.ToString("dd/MM/yyyy HH:mm"))</div>
+                                </div>
+                            </div>
+                            <div class="history-item">
+                                <div class="history-icon pending">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="history-content">
+                                    <div class="history-action">Gửi yêu cầu phê duyệt</div>
+                                    <div class="history-user">Chờ phê duyệt từ Giám Đốc</div>
+                                    <div class="history-time">@(DateTime.Now.ToString("dd/MM/yyyy HH:mm"))</div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Approval Actions -->
+            <div class="col-lg-4 mb-4">
+                <div class="approval-actions">
+                    <h3 class="card-title">
+                        <i class="fas fa-gavel me-2"></i>Quyết Định Phê Duyệt
+                    </h3>
+                    
+                    <div class="action-buttons">
+                        <button type="button" class="btn-approve" 
+                                onclick="approveThis()"
+                                aria-label="Phê duyệt khóa học này">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Chấp Nhận</span>
+                        </button>
+                        <button type="button" class="btn-reject" 
+                                onclick="showRejectForm()"
+                                aria-label="Từ chối khóa học này">
+                            <i class="fas fa-times-circle"></i>
+                            <span>Từ Chối</span>
+                        </button>
+                    </div>
+
+                    <!-- Rejection Form -->
+                    <div class="rejection-section" id="rejectionSection">
+                        <label for="rejectionReason" class="rejection-label">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Lý do từ chối (bắt buộc)
+                        </label>
+                        <textarea class="rejection-textarea" id="rejectionReason" name="rejectionReason"
+                                  aria-label="Lý do từ chối khóa học"
+                                  aria-required="true"
+                                  placeholder="Vui lòng nhập lý do cụ thể tại sao khóa học này không được phê duyệt...
+Ví dụ:
+- Nội dung khóa học chưa phù hợp với yêu cầu
+- Thời lượng quá dài/ngắn
+- Thiếu thông tin chi tiết
+- Không phù hợp với chiến lược đào tạo hiện tại"></textarea>
+                        <div class="rejection-buttons">
+                            <button type="button" class="btn-confirm-reject" 
+                                    onclick="rejectThis()"
+                                    aria-label="Xác nhận từ chối khóa học với lý do đã nhập">
+                                <i class="fas fa-ban me-1"></i>Xác Nhận Từ Chối
+                            </button>
+                            <button type="button" class="btn-cancel-reject" 
+                                    onclick="hideRejectForm()"
+                                    aria-label="Hủy bỏ việc từ chối khóa học">
+                                <i class="fas fa-undo me-1"></i>Hủy Bỏ
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="success-message" id="successMessage">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <span id="successText">Phê duyệt thành công!</span>
+                    </div>
+
+                    <div class="error-message" id="errorMessage">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <span id="errorText">Có lỗi xảy ra. Vui lòng thử lại!</span>
+                    </div>
+                </div>
+
+                <!-- Course Guidelines -->
+                <div class="approval-card">
+                    <h3 class="card-title">
+                        <i class="fas fa-clipboard-list me-2"></i>Tiêu Chí Đánh Giá
+                    </h3>
+                    
+                    <div class="help-list">
+                        <div class="help-item">
+                            <i class="fas fa-check-circle text-success"></i>
+                            <span>
+                                <strong>Nội dung phù hợp:</strong> Khóa học có nội dung liên quan đến công việc
+                            </span>
+                        </div>
+                        <div class="help-item">
+                            <i class="fas fa-check-circle text-success"></i>
+                            <span>
+                                <strong>Thời lượng hợp lý:</strong> Thời gian học phù hợp với nội dung
+                            </span>
+                        </div>
+                        <div class="help-item">
+                            <i class="fas fa-check-circle text-success"></i>
+                            <span>
+                                <strong>Đối tượng rõ ràng:</strong> Xác định được nhóm nhân viên cần đào tạo
+                            </span>
+                        </div>
+                        <div class="help-item">
+                            <i class="fas fa-check-circle text-success"></i>
+                            <span>
+                                <strong>Mô tả chi tiết:</strong> Có thông tin đầy đủ về mục tiêu khóa học
+                            </span>
+                        </div>
+                        <div class="help-item">
+                            <i class="fas fa-check-circle text-success"></i>
+                            <span>
+                                <strong>Cấp độ phù hợp:</strong> Độ khó phù hợp với trình độ nhân viên
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="approval-card">
+                    <h3 class="card-title">
+                        <i class="fas fa-bolt me-2"></i>Thao Tác Nhanh
+                    </h3>
+                    
+                    <div class="action-list">
+                        <a href="@Url.Action("ChiTiet", new { id = Model.CourseId })" class="action-link">
+                            <i class="fas fa-eye"></i>
+                            <span>Xem chi tiết khóa học</span>
+                        </a>
+                        <a href="@Url.Action("Index")" class="action-link">
+                            <i class="fas fa-list"></i>
+                            <span>Danh sách khóa học chờ duyệt</span>
+                        </a>
+                        <a href="#" class="action-link" onclick="printApproval()">
+                            <i class="fas fa-print"></i>
+                            <span>In phiếu phê duyệt</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Anti-forgery token for AJAX requests -->
+<form style="display: none;">
+    @Html.AntiForgeryToken()
+</form>
+
+@section Scripts {
+    <script>
+        let isProcessing = false;
+
+        function showRejectForm() {
+            const section = document.getElementById('rejectionSection');
+            section.classList.add('show');
+            document.getElementById('rejectionReason').focus();
+            
+            // Hide any previous messages
+            hideMessages();
+        }
+
+        function hideRejectForm() {
+            const section = document.getElementById('rejectionSection');
+            section.classList.remove('show');
+            document.getElementById('rejectionReason').value = '';
+        }
+
+        function hideMessages() {
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            const successText = document.getElementById('successText');
+            successText.textContent = message;
+            successDiv.style.display = 'block';
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            errorText.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function approveThis() {
+            if (isProcessing) return;
+
+            const confirmed = confirm('Bạn có chắc chắn muốn phê duyệt khóa học này?\n\nSau khi phê duyệt, khóa học sẽ được kích hoạt và có thể tạo lớp học.');
+            if (!confirmed) return;
+
+            isProcessing = true;
+            const approveBtn = document.querySelector('.btn-approve');
+            const originalContent = approveBtn.innerHTML;
+            
+            // Show loading state
+            approveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Đang xử lý...</span>';
+            approveBtn.classList.add('btn-loading');
+            
+            hideMessages();
+
+            // Simulate API call
+            setTimeout(() => {
+                // Here you would make the actual API call to approve
+                // For demo purposes, we'll simulate success
+                
+                fetch('@Url.Action("Approve", "KhoaHoc")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                    },
+                    body: JSON.stringify({
+                        courseId: @Model.CourseId,
+                        action: 'approve'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showSuccess('Khóa học đã được phê duyệt thành công!');
+                        
+                        // Update status badge
+                        const statusBadge = document.querySelector('.status-pending');
+                        if (statusBadge) {
+                            statusBadge.className = 'status-badge status-approved';
+                            statusBadge.innerHTML = '<i class="fas fa-check-circle me-1"></i>Đã phê duyệt';
+                        }
+                        
+                        // Disable action buttons
+                        document.querySelector('.btn-approve').disabled = true;
+                        document.querySelector('.btn-reject').disabled = true;
+                        
+                        // Redirect after 3 seconds
+                        setTimeout(() => {
+                            window.location.href = '@Url.Action("Index")';
+                        }, 3000);
+                    } else {
+                        showError(data.message || 'Có lỗi xảy ra khi phê duyệt.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showError('Có lỗi xảy ra. Vui lòng thử lại sau!');
+                })
+                .finally(() => {
+                    isProcessing = false;
+                    approveBtn.innerHTML = originalContent;
+                    approveBtn.classList.remove('btn-loading');
+                });
+            }, 1500);
+        }
+
+        function rejectThis() {
+            if (isProcessing) return;
+
+            const reason = document.getElementById('rejectionReason').value.trim();
+            if (!reason) {
+                alert('Vui lòng nhập lý do từ chối!');
+                document.getElementById('rejectionReason').focus();
+                return;
+            }
+
+            if (reason.length < 20) {
+                alert('Lý do từ chối phải có ít nhất 20 ký tự!');
+                document.getElementById('rejectionReason').focus();
+                return;
+            }
+
+            const confirmed = confirm('Bạn có chắc chắn muốn từ chối khóa học này?\n\nLý do: ' + reason);
+            if (!confirmed) return;
+
+            isProcessing = true;
+            const rejectBtn = document.querySelector('.btn-confirm-reject');
+            const originalContent = rejectBtn.innerHTML;
+            
+            // Show loading state
+            rejectBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>Đang xử lý...';
+            rejectBtn.classList.add('btn-loading');
+            
+            hideMessages();
+
+            // Simulate API call
+            setTimeout(() => {
+                // Here you would make the actual API call to reject
+                // For demo purposes, we'll simulate success
+                
+                fetch('@Url.Action("Reject", "KhoaHoc")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                    },
+                    body: JSON.stringify({
+                        courseId: @Model.CourseId,
+                        action: 'reject',
+                        reason: reason
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showSuccess('Khóa học đã bị từ chối. Thông báo đã được gửi tới người tạo.');
+                        
+                        // Update status badge
+                        const statusBadge = document.querySelector('.status-pending');
+                        if (statusBadge) {
+                            statusBadge.className = 'status-badge status-rejected';
+                            statusBadge.innerHTML = '<i class="fas fa-times-circle me-1"></i>Đã từ chối';
+                        }
+                        
+                        // Hide rejection form
+                        hideRejectForm();
+                        
+                        // Disable action buttons
+                        document.querySelector('.btn-approve').disabled = true;
+                        document.querySelector('.btn-reject').disabled = true;
+                        
+                        // Redirect after 3 seconds
+                        setTimeout(() => {
+                            window.location.href = '@Url.Action("Index")';
+                        }, 3000);
+                    } else {
+                        showError(data.message || 'Có lỗi xảy ra khi từ chối.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showError('Có lỗi xảy ra. Vui lòng thử lại sau!');
+                })
+                .finally(() => {
+                    isProcessing = false;
+                    rejectBtn.innerHTML = originalContent;
+                    rejectBtn.classList.remove('btn-loading');
+                });
+            }, 1500);
+        }
+
+        function printApproval() {
+            window.print();
+        }
+
+        // Auto-hide messages when clicking somewhere else
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.success-message') && !e.target.closest('.error-message')) {
+                setTimeout(hideMessages, 100);
+            }
+        });
+
+        // Form validation enhancement
+        document.addEventListener('DOMContentLoaded', function() {
+            const textarea = document.getElementById('rejectionReason');
+            if (textarea) {
+                textarea.addEventListener('input', function() {
+                    const length = this.value.length;
+                    if (length < 20) {
+                        this.style.borderColor = '#dc3545';
+                    } else {
+                        this.style.borderColor = '#28a745';
+                    }
+                });
+            }
+        });
+    </script>
+}
