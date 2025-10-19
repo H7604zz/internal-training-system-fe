@@ -123,9 +123,15 @@
                     <div class="col-lg-6 col-xl-4 mb-4">
                         <div class="card course-card">
                             <div class="course-header">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
                                     <h3 class="course-title">@course.CourseName</h3>
                                     <span class="course-code">@course.Code</span>
+                                </div>
+                                <div class="course-status-row">
+                                    <span class="status-badge @(course.IsActive ? "status-active" : "status-inactive")">
+                                        <i class="fas @(course.IsActive ? "fa-check-circle" : "fa-pause-circle") me-1"></i>
+                                        @course.StatusDisplay
+                                    </span>
                                 </div>
                             </div>
                             <div class="course-body">
@@ -141,7 +147,6 @@
                                         <span>@course.DurationDisplay</span>
                                     </div>
                                     <div class="meta-item">
-                                        <i class="fas fa-signal meta-icon"></i>
                                         <span class="level-badge @(course.Level.ToLower() switch 
                                         {
                                             "cơ bản" => "level-basic",
@@ -150,12 +155,30 @@
                                             _ => "level-basic"
                                         })">@course.Level</span>
                                     </div>
+                                    
+                                </div>
+
+                                <!-- Approval Status -->
+                                <div class="course-meta">
                                     <div class="meta-item">
-                                        <span class="status-badge @(course.IsActive ? "status-active" : "status-inactive")">
-                                            <i class="fas @(course.IsActive ? "fa-check-circle" : "fa-pause-circle") me-1"></i>
-                                            @course.StatusDisplay
+                                        <i class="fas fa-clipboard-check meta-icon"></i>
+                                        <span class="approval-badge @(course.Status?.ToLower() switch
+                                        {
+                                            "pending" => "approval-pending",
+                                            "approved" => "approval-approved",
+                                            "rejected" => "approval-rejected",
+                                            _ => "approval-pending"
+                                        })">
+                                            @course.ApprovalStatusDisplay
                                         </span>
                                     </div>
+                                    @if (course.Status == "Approved" && !string.IsNullOrEmpty(course.ApprovedBy))
+                                    {
+                                        <div class="meta-item">
+                                            <i class="fas fa-user-check meta-icon"></i>
+                                            <span>@course.ApprovedBy</span>
+                                        </div>
+                                    }
                                 </div>
 
                                 <div class="mb-3">
@@ -176,6 +199,14 @@
                                         <i class="fas fa-edit"></i>
                                         Chỉnh sửa
                                     </a>
+                                    @if (course.Status == "Pending")
+                                    {
+                                        <a href="@Url.Action("PheDuyet", new { id = course.CourseId })" 
+                                           class="action-btn btn-approve">
+                                            <i class="fas fa-clipboard-check"></i>
+                                            Phê duyệt
+                                        </a>
+                                    }
                                 </div>
                             </div>
                         </div>

@@ -9,25 +9,6 @@
 
 <div class="course-container">
     <div class="container-fluid">
-        <!-- Breadcrumb -->
-        <nav aria-label="breadcrumb" class="course-breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item">
-                    <a href="@Url.Action("Index", "TrangChu")">
-                        <i class="fas fa-home"></i> Trang chủ
-                    </a>
-                </li>
-                <li class="breadcrumb-item">
-                    <a href="@Url.Action("Index")">
-                        <i class="fas fa-graduation-cap"></i> Danh sách khóa học
-                    </a>
-                </li>
-                <li class="breadcrumb-item active" aria-current="page">
-                    Thêm khóa học mới
-                </li>
-            </ol>
-        </nav>
-
         <!-- Header Section -->
         <div class="form-header">
             <div class="row align-items-center">
@@ -148,12 +129,29 @@
                             }
                         </div>
                     </div>
+
+                    <!-- Course Content Section -->
+                    <div class="form-card">
+                        <h3 class="form-section-title">
+                            <i class="fas fa-book me-2"></i>Nội Dung Khóa Học
+                        </h3>
+                        <p class="form-help-text">Tạo các module và bài học cho khóa học</p>
+
+                        <!-- Modules Container -->
+                        <div id="modules-container">
+                            <!-- Module template will be added here -->
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary mt-3" id="add-module-btn">
+                            <i class="fas fa-plus me-2"></i>Thêm Module
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Side Panel -->
                 <div class="col-lg-4 mb-4">
                     <!-- Form Actions -->
-                    <div class="form-card sticky-top">
+                    <div class="form-card">
                         <h3 class="form-section-title">
                             <i class="fas fa-save me-2"></i>Thao Tác
                         </h3>
@@ -167,27 +165,6 @@
                             </a>
                         </div>
 
-                        <hr class="my-3">
-
-                        <div class="form-preview">
-                            <h5>Xem trước:</h5>
-                            <div class="preview-item">
-                                <span class="preview-label">Tên:</span>
-                                <span class="preview-value" id="preview-name">Chưa nhập</span>
-                            </div>
-                            <div class="preview-item">
-                                <span class="preview-label">Mã:</span>
-                                <span class="preview-value" id="preview-code">Chưa nhập</span>
-                            </div>
-                            <div class="preview-item">
-                                <span class="preview-label">Cấp độ:</span>
-                                <span class="preview-value" id="preview-level">Chưa chọn</span>
-                            </div>
-                            <div class="preview-item">
-                                <span class="preview-label">Thời lượng:</span>
-                                <span class="preview-value" id="preview-duration">0 giờ</span>
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Form Help -->
@@ -244,6 +221,142 @@
                 </div>
             </div>
         </form>
+
+        <!-- Hidden Templates -->
+        <div id="module-template" style="display: none;">
+            <div class="module-item mb-4" data-module-index="">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-folder me-2"></i>Module <span class="module-number"></span>
+                        </h5>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-outline-secondary move-up-module" title="Di chuyển lên">
+                                <i class="fas fa-arrow-up"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary move-down-module" title="Di chuyển xuống">
+                                <i class="fas fa-arrow-down"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger remove-module" title="Xóa module">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label required">Tên Module</label>
+                                <input type="text" name="Modules[].ModuleName" class="form-control" placeholder="Nhập tên module">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label required">Thứ tự</label>
+                                <input type="number" name="Modules[].Order" class="form-control module-order" min="1" readonly>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mô tả Module</label>
+                            <textarea name="Modules[].Description" class="form-control" rows="2" placeholder="Nhập mô tả module..."></textarea>
+                        </div>
+
+                        <!-- Lessons Section -->
+                        <div class="lessons-section">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6><i class="fas fa-play-circle me-2"></i>Bài Học</h6>
+                                <button type="button" class="btn btn-sm btn-outline-primary add-lesson-btn">
+                                    <i class="fas fa-plus me-1"></i>Thêm Bài Học
+                                </button>
+                            </div>
+                            <div class="lessons-container">
+                                <!-- Lessons will be added here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="lesson-template" style="display: none;">
+            <div class="lesson-item mb-3" data-lesson-index="">
+                <div class="card border-start border-primary border-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h6 class="card-title mb-0">
+                                <i class="fas fa-play me-2"></i>Bài học <span class="lesson-number"></span>
+                            </h6>
+                            <div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary move-up-lesson" title="Di chuyển lên">
+                                    <i class="fas fa-arrow-up"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary move-down-lesson" title="Di chuyển xuống">
+                                    <i class="fas fa-arrow-down"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger remove-lesson" title="Xóa bài học">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <label class="form-label required">Tên Bài Học</label>
+                                <input type="text" name="Modules[].Lessons[].LessonName" class="form-control" placeholder="Nhập tên bài học">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label required">Thứ tự</label>
+                                <input type="number" name="Modules[].Lessons[].Order" class="form-control lesson-order" min="1" readonly>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Nội dung học</label>
+                            <div class="content-upload-area">
+                                <div class="upload-tabs mb-3">
+                                    <div class="btn-group" role="group">
+                                        <input type="radio" class="btn-check content-type" name="content-type-" id="video-" value="video">
+                                        <label class="btn btn-outline-primary" for="video-">
+                                            <i class="fas fa-video me-1"></i>Video
+                                        </label>
+
+                                        <input type="radio" class="btn-check content-type" name="content-type-" id="pdf-" value="pdf">
+                                        <label class="btn btn-outline-primary" for="pdf-">
+                                            <i class="fas fa-file-pdf me-1"></i>PDF
+                                        </label>
+
+                                        <input type="radio" class="btn-check content-type" name="content-type-" id="image-" value="image">
+                                        <label class="btn btn-outline-primary" for="image-">
+                                            <i class="fas fa-image me-1"></i>Hình ảnh
+                                        </label>
+
+                                        <input type="radio" class="btn-check content-type" name="content-type-" id="document-" value="document">
+                                        <label class="btn btn-outline-primary" for="document-">
+                                            <i class="fas fa-file-alt me-1"></i>Tài liệu
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="file-upload-container">
+                                    <div class="file-upload-area">
+                                        <input type="file" name="Modules[].Lessons[].ContentFile" class="form-control content-file-input" accept="">
+                                        <div class="upload-placeholder text-center p-4">
+                                            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-2"></i>
+                                            <p class="text-muted mb-0">Chọn loại nội dung và tải lên tệp</p>
+                                            <small class="text-muted">Hỗ trợ: Video (MP4), PDF, Hình ảnh (JPG, PNG), Tài liệu (DOCX, PPTX)</small>
+                                        </div>
+                                    </div>
+                                    <div class="file-info mt-2" style="display: none;">
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-file me-2"></i>
+                                            <span class="file-name"></span>
+                                            <span class="file-size text-muted ms-2"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -251,46 +364,14 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Form preview updates
-            const previewElements = {
-                name: document.getElementById('preview-name'),
-                code: document.getElementById('preview-code'),
-                level: document.getElementById('preview-level'),
-                duration: document.getElementById('preview-duration')
-            };
+            let moduleIndex = 0;
 
             const formElements = {
                 name: document.getElementById('CourseName'),
                 code: document.getElementById('Code'),
                 level: document.getElementById('Level'),
-                duration: document.getElementById('DurationHours')
+                duration: document.getElementById('Duration')
             };
-
-            // Update preview on input change
-            if (formElements.name && previewElements.name) {
-                formElements.name.addEventListener('input', function() {
-                    previewElements.name.textContent = this.value || 'Chưa nhập';
-                });
-            }
-
-            if (formElements.code && previewElements.code) {
-                formElements.code.addEventListener('input', function() {
-                    previewElements.code.textContent = this.value || 'Chưa nhập';
-                });
-            }
-
-            if (formElements.level && previewElements.level) {
-                formElements.level.addEventListener('change', function() {
-                    previewElements.level.textContent = this.value || 'Chưa chọn';
-                });
-            }
-
-            if (formElements.duration && previewElements.duration) {
-                formElements.duration.addEventListener('input', function() {
-                    const value = this.value || 0;
-                    previewElements.duration.textContent = `${value} giờ`;
-                });
-            }
 
             // Auto-generate course code from name
             if (formElements.name && formElements.code) {
@@ -300,9 +381,247 @@
                         const code = words.map(word => word.charAt(0).toUpperCase()).join('') + 
                                    '-' + String(Math.floor(Math.random() * 100) + 1).padStart(3, '0');
                         formElements.code.value = code;
-                        previewElements.code.textContent = code;
                     }
                 });
+            }
+
+            // Module and Lesson Management
+            const modulesContainer = document.getElementById('modules-container');
+            const addModuleBtn = document.getElementById('add-module-btn');
+            const moduleTemplate = document.getElementById('module-template');
+            const lessonTemplate = document.getElementById('lesson-template');
+
+            // Add Module
+            addModuleBtn.addEventListener('click', function() {
+                addModule();
+            });
+
+            function addModule() {
+                const moduleHtml = moduleTemplate.innerHTML;
+                const moduleDiv = document.createElement('div');
+                moduleDiv.innerHTML = moduleHtml;
+                const moduleItem = moduleDiv.firstElementChild;
+                
+                moduleIndex++;
+                moduleItem.setAttribute('data-module-index', moduleIndex - 1);
+                
+                // Update module number and form names
+                updateModuleIndexes(moduleItem, moduleIndex - 1);
+                
+                modulesContainer.appendChild(moduleItem);
+                
+                // Add event listeners
+                addModuleEventListeners(moduleItem);
+                
+                // Update all module orders
+                updateModuleOrders();
+            }
+
+            function addModuleEventListeners(moduleItem) {
+                // Remove module
+                moduleItem.querySelector('.remove-module').addEventListener('click', function() {
+                    moduleItem.remove();
+                    updateModuleOrders();
+                });
+
+                // Move module up/down
+                moduleItem.querySelector('.move-up-module').addEventListener('click', function() {
+                    const prev = moduleItem.previousElementSibling;
+                    if (prev) {
+                        modulesContainer.insertBefore(moduleItem, prev);
+                        updateModuleOrders();
+                    }
+                });
+
+                moduleItem.querySelector('.move-down-module').addEventListener('click', function() {
+                    const next = moduleItem.nextElementSibling;
+                    if (next) {
+                        modulesContainer.insertBefore(next, moduleItem);
+                        updateModuleOrders();
+                    }
+                });
+
+                // Add lesson
+                moduleItem.querySelector('.add-lesson-btn').addEventListener('click', function() {
+                    addLesson(moduleItem);
+                });
+            }
+
+            function addLesson(moduleItem) {
+                const lessonHtml = lessonTemplate.innerHTML;
+                const lessonDiv = document.createElement('div');
+                lessonDiv.innerHTML = lessonHtml;
+                const lessonItem = lessonDiv.firstElementChild;
+                
+                const lessonsContainer = moduleItem.querySelector('.lessons-container');
+                const moduleIndex = moduleItem.getAttribute('data-module-index');
+                const lessonIndex = lessonsContainer.children.length;
+                
+                lessonItem.setAttribute('data-lesson-index', lessonIndex);
+                
+                // Update lesson form names and IDs
+                updateLessonIndexes(lessonItem, moduleIndex, lessonIndex);
+                
+                lessonsContainer.appendChild(lessonItem);
+                
+                // Add event listeners
+                addLessonEventListeners(lessonItem, moduleItem);
+                
+                // Update lesson orders in this module
+                updateLessonOrders(moduleItem);
+            }
+
+            function addLessonEventListeners(lessonItem, moduleItem) {
+                const lessonsContainer = moduleItem.querySelector('.lessons-container');
+
+                // Remove lesson
+                lessonItem.querySelector('.remove-lesson').addEventListener('click', function() {
+                    lessonItem.remove();
+                    updateLessonOrders(moduleItem);
+                });
+
+                // Move lesson up/down
+                lessonItem.querySelector('.move-up-lesson').addEventListener('click', function() {
+                    const prev = lessonItem.previousElementSibling;
+                    if (prev) {
+                        lessonsContainer.insertBefore(lessonItem, prev);
+                        updateLessonOrders(moduleItem);
+                    }
+                });
+
+                lessonItem.querySelector('.move-down-lesson').addEventListener('click', function() {
+                    const next = lessonItem.nextElementSibling;
+                    if (next) {
+                        lessonsContainer.insertBefore(next, lessonItem);
+                        updateLessonOrders(moduleItem);
+                    }
+                });
+
+                // Content type change
+                const contentTypeInputs = lessonItem.querySelectorAll('.content-type');
+                const fileInput = lessonItem.querySelector('.content-file-input');
+                
+                contentTypeInputs.forEach(input => {
+                    input.addEventListener('change', function() {
+                        updateFileInputAccept(lessonItem, this.value);
+                    });
+                });
+
+                // File upload
+                fileInput.addEventListener('change', function() {
+                    handleFileUpload(lessonItem, this);
+                });
+            }
+
+            function updateModuleIndexes(moduleItem, index) {
+                // Update module number display
+                moduleItem.querySelector('.module-number').textContent = index + 1;
+                
+                // Update form field names
+                const inputs = moduleItem.querySelectorAll('input[name^="Modules["], textarea[name^="Modules["]');
+                inputs.forEach(input => {
+                    const name = input.getAttribute('name');
+                    const newName = name.replace(/Modules\[\d*\]/, `Modules[${index}]`);
+                    input.setAttribute('name', newName);
+                });
+
+                // Update module order value
+                moduleItem.querySelector('.module-order').value = index + 1;
+            }
+
+            function updateLessonIndexes(lessonItem, moduleIndex, lessonIndex) {
+                // Update lesson number display
+                lessonItem.querySelector('.lesson-number').textContent = lessonIndex + 1;
+                
+                // Update form field names and IDs
+                const inputs = lessonItem.querySelectorAll('input, textarea');
+                inputs.forEach(input => {
+                    const name = input.getAttribute('name');
+                    if (name && name.includes('Modules[].Lessons[]')) {
+                        const newName = name.replace('Modules[].Lessons[]', `Modules[${moduleIndex}].Lessons[${lessonIndex}]`);
+                        input.setAttribute('name', newName);
+                    }
+
+                    const id = input.getAttribute('id');
+                    if (id && (id.includes('-') && id.endsWith('-'))) {
+                        const newId = id.replace('-', `-${moduleIndex}-${lessonIndex}-`);
+                        input.setAttribute('id', newId);
+                        
+                        // Update corresponding label
+                        const label = lessonItem.querySelector(`label[for="${id}"]`);
+                        if (label) {
+                            label.setAttribute('for', newId);
+                        }
+                    }
+
+                    const radioName = input.getAttribute('name');
+                    if (radioName && radioName.includes('content-type-')) {
+                        const newRadioName = `content-type-${moduleIndex}-${lessonIndex}`;
+                        input.setAttribute('name', newRadioName);
+                    }
+                });
+
+                // Update lesson order value
+                lessonItem.querySelector('.lesson-order').value = lessonIndex + 1;
+            }
+
+            function updateModuleOrders() {
+                const moduleItems = modulesContainer.querySelectorAll('.module-item');
+                moduleItems.forEach((moduleItem, index) => {
+                    moduleItem.setAttribute('data-module-index', index);
+                    updateModuleIndexes(moduleItem, index);
+                    
+                    // Update all lessons in this module
+                    const lessonItems = moduleItem.querySelectorAll('.lesson-item');
+                    lessonItems.forEach((lessonItem, lessonIndex) => {
+                        updateLessonIndexes(lessonItem, index, lessonIndex);
+                    });
+                });
+            }
+
+            function updateLessonOrders(moduleItem) {
+                const lessonItems = moduleItem.querySelectorAll('.lesson-item');
+                const moduleIndex = moduleItem.getAttribute('data-module-index');
+                
+                lessonItems.forEach((lessonItem, index) => {
+                    lessonItem.setAttribute('data-lesson-index', index);
+                    updateLessonIndexes(lessonItem, moduleIndex, index);
+                });
+            }
+
+            function updateFileInputAccept(lessonItem, contentType) {
+                const fileInput = lessonItem.querySelector('.content-file-input');
+                const acceptTypes = {
+                    'video': '.mp4,.avi,.mov,.wmv',
+                    'pdf': '.pdf',
+                    'image': '.jpg,.jpeg,.png,.gif,.bmp',
+                    'document': '.doc,.docx,.ppt,.pptx,.txt'
+                };
+                
+                fileInput.setAttribute('accept', acceptTypes[contentType] || '');
+            }
+
+            function handleFileUpload(lessonItem, fileInput) {
+                const fileInfo = lessonItem.querySelector('.file-info');
+                const fileName = lessonItem.querySelector('.file-name');
+                const fileSize = lessonItem.querySelector('.file-size');
+                
+                if (fileInput.files && fileInput.files[0]) {
+                    const file = fileInput.files[0];
+                    fileName.textContent = file.name;
+                    fileSize.textContent = `(${formatFileSize(file.size)})`;
+                    fileInfo.style.display = 'block';
+                } else {
+                    fileInfo.style.display = 'none';
+                }
+            }
+
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
             }
 
             // Template buttons
@@ -338,22 +657,21 @@
 
                 const templateData = templates[template];
                 if (templateData) {
-                    formElements.name.value = templateData.name;
-                    document.getElementById('Description').value = templateData.description;
-                    formElements.level.value = templateData.level;
-                    formElements.duration.value = templateData.duration;
-
-                    // Update preview
-                    previewElements.name.textContent = templateData.name;
-                    previewElements.level.textContent = templateData.level;
-                    previewElements.duration.textContent = `${templateData.duration} giờ`;
+                    if (formElements.name) formElements.name.value = templateData.name;
+                    
+                    const descriptionField = document.getElementById('Description');
+                    if (descriptionField) descriptionField.value = templateData.description;
+                    
+                    if (formElements.level) formElements.level.value = templateData.level;
+                    if (formElements.duration) formElements.duration.value = templateData.duration;
 
                     // Generate code
-                    const words = templateData.name.split(' ').slice(0, 2);
-                    const code = words.map(word => word.charAt(0).toUpperCase()).join('') + 
-                               '-' + String(Math.floor(Math.random() * 100) + 1).padStart(3, '0');
-                    formElements.code.value = code;
-                    previewElements.code.textContent = code;
+                    if (formElements.code) {
+                        const words = templateData.name.split(' ').slice(0, 2);
+                        const code = words.map(word => word.charAt(0).toUpperCase()).join('') + 
+                                   '-' + String(Math.floor(Math.random() * 100) + 1).padStart(3, '0');
+                        formElements.code.value = code;
+                    }
                 }
             }
 

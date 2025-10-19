@@ -1,6 +1,7 @@
 ﻿using InternalTrainingSystem.WebApp.Models.DTOs;
 using InternalTrainingSystem.WebApp.Services.Interface;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace InternalTrainingSystem.WebApp.Controllers
 {
@@ -177,7 +178,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 }
 
                 // await _courseService.CreateCourseAsync(model);
-                TempData["SuccessMessage"] = "Thêm khóa học mới thành công!";
+                TempData["Success"] = "Thêm khóa học mới thành công! Khóa học đã được gửi để chờ phê duyệt.";
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
@@ -187,6 +188,180 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 ViewBag.Categories = GetCategories();
                 ViewBag.Departments = GetDepartments();
                 return View(model);
+            }
+        }
+
+        [HttpGet("phe-duyet/{id}")]
+        public async Task<IActionResult> PheDuyet(int id)
+        {
+            try
+            {
+                // var course = await _courseService.GetCourseForApprovalAsync(id);
+                var allCourses = GetSampleCourseDataForApproval(); // Sử dụng data mẫu để test
+                var course = allCourses.FirstOrDefault(c => c.CourseId == id);
+
+                if (course == null)
+                {
+                    TempData["Error"] = "Không tìm thấy khóa học cần phê duyệt.";
+                    return RedirectToAction("Index");
+                }
+
+                if (course.Status != "Pending")
+                {
+                    TempData["Warning"] = "Khóa học này đã được xử lý phê duyệt.";
+                    return RedirectToAction("ChiTiet", new { id });
+                }
+
+                // Thêm thông tin người tạo và lịch sử phê duyệt
+                ViewBag.CreatedBy = course.CreatedBy ?? "Nhân viên đào tạo";
+                ViewBag.ApprovalHistory = GetApprovalHistory(id);
+
+                return View(course);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting course for approval with ID: {CourseId}", id);
+                TempData["Error"] = "Đã xảy ra lỗi khi tải thông tin khóa học để phê duyệt.";
+                return RedirectToAction("Index");
+            }
+        }
+
+        [HttpPost("approve")]
+        public async Task<IActionResult> Approve([FromBody] CourseApprovalRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(request.Action) || request.CourseId <= 0)
+                {
+                    return Json(new CourseApprovalResponse
+                    {
+                        Success = false,
+                        Message = "Thông tin yêu cầu không hợp lệ.",
+                        ErrorCode = "INVALID_REQUEST"
+                    });
+                }
+
+                // Simulate processing time
+                await Task.Delay(1000);
+
+                // Here you would call the actual service
+                // var result = await _courseService.ApproveCourseAsync(request);
+
+                // For demo purposes, simulate success
+                var course = GetSampleCourseDataForApproval().FirstOrDefault(c => c.CourseId == request.CourseId);
+                if (course == null)
+                {
+                    return Json(new CourseApprovalResponse
+                    {
+                        Success = false,
+                        Message = "Không tìm thấy khóa học.",
+                        ErrorCode = "COURSE_NOT_FOUND"
+                    });
+                }
+
+                if (request.Action.ToLower() == "approve")
+                {
+                    // Simulate approval
+                    _logger.LogInformation("Course {CourseId} approved by {ApprovedBy}", request.CourseId, request.ApprovedBy);
+                    
+                    return Json(new CourseApprovalResponse
+                    {
+                        Success = true,
+                        Message = "Khóa học đã được phê duyệt thành công!"
+                    });
+                }
+
+                return Json(new CourseApprovalResponse
+                {
+                    Success = false,
+                    Message = "Hành động không được hỗ trợ.",
+                    ErrorCode = "INVALID_ACTION"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while approving course with ID: {CourseId}", request.CourseId);
+                return Json(new CourseApprovalResponse
+                {
+                    Success = false,
+                    Message = "Đã xảy ra lỗi khi phê duyệt khóa học. Vui lòng thử lại.",
+                    ErrorCode = "INTERNAL_ERROR"
+                });
+            }
+        }
+
+        [HttpPost("reject")]
+        public async Task<IActionResult> Reject([FromBody] CourseApprovalRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(request.Action) || request.CourseId <= 0 || string.IsNullOrEmpty(request.Reason))
+                {
+                    return Json(new CourseApprovalResponse
+                    {
+                        Success = false,
+                        Message = "Vui lòng nhập đầy đủ thông tin và lý do từ chối.",
+                        ErrorCode = "INVALID_REQUEST"
+                    });
+                }
+
+                if (request.Reason.Length < 20)
+                {
+                    return Json(new CourseApprovalResponse
+                    {
+                        Success = false,
+                        Message = "Lý do từ chối phải có ít nhất 20 ký tự.",
+                        ErrorCode = "REASON_TOO_SHORT"
+                    });
+                }
+
+                // Simulate processing time
+                await Task.Delay(1000);
+
+                // Here you would call the actual service
+                // var result = await _courseService.RejectCourseAsync(request);
+
+                // For demo purposes, simulate success
+                var course = GetSampleCourseDataForApproval().FirstOrDefault(c => c.CourseId == request.CourseId);
+                if (course == null)
+                {
+                    return Json(new CourseApprovalResponse
+                    {
+                        Success = false,
+                        Message = "Không tìm thấy khóa học.",
+                        ErrorCode = "COURSE_NOT_FOUND"
+                    });
+                }
+
+                if (request.Action.ToLower() == "reject")
+                {
+                    // Simulate rejection
+                    _logger.LogInformation("Course {CourseId} rejected by {RejectedBy} with reason: {Reason}", 
+                        request.CourseId, request.ApprovedBy, request.Reason);
+                    
+                    return Json(new CourseApprovalResponse
+                    {
+                        Success = true,
+                        Message = "Khóa học đã bị từ chối. Thông báo đã được gửi tới người tạo."
+                    });
+                }
+
+                return Json(new CourseApprovalResponse
+                {
+                    Success = false,
+                    Message = "Hành động không được hỗ trợ.",
+                    ErrorCode = "INVALID_ACTION"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while rejecting course with ID: {CourseId}", request.CourseId);
+                return Json(new CourseApprovalResponse
+                {
+                    Success = false,
+                    Message = "Đã xảy ra lỗi khi từ chối khóa học. Vui lòng thử lại.",
+                    ErrorCode = "INTERNAL_ERROR"
+                });
             }
         }
 
@@ -207,7 +382,10 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     CategoryName = "Lập trình",
                     IsActive = true,
                     CreatedDate = DateTime.Now.AddDays(-30),
-                    CreatedBy = "Admin",
+                    CreatedBy = "Nguyễn Văn Nam",
+                    Status = "Approved",
+                    ApprovedBy = "Trần Thị Hương - Giám đốc",
+                    ApprovalDate = DateTime.Now.AddDays(-25),
                     Departments = departments.Take(2).ToList()
                 },
                 new CourseDto
@@ -221,7 +399,10 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     CategoryName = "Web Development",
                     IsActive = true,
                     CreatedDate = DateTime.Now.AddDays(-25),
-                    CreatedBy = "Admin",
+                    CreatedBy = "Lê Minh Đức",
+                    Status = "Approved",
+                    ApprovedBy = "Trần Thị Hương - Giám đốc",
+                    ApprovalDate = DateTime.Now.AddDays(-20),
                     Departments = departments.Where(d => d.Name.Contains("IT") || d.Name.Contains("Tech")).ToList()
                 },
                 new CourseDto
@@ -235,7 +416,10 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     CategoryName = "Frontend",
                     IsActive = true,
                     CreatedDate = DateTime.Now.AddDays(-20),
-                    CreatedBy = "Admin",
+                    CreatedBy = "Phạm Thị Mai",
+                    Status = "Approved",
+                    ApprovedBy = "Trần Thị Hương - Giám đốc",
+                    ApprovalDate = DateTime.Now.AddDays(-15),
                     Departments = departments.Where(d => d.Name.Contains("IT")).ToList()
                 },
                 new CourseDto
@@ -249,7 +433,11 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     CategoryName = "Database",
                     IsActive = false,
                     CreatedDate = DateTime.Now.AddDays(-15),
-                    CreatedBy = "Admin",
+                    CreatedBy = "Hoàng Văn Tùng",
+                    Status = "Rejected",
+                    ApprovedBy = "Trần Thị Hương - Giám đốc",
+                    ApprovalDate = DateTime.Now.AddDays(-10),
+                    RejectionReason = "Nội dung khóa học chưa chi tiết, thiếu thông tin về thực hành. Vui lòng bổ sung thêm các bài lab và project thực tế.",
                     Departments = departments.Take(3).ToList()
                 },
                 new CourseDto
@@ -263,7 +451,10 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     CategoryName = "Frontend",
                     IsActive = true,
                     CreatedDate = DateTime.Now.AddDays(-10),
-                    CreatedBy = "Admin",
+                    CreatedBy = "Vũ Thị Lan",
+                    Status = "Approved",
+                    ApprovedBy = "Trần Thị Hương - Giám đốc",
+                    ApprovalDate = DateTime.Now.AddDays(-5),
                     Departments = departments.Where(d => d.Name.Contains("IT") || d.Name.Contains("Dev")).ToList()
                 },
                 new CourseDto
@@ -277,7 +468,8 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     CategoryName = "Data Science",
                     IsActive = true,
                     CreatedDate = DateTime.Now.AddDays(-5),
-                    CreatedBy = "Admin",
+                    CreatedBy = "Đặng Minh Quân",
+                    Status = "Pending",
                     Departments = departments.Where(d => d.Name.Contains("Data") || d.Name.Contains("Analytics")).ToList()
                 },
                 new CourseDto
@@ -291,7 +483,8 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     CategoryName = "DevOps",
                     IsActive = true,
                     CreatedDate = DateTime.Now.AddDays(-2),
-                    CreatedBy = "Admin",
+                    CreatedBy = "Bùi Văn Hải",
+                    Status = "Pending",
                     Departments = departments.Take(4).ToList()
                 },
                 new CourseDto
@@ -305,11 +498,80 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     CategoryName = "Mobile Development",
                     IsActive = false,
                     CreatedDate = DateTime.Now.AddDays(-1),
-                    CreatedBy = "Admin",
+                    CreatedBy = "Trịnh Thị Hoa",
+                    Status = "Pending",
                     Departments = departments.Where(d => d.Name.Contains("Mobile") || d.Name.Contains("IT")).ToList()
                 }
             };
         }
+
+        private List<CourseDto> GetSampleCourseDataForApproval()
+        {
+            var allCourses = GetSampleCourseData();
+            // Return courses that are pending approval for the approval view
+            return allCourses.Where(c => c.Status == "Pending").ToList();
+        }
+
+        private List<ApprovalHistoryDto> GetApprovalHistory(int courseId)
+        {
+            var course = GetSampleCourseData().FirstOrDefault(c => c.CourseId == courseId);
+            if (course == null) return new List<ApprovalHistoryDto>();
+
+            var history = new List<ApprovalHistoryDto>
+            {
+                new ApprovalHistoryDto
+                {
+                    Id = 1,
+                    CourseId = courseId,
+                    Action = "Created",
+                    Description = "Khóa học được tạo",
+                    ActionBy = course.CreatedBy ?? "Nhân viên đào tạo",
+                    ActionDate = course.CreatedDate
+                },
+                new ApprovalHistoryDto
+                {
+                    Id = 2,
+                    CourseId = courseId,
+                    Action = "Submitted",
+                    Description = "Gửi yêu cầu phê duyệt",
+                    Note = "Khóa học đã sẵn sàng để phê duyệt",
+                    ActionBy = course.CreatedBy ?? "Nhân viên đào tạo",
+                    ActionDate = course.CreatedDate.AddMinutes(30)
+                }
+            };
+
+            // Add approval/rejection history if exists
+            if (course.Status == "Approved" && course.ApprovalDate.HasValue)
+            {
+                history.Add(new ApprovalHistoryDto
+                {
+                    Id = 3,
+                    CourseId = courseId,
+                    Action = "Approved",
+                    Description = "Khóa học đã được phê duyệt",
+                    Note = "Khóa học đã được phê duyệt và có thể tạo lớp học",
+                    ActionBy = course.ApprovedBy ?? "Giám đốc",
+                    ActionDate = course.ApprovalDate.Value
+                });
+            }
+            else if (course.Status == "Rejected" && course.ApprovalDate.HasValue)
+            {
+                history.Add(new ApprovalHistoryDto
+                {
+                    Id = 3,
+                    CourseId = courseId,
+                    Action = "Rejected",
+                    Description = "Khóa học bị từ chối",
+                    Note = course.RejectionReason,
+                    ActionBy = course.ApprovedBy ?? "Giám đốc",
+                    ActionDate = course.ApprovalDate.Value
+                });
+            }
+
+            return history.OrderBy(h => h.ActionDate).ToList();
+        }
+
+        
 
         private List<DepartmentDto> GetDepartments()
         {

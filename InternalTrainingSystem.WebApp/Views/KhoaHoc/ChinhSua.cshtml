@@ -192,6 +192,257 @@
                             }
                         </div>
                     </div>
+
+                    <!-- Course Content Section -->
+                    <div class="form-card">
+                        <h3 class="form-section-title">
+                            <i class="fas fa-book me-2"></i>Nội Dung Khóa Học
+                        </h3>
+                        <p class="form-help-text">Quản lý các module và bài học cho khóa học</p>
+
+                        <!-- Existing Modules Container -->
+                        <div id="existing-modules-container">
+                            <!-- Module 1 - Existing with sample data -->
+                            <div class="module-item mb-4" data-module-index="0">
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-folder me-2"></i>Module <span class="module-number">1</span>
+                                        </h5>
+                                        <div>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary move-up-module" title="Di chuyển lên">
+                                                <i class="fas fa-arrow-up"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary move-down-module" title="Di chuyển xuống">
+                                                <i class="fas fa-arrow-down"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger remove-module" title="Xóa module">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label required">Tên Module</label>
+                                                <input type="text" name="Modules[0].ModuleName" class="form-control" 
+                                                       value="Giới thiệu về Lập trình Web" placeholder="Nhập tên module">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label required">Thứ tự</label>
+                                                <input type="number" name="Modules[0].Order" class="form-control module-order" min="1" value="1" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Mô tả Module</label>
+                                            <textarea name="Modules[0].Description" class="form-control" rows="2" 
+                                                      placeholder="Nhập mô tả module...">Tìm hiểu các khái niệm cơ bản về phát triển web, HTML, CSS và JavaScript</textarea>
+                                        </div>
+
+                                        <!-- Lessons Section -->
+                                        <div class="lessons-section">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h6><i class="fas fa-play-circle me-2"></i>Bài Học</h6>
+                                                <button type="button" class="btn btn-sm btn-outline-primary add-lesson-btn">
+                                                    <i class="fas fa-plus me-1"></i>Thêm Bài Học
+                                                </button>
+                                            </div>
+                                            <div class="lessons-container">
+                                                <!-- Existing Lesson 1 -->
+                                                <div class="lesson-item mb-3" data-lesson-index="0">
+                                                    <div class="card border-start border-primary border-3">
+                                                        <div class="card-body">
+                                                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                                                <h6 class="card-title mb-0">
+                                                                    <i class="fas fa-play me-2"></i>Bài học <span class="lesson-number">1</span>
+                                                                </h6>
+                                                                <div>
+                                                                    <button type="button" class="btn btn-sm btn-outline-secondary move-up-lesson" title="Di chuyển lên">
+                                                                        <i class="fas fa-arrow-up"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-sm btn-outline-secondary move-down-lesson" title="Di chuyển xuống">
+                                                                        <i class="fas fa-arrow-down"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-sm btn-outline-danger remove-lesson" title="Xóa bài học">
+                                                                        <i class="fas fa-trash"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div class="row mb-3">
+                                                                <div class="col-md-8">
+                                                                    <label class="form-label required">Tên Bài Học</label>
+                                                                    <input type="text" name="Modules[0].Lessons[0].LessonName" class="form-control" 
+                                                                           value="HTML cơ bản" placeholder="Nhập tên bài học">
+                                                                </div>
+                                                                <div class="col-md-4">
+                                                                    <label class="form-label required">Thứ tự</label>
+                                                                    <input type="number" name="Modules[0].Lessons[0].Order" class="form-control lesson-order" min="1" value="1" readonly>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Nội dung học hiện tại</label>
+                                                                <div class="current-content-info">
+                                                                    <div class="alert alert-info">
+                                                                        <i class="fas fa-video me-2"></i>
+                                                                        <strong>video_html_basics.mp4</strong> (45 phút)
+                                                                        <a href="#" class="btn btn-sm btn-outline-primary ms-2">
+                                                                            <i class="fas fa-eye me-1"></i>Xem
+                                                                        </a>
+                                                                        <button type="button" class="btn btn-sm btn-outline-danger ms-2">
+                                                                            <i class="fas fa-trash me-1"></i>Xóa
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <label class="form-label mt-3">Thay đổi nội dung</label>
+                                                                <div class="content-upload-area">
+                                                                    <div class="upload-tabs mb-3">
+                                                                        <div class="btn-group" role="group">
+                                                                            <input type="radio" class="btn-check content-type" name="content-type-0-0" id="video-0-0" value="video">
+                                                                            <label class="btn btn-outline-primary" for="video-0-0">
+                                                                                <i class="fas fa-video me-1"></i>Video
+                                                                            </label>
+
+                                                                            <input type="radio" class="btn-check content-type" name="content-type-0-0" id="pdf-0-0" value="pdf">
+                                                                            <label class="btn btn-outline-primary" for="pdf-0-0">
+                                                                                <i class="fas fa-file-pdf me-1"></i>PDF
+                                                                            </label>
+
+                                                                            <input type="radio" class="btn-check content-type" name="content-type-0-0" id="image-0-0" value="image">
+                                                                            <label class="btn btn-outline-primary" for="image-0-0">
+                                                                                <i class="fas fa-image me-1"></i>Hình ảnh
+                                                                            </label>
+
+                                                                            <input type="radio" class="btn-check content-type" name="content-type-0-0" id="document-0-0" value="document">
+                                                                            <label class="btn btn-outline-primary" for="document-0-0">
+                                                                                <i class="fas fa-file-alt me-1"></i>Tài liệu
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="file-upload-container">
+                                                                        <div class="file-upload-area">
+                                                                            <input type="file" name="Modules[0].Lessons[0].ContentFile" class="form-control content-file-input" accept="">
+                                                                            <div class="upload-placeholder text-center p-4">
+                                                                                <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-2"></i>
+                                                                                <p class="text-muted mb-0">Chọn loại nội dung và tải lên tệp mới</p>
+                                                                                <small class="text-muted">Để trống nếu không muốn thay đổi</small>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Existing Lesson 2 -->
+                                                <div class="lesson-item mb-3" data-lesson-index="1">
+                                                    <div class="card border-start border-primary border-3">
+                                                        <div class="card-body">
+                                                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                                                <h6 class="card-title mb-0">
+                                                                    <i class="fas fa-play me-2"></i>Bài học <span class="lesson-number">2</span>
+                                                                </h6>
+                                                                <div>
+                                                                    <button type="button" class="btn btn-sm btn-outline-secondary move-up-lesson" title="Di chuyển lên">
+                                                                        <i class="fas fa-arrow-up"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-sm btn-outline-secondary move-down-lesson" title="Di chuyển xuống">
+                                                                        <i class="fas fa-arrow-down"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-sm btn-outline-danger remove-lesson" title="Xóa bài học">
+                                                                        <i class="fas fa-trash"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div class="row mb-3">
+                                                                <div class="col-md-8">
+                                                                    <label class="form-label required">Tên Bài Học</label>
+                                                                    <input type="text" name="Modules[0].Lessons[1].LessonName" class="form-control" 
+                                                                           value="CSS Styling" placeholder="Nhập tên bài học">
+                                                                </div>
+                                                                <div class="col-md-4">
+                                                                    <label class="form-label required">Thứ tự</label>
+                                                                    <input type="number" name="Modules[0].Lessons[1].Order" class="form-control lesson-order" min="1" value="2" readonly>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Nội dung học hiện tại</label>
+                                                                <div class="current-content-info">
+                                                                    <div class="alert alert-warning">
+                                                                        <i class="fas fa-file-pdf me-2"></i>
+                                                                        <strong>css_styling_guide.pdf</strong> (20 trang)
+                                                                        <a href="#" class="btn btn-sm btn-outline-primary ms-2">
+                                                                            <i class="fas fa-eye me-1"></i>Xem
+                                                                        </a>
+                                                                        <button type="button" class="btn btn-sm btn-outline-danger ms-2">
+                                                                            <i class="fas fa-trash me-1"></i>Xóa
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <label class="form-label mt-3">Thay đổi nội dung</label>
+                                                                <div class="content-upload-area">
+                                                                    <div class="upload-tabs mb-3">
+                                                                        <div class="btn-group" role="group">
+                                                                            <input type="radio" class="btn-check content-type" name="content-type-0-1" id="video-0-1" value="video">
+                                                                            <label class="btn btn-outline-primary" for="video-0-1">
+                                                                                <i class="fas fa-video me-1"></i>Video
+                                                                            </label>
+
+                                                                            <input type="radio" class="btn-check content-type" name="content-type-0-1" id="pdf-0-1" value="pdf">
+                                                                            <label class="btn btn-outline-primary" for="pdf-0-1">
+                                                                                <i class="fas fa-file-pdf me-1"></i>PDF
+                                                                            </label>
+
+                                                                            <input type="radio" class="btn-check content-type" name="content-type-0-1" id="image-0-1" value="image">
+                                                                            <label class="btn btn-outline-primary" for="image-0-1">
+                                                                                <i class="fas fa-image me-1"></i>Hình ảnh
+                                                                            </label>
+
+                                                                            <input type="radio" class="btn-check content-type" name="content-type-0-1" id="document-0-1" value="document">
+                                                                            <label class="btn btn-outline-primary" for="document-0-1">
+                                                                                <i class="fas fa-file-alt me-1"></i>Tài liệu
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="file-upload-container">
+                                                                        <div class="file-upload-area">
+                                                                            <input type="file" name="Modules[0].Lessons[1].ContentFile" class="form-control content-file-input" accept="">
+                                                                            <div class="upload-placeholder text-center p-4">
+                                                                                <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-2"></i>
+                                                                                <p class="text-muted mb-0">Chọn loại nội dung và tải lên tệp mới</p>
+                                                                                <small class="text-muted">Để trống nếu không muốn thay đổi</small>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- New Modules Container -->
+                        <div id="modules-container">
+                            <!-- New modules will be added here -->
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary mt-3" id="add-module-btn">
+                            <i class="fas fa-plus me-2"></i>Thêm Module Mới
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Side Panel -->
@@ -293,6 +544,142 @@
                 </div>
             </div>
         </form>
+
+        <!-- Hidden Templates -->
+        <div id="module-template" style="display: none;">
+            <div class="module-item mb-4" data-module-index="">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-folder me-2"></i>Module <span class="module-number"></span>
+                        </h5>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-outline-secondary move-up-module" title="Di chuyển lên">
+                                <i class="fas fa-arrow-up"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary move-down-module" title="Di chuyển xuống">
+                                <i class="fas fa-arrow-down"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger remove-module" title="Xóa module">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label required">Tên Module</label>
+                                <input type="text" name="Modules[].ModuleName" class="form-control" placeholder="Nhập tên module">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label required">Thứ tự</label>
+                                <input type="number" name="Modules[].Order" class="form-control module-order" min="1" readonly>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mô tả Module</label>
+                            <textarea name="Modules[].Description" class="form-control" rows="2" placeholder="Nhập mô tả module..."></textarea>
+                        </div>
+
+                        <!-- Lessons Section -->
+                        <div class="lessons-section">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6><i class="fas fa-play-circle me-2"></i>Bài Học</h6>
+                                <button type="button" class="btn btn-sm btn-outline-primary add-lesson-btn">
+                                    <i class="fas fa-plus me-1"></i>Thêm Bài Học
+                                </button>
+                            </div>
+                            <div class="lessons-container">
+                                <!-- Lessons will be added here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="lesson-template" style="display: none;">
+            <div class="lesson-item mb-3" data-lesson-index="">
+                <div class="card border-start border-primary border-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h6 class="card-title mb-0">
+                                <i class="fas fa-play me-2"></i>Bài học <span class="lesson-number"></span>
+                            </h6>
+                            <div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary move-up-lesson" title="Di chuyển lên">
+                                    <i class="fas fa-arrow-up"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary move-down-lesson" title="Di chuyển xuống">
+                                    <i class="fas fa-arrow-down"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger remove-lesson" title="Xóa bài học">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <label class="form-label required">Tên Bài Học</label>
+                                <input type="text" name="Modules[].Lessons[].LessonName" class="form-control" placeholder="Nhập tên bài học">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label required">Thứ tự</label>
+                                <input type="number" name="Modules[].Lessons[].Order" class="form-control lesson-order" min="1" readonly>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Nội dung học</label>
+                            <div class="content-upload-area">
+                                <div class="upload-tabs mb-3">
+                                    <div class="btn-group" role="group">
+                                        <input type="radio" class="btn-check content-type" name="content-type-" id="video-" value="video">
+                                        <label class="btn btn-outline-primary" for="video-">
+                                            <i class="fas fa-video me-1"></i>Video
+                                        </label>
+
+                                        <input type="radio" class="btn-check content-type" name="content-type-" id="pdf-" value="pdf">
+                                        <label class="btn btn-outline-primary" for="pdf-">
+                                            <i class="fas fa-file-pdf me-1"></i>PDF
+                                        </label>
+
+                                        <input type="radio" class="btn-check content-type" name="content-type-" id="image-" value="image">
+                                        <label class="btn btn-outline-primary" for="image-">
+                                            <i class="fas fa-image me-1"></i>Hình ảnh
+                                        </label>
+
+                                        <input type="radio" class="btn-check content-type" name="content-type-" id="document-" value="document">
+                                        <label class="btn btn-outline-primary" for="document-">
+                                            <i class="fas fa-file-alt me-1"></i>Tài liệu
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="file-upload-container">
+                                    <div class="file-upload-area">
+                                        <input type="file" name="Modules[].Lessons[].ContentFile" class="form-control content-file-input" accept="">
+                                        <div class="upload-placeholder text-center p-4">
+                                            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-2"></i>
+                                            <p class="text-muted mb-0">Chọn loại nội dung và tải lên tệp</p>
+                                            <small class="text-muted">Hỗ trợ: Video (MP4), PDF, Hình ảnh (JPG, PNG), Tài liệu (DOCX, PPTX)</small>
+                                        </div>
+                                    </div>
+                                    <div class="file-info mt-2" style="display: none;">
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-file me-2"></i>
+                                            <span class="file-name"></span>
+                                            <span class="file-size text-muted ms-2"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -301,6 +688,8 @@
     <script>
         // Form validation and interactions
         document.addEventListener('DOMContentLoaded', function() {
+            let moduleIndex = 1; // Start from 1 since we have existing module at index 0
+
             // Auto-generate course code from name
             const courseNameInput = document.querySelector('#CourseName');
             const courseCodeInput = document.querySelector('#Code');
@@ -321,6 +710,312 @@
                         }, 1000);
                     }
                 });
+            }
+
+            // Module and Lesson Management
+            const modulesContainer = document.getElementById('modules-container');
+            const addModuleBtn = document.getElementById('add-module-btn');
+            const moduleTemplate = document.getElementById('module-template');
+            const lessonTemplate = document.getElementById('lesson-template');
+
+            // Add event listeners to existing lessons
+            initializeExistingContent();
+
+            // Add Module
+            addModuleBtn.addEventListener('click', function() {
+                addModule();
+            });
+
+            function initializeExistingContent() {
+                // Add event listeners to existing modules and lessons
+                const existingModules = document.querySelectorAll('#existing-modules-container .module-item');
+                existingModules.forEach(moduleItem => {
+                    addModuleEventListeners(moduleItem);
+                });
+            }
+
+            function addModule() {
+                const moduleHtml = moduleTemplate.innerHTML;
+                const moduleDiv = document.createElement('div');
+                moduleDiv.innerHTML = moduleHtml;
+                const moduleItem = moduleDiv.firstElementChild;
+                
+                moduleIndex++;
+                moduleItem.setAttribute('data-module-index', moduleIndex - 1);
+                
+                // Update module number and form names
+                updateModuleIndexes(moduleItem, moduleIndex - 1);
+                
+                modulesContainer.appendChild(moduleItem);
+                
+                // Add event listeners
+                addModuleEventListeners(moduleItem);
+                
+                // Update all module orders
+                updateAllModuleOrders();
+            }
+
+            function addModuleEventListeners(moduleItem) {
+                // Remove module
+                const removeBtn = moduleItem.querySelector('.remove-module');
+                if (removeBtn) {
+                    removeBtn.addEventListener('click', function() {
+                        if (confirm('Bạn có chắc chắn muốn xóa module này và tất cả bài học trong đó?')) {
+                            moduleItem.remove();
+                            updateAllModuleOrders();
+                        }
+                    });
+                }
+
+                // Move module up/down
+                const moveUpBtn = moduleItem.querySelector('.move-up-module');
+                if (moveUpBtn) {
+                    moveUpBtn.addEventListener('click', function() {
+                        const prev = moduleItem.previousElementSibling;
+                        if (prev) {
+                            moduleItem.parentNode.insertBefore(moduleItem, prev);
+                            updateAllModuleOrders();
+                        }
+                    });
+                }
+
+                const moveDownBtn = moduleItem.querySelector('.move-down-module');
+                if (moveDownBtn) {
+                    moveDownBtn.addEventListener('click', function() {
+                        const next = moduleItem.nextElementSibling;
+                        if (next) {
+                            moduleItem.parentNode.insertBefore(next, moduleItem);
+                            updateAllModuleOrders();
+                        }
+                    });
+                }
+
+                // Add lesson
+                const addLessonBtn = moduleItem.querySelector('.add-lesson-btn');
+                if (addLessonBtn) {
+                    addLessonBtn.addEventListener('click', function() {
+                        addLesson(moduleItem);
+                    });
+                }
+
+                // Add event listeners to existing lessons in this module
+                const existingLessons = moduleItem.querySelectorAll('.lesson-item');
+                existingLessons.forEach(lessonItem => {
+                    addLessonEventListeners(lessonItem, moduleItem);
+                });
+            }
+
+            function addLesson(moduleItem) {
+                const lessonHtml = lessonTemplate.innerHTML;
+                const lessonDiv = document.createElement('div');
+                lessonDiv.innerHTML = lessonHtml;
+                const lessonItem = lessonDiv.firstElementChild;
+                
+                const lessonsContainer = moduleItem.querySelector('.lessons-container');
+                const moduleIndex = moduleItem.getAttribute('data-module-index');
+                const lessonIndex = lessonsContainer.children.length;
+                
+                lessonItem.setAttribute('data-lesson-index', lessonIndex);
+                
+                // Update lesson form names and IDs
+                updateLessonIndexes(lessonItem, moduleIndex, lessonIndex);
+                
+                lessonsContainer.appendChild(lessonItem);
+                
+                // Add event listeners
+                addLessonEventListeners(lessonItem, moduleItem);
+                
+                // Update lesson orders in this module
+                updateLessonOrders(moduleItem);
+            }
+
+            function addLessonEventListeners(lessonItem, moduleItem) {
+                const lessonsContainer = moduleItem.querySelector('.lessons-container');
+
+                // Remove lesson
+                const removeBtn = lessonItem.querySelector('.remove-lesson');
+                if (removeBtn) {
+                    removeBtn.addEventListener('click', function() {
+                        if (confirm('Bạn có chắc chắn muốn xóa bài học này?')) {
+                            lessonItem.remove();
+                            updateLessonOrders(moduleItem);
+                        }
+                    });
+                }
+
+                // Move lesson up/down
+                const moveUpBtn = lessonItem.querySelector('.move-up-lesson');
+                if (moveUpBtn) {
+                    moveUpBtn.addEventListener('click', function() {
+                        const prev = lessonItem.previousElementSibling;
+                        if (prev) {
+                            lessonsContainer.insertBefore(lessonItem, prev);
+                            updateLessonOrders(moduleItem);
+                        }
+                    });
+                }
+
+                const moveDownBtn = lessonItem.querySelector('.move-down-lesson');
+                if (moveDownBtn) {
+                    moveDownBtn.addEventListener('click', function() {
+                        const next = lessonItem.nextElementSibling;
+                        if (next) {
+                            lessonsContainer.insertBefore(next, lessonItem);
+                            updateLessonOrders(moduleItem);
+                        }
+                    });
+                }
+
+                // Content type change
+                const contentTypeInputs = lessonItem.querySelectorAll('.content-type');
+                const fileInput = lessonItem.querySelector('.content-file-input');
+                
+                contentTypeInputs.forEach(input => {
+                    input.addEventListener('change', function() {
+                        updateFileInputAccept(lessonItem, this.value);
+                    });
+                });
+
+                // File upload
+                if (fileInput) {
+                    fileInput.addEventListener('change', function() {
+                        handleFileUpload(lessonItem, this);
+                    });
+                }
+            }
+
+            function updateModuleIndexes(moduleItem, index) {
+                // Update module number display
+                const moduleNumber = moduleItem.querySelector('.module-number');
+                if (moduleNumber) moduleNumber.textContent = index + 1;
+                
+                // Update form field names
+                const inputs = moduleItem.querySelectorAll('input[name^="Modules["], textarea[name^="Modules["]');
+                inputs.forEach(input => {
+                    const name = input.getAttribute('name');
+                    if (name) {
+                        const newName = name.replace(/Modules\[\d*\]/, `Modules[${index}]`);
+                        input.setAttribute('name', newName);
+                    }
+                });
+
+                // Update module order value
+                const orderInput = moduleItem.querySelector('.module-order');
+                if (orderInput) orderInput.value = index + 1;
+            }
+
+            function updateLessonIndexes(lessonItem, moduleIndex, lessonIndex) {
+                // Update lesson number display
+                const lessonNumber = lessonItem.querySelector('.lesson-number');
+                if (lessonNumber) lessonNumber.textContent = lessonIndex + 1;
+                
+                // Update form field names and IDs
+                const inputs = lessonItem.querySelectorAll('input, textarea');
+                inputs.forEach(input => {
+                    const name = input.getAttribute('name');
+                    if (name && name.includes('Modules[].Lessons[]')) {
+                        const newName = name.replace('Modules[].Lessons[]', `Modules[${moduleIndex}].Lessons[${lessonIndex}]`);
+                        input.setAttribute('name', newName);
+                    }
+
+                    const id = input.getAttribute('id');
+                    if (id && (id.includes('-') && id.endsWith('-'))) {
+                        const newId = id.replace('-', `-${moduleIndex}-${lessonIndex}-`);
+                        input.setAttribute('id', newId);
+                        
+                        // Update corresponding label
+                        const label = lessonItem.querySelector(`label[for="${id}"]`);
+                        if (label) {
+                            label.setAttribute('for', newId);
+                        }
+                    }
+
+                    const radioName = input.getAttribute('name');
+                    if (radioName && radioName.includes('content-type-')) {
+                        const newRadioName = `content-type-${moduleIndex}-${lessonIndex}`;
+                        input.setAttribute('name', newRadioName);
+                    }
+                });
+
+                // Update lesson order value
+                const orderInput = lessonItem.querySelector('.lesson-order');
+                if (orderInput) orderInput.value = lessonIndex + 1;
+            }
+
+            function updateAllModuleOrders() {
+                // Update existing modules
+                const existingModules = document.querySelectorAll('#existing-modules-container .module-item');
+                existingModules.forEach((moduleItem, index) => {
+                    moduleItem.setAttribute('data-module-index', index);
+                    updateModuleIndexes(moduleItem, index);
+                    
+                    // Update all lessons in this module
+                    const lessonItems = moduleItem.querySelectorAll('.lesson-item');
+                    lessonItems.forEach((lessonItem, lessonIndex) => {
+                        updateLessonIndexes(lessonItem, index, lessonIndex);
+                    });
+                });
+
+                // Update new modules
+                const newModules = modulesContainer.querySelectorAll('.module-item');
+                newModules.forEach((moduleItem, index) => {
+                    const actualIndex = existingModules.length + index;
+                    moduleItem.setAttribute('data-module-index', actualIndex);
+                    updateModuleIndexes(moduleItem, actualIndex);
+                    
+                    // Update all lessons in this module
+                    const lessonItems = moduleItem.querySelectorAll('.lesson-item');
+                    lessonItems.forEach((lessonItem, lessonIndex) => {
+                        updateLessonIndexes(lessonItem, actualIndex, lessonIndex);
+                    });
+                });
+            }
+
+            function updateLessonOrders(moduleItem) {
+                const lessonItems = moduleItem.querySelectorAll('.lesson-item');
+                const moduleIndex = moduleItem.getAttribute('data-module-index');
+                
+                lessonItems.forEach((lessonItem, index) => {
+                    lessonItem.setAttribute('data-lesson-index', index);
+                    updateLessonIndexes(lessonItem, moduleIndex, index);
+                });
+            }
+
+            function updateFileInputAccept(lessonItem, contentType) {
+                const fileInput = lessonItem.querySelector('.content-file-input');
+                const acceptTypes = {
+                    'video': '.mp4,.avi,.mov,.wmv',
+                    'pdf': '.pdf',
+                    'image': '.jpg,.jpeg,.png,.gif,.bmp',
+                    'document': '.doc,.docx,.ppt,.pptx,.txt'
+                };
+                
+                if (fileInput) {
+                    fileInput.setAttribute('accept', acceptTypes[contentType] || '');
+                }
+            }
+
+            function handleFileUpload(lessonItem, fileInput) {
+                const fileInfo = lessonItem.querySelector('.file-info');
+                const fileName = lessonItem.querySelector('.file-name');
+                const fileSize = lessonItem.querySelector('.file-size');
+                
+                if (fileInput.files && fileInput.files[0]) {
+                    const file = fileInput.files[0];
+                    if (fileName) fileName.textContent = file.name;
+                    if (fileSize) fileSize.textContent = `(${formatFileSize(file.size)})`;
+                    if (fileInfo) fileInfo.style.display = 'block';
+                } else {
+                    if (fileInfo) fileInfo.style.display = 'none';
+                }
+            }
+
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
             }
 
             // Department selection counter and feedback
