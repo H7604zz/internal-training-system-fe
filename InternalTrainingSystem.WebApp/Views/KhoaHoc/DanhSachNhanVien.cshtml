@@ -1,0 +1,462 @@
+@model List<InternalTrainingSystem.WebApp.Models.DTOs.EmployeeResponseDto>
+@{
+    ViewData["Title"] = "Danh Sách Nhân Viên Khóa Học";
+    var course = ViewBag.Course as InternalTrainingSystem.WebApp.Models.DTOs.CourseDto;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/khoa-hoc.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/danh-sach-nhan-vien.css" asp-append-version="true" />
+}
+
+<div class="employee-list-container">
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="employee-list-header">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <h1 class="employee-list-title">
+                            <i class="fas fa-users me-3"></i>Danh Sách Nhân Viên Khóa Học
+                        </h1>
+                        
+                        @if (course != null)
+                        {
+                            <div class="course-info">
+                                <h4><i class="fas fa-graduation-cap me-2"></i>@course.CourseName</h4>
+                                <p class="mb-2"><strong>Mã khóa học:</strong> @course.Code</p>
+                                <p class="mb-0"><strong>Mô tả:</strong> @course.Description</p>
+                            </div>
+                        }
+                        
+                        <div class="stats-row">
+                            <div class="stat-item">
+                                <div class="stat-number">@ViewBag.TotalEmployees</div>
+                                <div class="stat-label">Tổng nhân viên</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">@ViewBag.AcceptedCount</div>
+                                <div class="stat-label">Tham gia</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">@ViewBag.DeclinedCount</div>
+                                <div class="stat-label">Từ chối</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">@ViewBag.PendingCount</div>
+                                <div class="stat-label">Chưa tham gia</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">@ViewBag.NotInvitedCount</div>
+                                <div class="stat-label">Chưa được mời</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Send Notification Section -->
+        @if (ViewBag.NotInvitedCount > 0)
+        {
+            <div class="notification-section">
+                <h5 class="notification-title">
+                    <i class="fas fa-bell me-2"></i>Gửi Thông Báo Cho Nhân Viên Mới
+                </h5>
+                <div class="notification-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Có <strong>@ViewBag.NotInvitedCount nhân viên</strong> chưa được mời tham gia khóa học này. 
+                    Bạn có thể gửi thông báo mời họ tham gia.
+                </div>
+                <button type="button" class="send-notification-btn" onclick="sendNotificationToNewEmployees()">
+                    <i class="fas fa-paper-plane me-2"></i>Gửi Thông Báo Cho Nhân Viên Mới
+                </button>
+            </div>
+        }
+
+        <!-- Search & Department Filter -->
+        <div class="search-filter-card">
+            <h5 class="mb-3">
+                <i class="fas fa-search me-2"></i>Tìm Kiếm & Lọc
+            </h5>
+            <form method="get" class="search-form">
+                <input type="hidden" name="id" value="@ViewBag.CourseId" />
+                <div class="form-group">
+                    <label class="form-label">Mã nhân viên</label>
+                    <input type="text" class="form-control" name="employeeId" 
+                           value="@ViewBag.EmployeeId" placeholder="Nhập mã nhân viên...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phòng ban</label>
+                    <select class="form-select" name="departmentId">
+                        <option value="">Tất cả phòng ban</option>
+                        @if (ViewBag.Departments != null)
+                        {
+                            @foreach (var dept in ViewBag.Departments)
+                            {
+                                <option value="@dept.Id" selected="@(ViewBag.DepartmentId == dept.Id)">
+                                    @dept.Name
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn-search">
+                        <i class="fas fa-search me-1"></i>Tìm kiếm
+                    </button>
+                    <a href="@Url.Action("PhanHoi", new { id = ViewBag.CourseId })" class="btn-reset">
+                        <i class="fas fa-undo me-1"></i>Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Status Filters -->
+        <div class="filter-card">
+            <h5 class="mb-3">
+                <i class="fas fa-filter me-2"></i>Lọc Theo Trạng Thái
+            </h5>
+            <div class="filter-tabs">
+                <a href="#" class="filter-tab active" data-filter="all">
+                    Tất cả (@ViewBag.TotalEmployees)
+                </a>
+                <a href="#" class="filter-tab" data-filter="accepted">
+                    Tham gia (@ViewBag.AcceptedCount)
+                </a>
+                <a href="#" class="filter-tab" data-filter="declined">
+                    Từ chối (@ViewBag.DeclinedCount)
+                </a>
+                <a href="#" class="filter-tab" data-filter="pending">
+                    Chưa tham gia (@ViewBag.PendingCount)
+                </a>
+                <a href="#" class="filter-tab" data-filter="notinvited">
+                    Chưa được mời (@ViewBag.NotInvitedCount)
+                </a>
+            </div>
+        </div>
+
+        <!-- Employee List -->
+        <div class="employees-list">
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var employee in Model)
+                {
+                    <div class="employee-card" data-response-type="@employee.ResponseType.ToLower()">
+                        <div class="employee-header-card">
+                            <div class="employee-info">
+                                <div class="employee-avatar">
+                                    @(employee.EmployeeName.Split(' ').LastOrDefault()?.FirstOrDefault().ToString().ToUpper())
+                                </div>
+                                <div class="employee-details">
+                                    <h5>@employee.EmployeeName</h5>
+                                    <div class="employee-meta">
+                                        <i class="fas fa-id-card me-1"></i>Mã NV: @employee.EmployeeId
+                                    </div>
+                                    <div class="employee-meta">
+                                        <i class="fas fa-building me-1"></i>@employee.DepartmentName
+                                    </div>
+                                    <div class="employee-meta">
+                                        <i class="fas fa-user-tie me-1"></i>@employee.Position
+                                    </div>
+                                </div>
+                                <div class="response-status">
+                                    <span class="status-badge @(employee.ResponseType.ToLower() switch 
+                                    {
+                                        "accepted" => "status-accepted",
+                                        "declined" => "status-declined", 
+                                        "pending" => "status-pending",
+                                        "notinvited" => "status-not-invited",
+                                        _ => "status-pending"
+                                    })">
+                                        <i class="fas @(employee.ResponseType.ToLower() switch 
+                                        {
+                                            "accepted" => "fa-check-circle",
+                                            "declined" => "fa-times-circle", 
+                                            "pending" => "fa-clock",
+                                            "notinvited" => "fa-user-plus",
+                                            _ => "fa-question-circle"
+                                        }) me-1"></i>
+                                        @(employee.ResponseType.ToLower() switch 
+                                        {
+                                            "accepted" => "Đã tham gia",
+                                            "declined" => "Từ chối", 
+                                            "pending" => "Chưa tham gia",
+                                            "notinvited" => "Chưa được mời",
+                                            _ => "Không xác định"
+                                        })
+                                    </span>
+                                    @if (employee.ResponseDate.HasValue)
+                                    {
+                                        <div class="response-date">
+                                            <i class="fas fa-calendar-alt me-1"></i>@employee.ResponseDateDisplay
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        
+                        @if (!string.IsNullOrEmpty(employee.Note) || !string.IsNullOrEmpty(employee.ContactEmail) || employee.ResponseType.ToLower() == "declined" || employee.ResponseType.ToLower() == "notinvited")
+                        {
+                            <div class="employee-body">
+                                @if (!string.IsNullOrEmpty(employee.Note))
+                                {
+                                    <div class="employee-note">
+                                        <i class="fas @(employee.ResponseType.ToLower() == "declined" ? "fa-exclamation-triangle" : "fa-comment-alt") me-2"></i>
+                                        <strong>@(employee.ResponseType.ToLower() == "declined" ? "Lý do từ chối:" : "Ghi chú:"):</strong> @employee.Note
+                                    </div>
+                                }
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    @if (!string.IsNullOrEmpty(employee.ContactEmail))
+                                    {
+                                        <div class="contact-info">
+                                            <i class="fas fa-envelope me-1"></i>
+                                            <span>@employee.ContactEmail</span>
+                                        </div>
+                                    }
+                                    
+                                    <div class="employee-actions">
+                                        @if (employee.ResponseType.ToLower() == "declined")
+                                        {
+                                            <button type="button" class="btn-invite" 
+                                                    onclick="reinviteEmployee(@employee.EmployeeId, '@employee.EmployeeName')">
+                                                <i class="fas fa-redo me-1"></i>Mời lại
+                                            </button>
+                                        }
+                                        @if (employee.ResponseType.ToLower() == "notinvited")
+                                        {
+                                            <button type="button" class="btn-send-notification" 
+                                                    onclick="sendNotificationToEmployee(@employee.EmployeeId, '@employee.EmployeeName')">
+                                                <i class="fas fa-paper-plane me-1"></i>Gửi thông báo
+                                            </button>
+                                        }
+                                        @if (!string.IsNullOrEmpty(employee.ContactEmail))
+                                        {
+                                            <a href="mailto:@employee.ContactEmail" class="btn-contact">
+                                                <i class="fas fa-envelope me-1"></i>Liên hệ
+                                            </a>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="fas fa-users-slash"></i>
+                    <h3>Không tìm thấy nhân viên nào</h3>
+                    <p>Không có nhân viên nào phù hợp với bộ lọc hiện tại.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterTabs = document.querySelectorAll('.filter-tab');
+            const employeeCards = document.querySelectorAll('.employee-card');
+
+            // Status filter functionality
+            filterTabs.forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all tabs
+                    filterTabs.forEach(t => t.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    const filter = this.dataset.filter;
+                    
+                    // Show/hide employee cards based on filter
+                    employeeCards.forEach(card => {
+                        const responseType = card.dataset.responseType;
+                        
+                        if (filter === 'all') {
+                            card.style.display = 'block';
+                        } else if (filter === responseType) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+        });
+
+        // Send notification to all new employees
+        function sendNotificationToNewEmployees() {
+            const course = {
+                name: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.Course?.CourseName ?? "")),
+                description: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.Course?.Description ?? ""))
+            };
+            
+            if (confirm(`Bạn có chắc muốn gửi thông báo về khóa học "${course.name}" cho tất cả nhân viên mới chưa được mời?`)) {
+                // Get all NotInvited employees
+                const notInvitedEmployees = Array.from(document.querySelectorAll('[data-response-type="notinvited"]'));
+                const departmentIds = [...new Set(notInvitedEmployees.map(emp => {
+                    const deptName = emp.querySelector('.employee-meta:nth-child(2)').textContent.trim();
+                    return getDepartmentId(deptName);
+                }))].filter(id => id);
+
+                // Show loading state
+                const btn = event.target;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang gửi thông báo...';
+                
+                // Use the existing GuiThongBao method
+                const formData = new FormData();
+                formData.append('courseName', course.name);
+                formData.append('description', course.description);
+                departmentIds.forEach(deptId => {
+                    formData.append('selectedDepartmentIds', deptId);
+                });
+                
+                fetch('@Url.Action("GuiThongBao", "KhoaHoc")', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(`Đã gửi thông báo thành công cho ${data.sentCount} nhân viên!`);
+                        // Refresh page to update status
+                        location.reload();
+                    } else {
+                        alert(`Lỗi: ${data.message}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi gửi thông báo. Vui lòng thử lại!');
+                })
+                .finally(() => {
+                    // Reset button
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Gửi Thông Báo Cho Nhân Viên Mới';
+                });
+            }
+        }
+
+        // Send notification to individual employee
+        function sendNotificationToEmployee(employeeId, employeeName) {
+            const course = {
+                name: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.Course?.CourseName ?? "")),
+                description: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.Course?.Description ?? ""))
+            };
+            
+            if (confirm(`Bạn có chắc muốn gửi thông báo về khóa học "${course.name}" cho ${employeeName}?`)) {
+                // Show loading state
+                const btn = event.target;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang gửi...';
+                
+                // Get employee's department ID
+                const employeeCard = btn.closest('.employee-card');
+                const deptName = employeeCard.querySelector('.employee-meta:nth-child(2)').textContent.trim();
+                const departmentId = getDepartmentId(deptName);
+                
+                const formData = new FormData();
+                formData.append('courseName', course.name);
+                formData.append('description', course.description);
+                formData.append('selectedDepartmentIds', departmentId);
+                
+                fetch('@Url.Action("GuiThongBao", "KhoaHoc")', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(`Đã gửi thông báo cho ${employeeName} thành công!`);
+                        // Update button to show sent status
+                        btn.innerHTML = '<i class="fas fa-check me-1"></i>Đã gửi';
+                        btn.disabled = true;
+                        btn.style.background = '#28a745';
+                    } else {
+                        alert(`Lỗi: ${data.message}`);
+                        // Reset button
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Gửi thông báo';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi gửi thông báo. Vui lòng thử lại!');
+                    // Reset button
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Gửi thông báo';
+                });
+            }
+        }
+
+        // Helper function to get department ID from name
+        function getDepartmentId(deptText) {
+            const deptName = deptText.replace(/\s*\w+\s*:\s*/, ''); // Remove icon and prefix
+            const deptMap = {
+                'IT Department': 1,
+                'Software Development': 2,
+                'Data Analytics': 3,
+                'QA Testing': 4,
+                'Technical Support': 5,
+                'Mobile Development': 6
+            };
+            return deptMap[deptName] || 1;
+        }
+
+        // Reinvite employee function
+        function reinviteEmployee(employeeId, employeeName) {
+            if (confirm(`Bạn có chắc muốn gửi lại lời mời tham gia khóa học cho ${employeeName}?`)) {
+                // Show loading state
+                event.target.disabled = true;
+                event.target.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang gửi...';
+                
+                // Simulate API call
+                fetch('@Url.Action("ReinviteEmployee", "KhoaHoc")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                    },
+                    body: JSON.stringify({
+                        courseId: @ViewBag.CourseId,
+                        employeeId: employeeId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message
+                        alert(`Đã gửi lại lời mời cho ${employeeName} thành công!`);
+                        
+                        // Reset button
+                        event.target.disabled = false;
+                        event.target.innerHTML = '<i class="fas fa-redo me-1"></i>Mời lại';
+                        
+                        // Optionally refresh the page or update the card status
+                        // location.reload();
+                    } else {
+                        alert(`Lỗi: ${data.message}`);
+                        // Reset button
+                        event.target.disabled = false;
+                        event.target.innerHTML = '<i class="fas fa-redo me-1"></i>Mời lại';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi gửi lời mời. Vui lòng thử lại!');
+                    // Reset button
+                    event.target.disabled = false;
+                    event.target.innerHTML = '<i class="fas fa-redo me-1"></i>Mời lại';
+                });
+            }
+        }
+    </script>
+}

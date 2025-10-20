@@ -191,6 +191,142 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
         }
 
+        [HttpPost("gui-thong-bao")]
+        public async Task<IActionResult> GuiThongBao([FromForm] string courseName, [FromForm] string description, [FromForm] List<int> selectedDepartmentIds)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(courseName))
+                {
+                    return Json(new { success = false, message = "Tên khóa học không được để trống!" });
+                }
+
+                if (selectedDepartmentIds == null || !selectedDepartmentIds.Any())
+                {
+                    return Json(new { success = false, message = "Vui lòng chọn ít nhất một phòng ban!" });
+                }
+
+                // Simulate getting eligible employees from selected departments
+                var departments = GetDepartments();
+                var selectedDepartments = departments.Where(d => selectedDepartmentIds.Contains(d.Id)).ToList();
+                
+                // Simulate employee count (in real application, this would come from employee service)
+                var totalEmployees = selectedDepartments.Sum(d => GetEmployeeCountByDepartment(d.Id));
+
+                // Simulate sending notifications
+                await Task.Delay(1000); // Simulate processing time
+
+                // Here you would implement actual notification logic:
+                // - Get eligible employees from selected departments
+                // - Create notification records
+                // - Send emails/push notifications
+                // - Save notification history
+
+                _logger.LogInformation("Notification sent for course '{CourseName}' to {EmployeeCount} employees in departments: {Departments}", 
+                    courseName, totalEmployees, string.Join(", ", selectedDepartments.Select(d => d.Name)));
+
+                return Json(new { 
+                    success = true, 
+                    message = "Gửi thông báo thành công!", 
+                    sentCount = totalEmployees,
+                    departments = selectedDepartments.Select(d => d.Name).ToArray()
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while sending course notification");
+                return Json(new { success = false, message = "Đã xảy ra lỗi khi gửi thông báo. Vui lòng thử lại!" });
+            }
+        }
+
+        [HttpGet("danh-sach-nhan-vien/{id}")]
+        public async Task<IActionResult> DanhSachNhanVien(int id, string employeeId = "", int departmentId = 0)
+        {
+            try
+            {
+                var course = GetSampleCourseData().FirstOrDefault(c => c.CourseId == id);
+                if (course == null)
+                {
+                    TempData["Error"] = "Không tìm thấy khóa học.";
+                    return RedirectToAction("Index");
+                }
+
+                // Get employee responses for this course
+                var responses = GetSampleEmployeeResponses(id);
+                
+                // Sort by priority: NotInvited first, then others
+                responses = responses.OrderBy(r => r.ResponseType == "NotInvited" ? 0 : 1)
+                                   .ThenBy(r => r.EmployeeName)
+                                   .ToList();
+                
+                // Apply filters
+                if (!string.IsNullOrEmpty(employeeId))
+                {
+                    responses = responses.Where(r => r.EmployeeId.ToString().Contains(employeeId, StringComparison.OrdinalIgnoreCase)).ToList();
+                }
+                
+                if (departmentId > 0)
+                {
+                    var departments = GetDepartments();
+                    var selectedDept = departments.FirstOrDefault(d => d.Id == departmentId);
+                    if (selectedDept != null)
+                    {
+                        responses = responses.Where(r => r.DepartmentName.Contains(selectedDept.Name, StringComparison.OrdinalIgnoreCase)).ToList();
+                    }
+                }
+                
+                ViewBag.Course = course;
+                ViewBag.CourseId = id;
+                ViewBag.EmployeeId = employeeId;
+                ViewBag.DepartmentId = departmentId;
+                ViewBag.Departments = GetDepartments();
+                ViewBag.TotalEmployees = responses.Count;
+                ViewBag.AcceptedCount = responses.Count(r => r.ResponseType == "Accepted");
+                ViewBag.DeclinedCount = responses.Count(r => r.ResponseType == "Declined");
+                ViewBag.PendingCount = responses.Count(r => r.ResponseType == "Pending");
+                ViewBag.NotInvitedCount = responses.Count(r => r.ResponseType == "NotInvited");
+
+                return View(responses);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting employee responses for course ID: {CourseId}", id);
+                TempData["Error"] = "Đã xảy ra lỗi khi tải danh sách nhân viên.";
+                return RedirectToAction("Index");
+            }
+        }
+
+        [HttpPost("reinvite-employee")]
+        public async Task<IActionResult> ReinviteEmployee([FromBody] ReinviteEmployeeRequest request)
+        {
+            try
+            {
+                if (request.CourseId <= 0 || request.EmployeeId <= 0)
+                {
+                    return Json(new { success = false, message = "Thông tin không hợp lệ." });
+                }
+
+                // Simulate processing time
+                await Task.Delay(1000);
+
+                // Here you would implement actual reinvite logic:
+                // - Update employee status to "Pending" 
+                // - Send new notification email
+                // - Log the reinvite action
+
+                _logger.LogInformation("Reinvited employee {EmployeeId} for course {CourseId}", 
+                    request.EmployeeId, request.CourseId);
+
+                return Json(new { success = true, message = "Đã gửi lại lời mời thành công!" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while reinviting employee {EmployeeId} for course {CourseId}", 
+                    request.EmployeeId, request.CourseId);
+                return Json(new { success = false, message = "Đã xảy ra lỗi khi gửi lời mời. Vui lòng thử lại!" });
+            }
+        }
+
         [HttpGet("phe-duyet/{id}")]
         public async Task<IActionResult> PheDuyet(int id)
         {
@@ -606,5 +742,192 @@ namespace InternalTrainingSystem.WebApp.Controllers
             var category = categories.FirstOrDefault(c => ((dynamic)c).Id == categoryId);
             return category != null ? ((dynamic)category).Name : "";
         }
+
+        private int GetEmployeeCountByDepartment(int departmentId)
+        {
+            // Simulate employee count per department
+            var employeeCounts = new Dictionary<int, int>
+            {
+                { 1, 15 }, // IT Department
+                { 2, 20 }, // Software Development
+                { 3, 12 }, // Data Analytics
+                { 4, 8 },  // QA Testing
+                { 5, 10 }, // Technical Support
+                { 6, 6 }   // Mobile Development
+            };
+
+            return employeeCounts.ContainsKey(departmentId) ? employeeCounts[departmentId] : 0;
+        }
+
+        private List<EmployeeResponseDto> GetSampleEmployeeResponses(int courseId)
+        {
+            return new List<EmployeeResponseDto>
+            {
+                new EmployeeResponseDto
+                {
+                    Id = 1,
+                    CourseId = courseId,
+                    EmployeeId = 101,
+                    EmployeeName = "Nguyễn Văn An",
+                    DepartmentName = "IT Department",
+                    Position = "Senior Developer",
+                    ResponseType = "Accepted",
+                    ResponseDate = DateTime.Now.AddHours(-2),
+                    Note = "Tôi rất quan tâm đến khóa học này và mong muốn tham gia.",
+                    ContactEmail = "an.nguyen@company.com"
+                },
+                new EmployeeResponseDto
+                {
+                    Id = 2,
+                    CourseId = courseId,
+                    EmployeeId = 102,
+                    EmployeeName = "Trần Thị Bình",
+                    DepartmentName = "Software Development",
+                    Position = "Frontend Developer",
+                    ResponseType = "Accepted",
+                    ResponseDate = DateTime.Now.AddHours(-1),
+                    Note = "Khóa học phù hợp với công việc hiện tại của tôi.",
+                    ContactEmail = "binh.tran@company.com"
+                },
+                new EmployeeResponseDto
+                {
+                    Id = 3,
+                    CourseId = courseId,
+                    EmployeeId = 103,
+                    EmployeeName = "Lê Minh Cường",
+                    DepartmentName = "Data Analytics",
+                    Position = "Data Analyst",
+                    ResponseType = "Declined",
+                    ResponseDate = DateTime.Now.AddMinutes(-30),
+                    Note = "Hiện tại tôi đang có dự án quan trọng, không thể tham gia lúc này.",
+                    ContactEmail = "cuong.le@company.com"
+                },
+                new EmployeeResponseDto
+                {
+                    Id = 4,
+                    CourseId = courseId,
+                    EmployeeId = 104,
+                    EmployeeName = "Phạm Thị Dung",
+                    DepartmentName = "QA Testing",
+                    Position = "QA Engineer",
+                    ResponseType = "Pending",
+                    ResponseDate = null,
+                    Note = null,
+                    ContactEmail = "dung.pham@company.com"
+                },
+                new EmployeeResponseDto
+                {
+                    Id = 5,
+                    CourseId = courseId,
+                    EmployeeId = 105,
+                    EmployeeName = "Vũ Văn Em",
+                    DepartmentName = "Technical Support",
+                    Position = "Support Engineer",
+                    ResponseType = "Accepted",
+                    ResponseDate = DateTime.Now.AddMinutes(-15),
+                    Note = "Tôi muốn nâng cao kỹ năng kỹ thuật của mình.",
+                    ContactEmail = "em.vu@company.com"
+                },
+                new EmployeeResponseDto
+                {
+                    Id = 6,
+                    CourseId = courseId,
+                    EmployeeId = 106,
+                    EmployeeName = "Hoàng Thị Phượng",
+                    DepartmentName = "Mobile Development",
+                    Position = "Mobile Developer",
+                    ResponseType = "Pending",
+                    ResponseDate = null,
+                    Note = null,
+                    ContactEmail = "phuong.hoang@company.com"
+                },
+                new EmployeeResponseDto
+                {
+                    Id = 7,
+                    CourseId = courseId,
+                    EmployeeId = 107,
+                    EmployeeName = "Đặng Văn Giang",
+                    DepartmentName = "IT Department",
+                    Position = "System Administrator",
+                    ResponseType = "Accepted",
+                    ResponseDate = DateTime.Now.AddMinutes(-45),
+                    Note = "Khóa học này sẽ giúp tôi hiểu rõ hơn về hệ thống.",
+                    ContactEmail = "giang.dang@company.com"
+                },
+                new EmployeeResponseDto
+                {
+                    Id = 8,
+                    CourseId = courseId,
+                    EmployeeId = 108,
+                    EmployeeName = "Bùi Thị Hạnh",
+                    DepartmentName = "Software Development",
+                    Position = "Backend Developer",
+                    ResponseType = "Declined",
+                    ResponseDate = DateTime.Now.AddHours(-3),
+                    Note = "Tôi đã có kiến thức về chủ đề này rồi.",
+                    ContactEmail = "hanh.bui@company.com"
+                },
+                // Nhân viên mới - chưa được mời
+                new EmployeeResponseDto
+                {
+                    Id = 9,
+                    CourseId = courseId,
+                    EmployeeId = 109,
+                    EmployeeName = "Trần Minh Khôi",
+                    DepartmentName = "IT Department",
+                    Position = "Junior Developer",
+                    ResponseType = "NotInvited",
+                    ResponseDate = null,
+                    Note = null,
+                    ContactEmail = "khoi.tran@company.com"
+                },
+                new EmployeeResponseDto
+                {
+                    Id = 10,
+                    CourseId = courseId,
+                    EmployeeId = 110,
+                    EmployeeName = "Nguyễn Thị Lan",
+                    DepartmentName = "Software Development",
+                    Position = "Junior Frontend Developer",
+                    ResponseType = "NotInvited",
+                    ResponseDate = null,
+                    Note = null,
+                    ContactEmail = "lan.nguyen@company.com"
+                },
+                new EmployeeResponseDto
+                {
+                    Id = 11,
+                    CourseId = courseId,
+                    EmployeeId = 111,
+                    EmployeeName = "Lê Văn Minh",
+                    DepartmentName = "Data Analytics",
+                    Position = "Data Entry Specialist",
+                    ResponseType = "NotInvited",
+                    ResponseDate = null,
+                    Note = null,
+                    ContactEmail = "minh.le@company.com"
+                },
+                new EmployeeResponseDto
+                {
+                    Id = 12,
+                    CourseId = courseId,
+                    EmployeeId = 112,
+                    EmployeeName = "Phạm Văn Nam",
+                    DepartmentName = "QA Testing",
+                    Position = "Manual Tester",
+                    ResponseType = "NotInvited",
+                    ResponseDate = null,
+                    Note = null,
+                    ContactEmail = "nam.pham@company.com"
+                }
+            };
+        }
+    }
+
+    // Request models for API endpoints
+    public class ReinviteEmployeeRequest
+    {
+        public int CourseId { get; set; }
+        public int EmployeeId { get; set; }
     }
 }

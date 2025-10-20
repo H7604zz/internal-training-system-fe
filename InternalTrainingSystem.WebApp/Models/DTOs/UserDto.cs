@@ -128,4 +128,32 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string? Department { get; set; }
         public string? Position { get; set; }
     }
+
+    /// <summary>
+    /// DTO cho phản hồi của nhân viên về khóa học
+    /// </summary>
+    public class EmployeeResponseDto
+    {
+        public int Id { get; set; }
+        public int CourseId { get; set; }
+        public int EmployeeId { get; set; }
+        public string EmployeeName { get; set; } = string.Empty;
+        public string DepartmentName { get; set; } = string.Empty;
+        public string Position { get; set; } = string.Empty;
+        public string ResponseType { get; set; } = string.Empty; // Accepted, Declined, Pending
+        public DateTime? ResponseDate { get; set; }
+        public string? Note { get; set; }
+        public string ContactEmail { get; set; } = string.Empty;
+        
+        public string ResponseTypeDisplay => ResponseType switch
+        {
+            "Accepted" => "Đồng ý tham gia",
+            "Declined" => "Từ chối",
+            "Pending" => "Chưa phản hồi",
+            "NotInvited" => "Chưa được mời",
+            _ => "Không xác định"
+        };
+
+        public string ResponseDateDisplay => ResponseDate?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa phản hồi";
+    }
 }
