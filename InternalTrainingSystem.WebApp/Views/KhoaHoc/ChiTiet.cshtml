@@ -5,92 +5,7 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/khoa-hoc.css" asp-append-version="true" />
-    <style>
-        /* Course Content Styles */
-        .course-content .module-display {
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .course-content .module-display:hover {
-            transform: translateY(-2px);
-        }
-
-        .course-content .card-header {
-            border: none;
-            padding: 1.5rem;
-        }
-
-        .course-content .lessons-list {
-            padding: 0;
-        }
-
-        .course-content .lesson-item {
-            border-bottom: 1px solid #e9ecef;
-            padding: 1rem 1.5rem;
-            transition: background-color 0.3s ease;
-        }
-
-        .course-content .lesson-item:last-child {
-            border-bottom: none;
-        }
-
-        .course-content .lesson-item:hover {
-            background-color: #f8f9fa;
-        }
-
-        .course-content .lesson-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 1rem;
-        }
-
-        .course-content .lesson-info {
-            flex: 1;
-        }
-
-        .course-content .lesson-title {
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-
-        .course-content .lesson-meta {
-            font-size: 0.875rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .course-content .lesson-actions {
-            flex-shrink: 0;
-        }
-
-        .course-summary {
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        .course-summary .alert {
-            border: none;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            margin-bottom: 0;
-        }
-
-        .course-summary h5 {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        .course-summary small {
-            opacity: 0.9;
-            font-weight: 500;
-        }
-    </style>
+    <link rel="stylesheet" href="~/css/course-content.css" asp-append-version="true" />
 }
 
 <div class="course-container">
@@ -497,38 +412,6 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Course Summary -->
-                            <div class="course-summary mt-4">
-                                <div class="alert alert-info">
-                                    <div class="row">
-                                        <div class="col-md-3 text-center">
-                                            <h5 class="mb-0">
-                                                <i class="fas fa-folder text-primary"></i> 3
-                                            </h5>
-                                            <small>Module</small>
-                                        </div>
-                                        <div class="col-md-3 text-center">
-                                            <h5 class="mb-0">
-                                                <i class="fas fa-play-circle text-success"></i> 9
-                                            </h5>
-                                            <small>Bài học</small>
-                                        </div>
-                                        <div class="col-md-3 text-center">
-                                            <h5 class="mb-0">
-                                                <i class="fas fa-clock text-warning"></i> 12h
-                                            </h5>
-                                            <small>Tổng thời lượng</small>
-                                        </div>
-                                        <div class="col-md-3 text-center">
-                                            <h5 class="mb-0">
-                                                <i class="fas fa-certificate text-danger"></i> 1
-                                            </h5>
-                                            <small>Chứng chỉ</small>
                                         </div>
                                     </div>
                                 </div>
