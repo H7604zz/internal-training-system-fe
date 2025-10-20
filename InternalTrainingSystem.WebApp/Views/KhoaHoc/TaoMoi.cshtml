@@ -1,4 +1,6 @@
 @model InternalTrainingSystem.WebApp.Models.DTOs.CourseDto
+@using InternalTrainingSystem.WebApp.Constants
+@using InternalTrainingSystem.WebApp.Extensions
 @{
     ViewData["Title"] = "Thêm Khóa Học Mới";
 }
@@ -77,9 +79,12 @@
                                 <label asp-for="Level" class="form-label required">Cấp độ</label>
                                 <select asp-for="Level" class="form-select">
                                     <option value="">Chọn cấp độ</option>
-                                    <option value="Cơ bản">Cơ bản</option>
-                                    <option value="Trung cấp">Trung cấp</option>
-                                    <option value="Nâng cao">Nâng cao</option>
+                                    @foreach (var level in CourseConstants.Levels.GetAllLevels())
+                                    {
+                                        <option value="@level.Key">
+                                            @level.Value
+                                        </option>
+                                    }
                                 </select>
                                 <span asp-validation-for="Level" class="text-danger"></span>
                             </div>
@@ -638,19 +643,19 @@
                     'it': {
                         name: 'Khóa học Lập trình Web',
                         description: 'Khóa học về phát triển ứng dụng web hiện đại với các công nghệ mới nhất',
-                        level: 'Trung cấp',
+                        level: '@CourseConstants.Levels.Intermediate',
                         duration: 40
                     },
                     'soft-skills': {
                         name: 'Kỹ năng Giao tiếp hiệu quả',
                         description: 'Phát triển kỹ năng giao tiếp và làm việc nhóm trong môi trường doanh nghiệp',
-                        level: 'Cơ bản',
+                        level: '@CourseConstants.Levels.Beginner',
                         duration: 16
                     },
                     'management': {
-                        name: 'Quản lý Dự án cơ bản',
-                        description: 'Tìm hiểu các phương pháp quản lý dự án hiệu quả và công cụ hỗ trợ',
-                        level: 'Trung cấp',
+                        name: 'Khóa học Quản lý dự án',
+                        description: 'Học cách quản lý dự án hiệu quả với các phương pháp Agile và Scrum',
+                        level: '@CourseConstants.Levels.Intermediate',
                         duration: 24
                     }
                 };

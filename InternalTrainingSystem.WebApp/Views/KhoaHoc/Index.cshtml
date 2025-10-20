@@ -149,13 +149,9 @@
                                         <span>@course.DurationDisplay</span>
                                     </div>
                                     <div class="meta-item">
-                                        <span class="level-badge @(course.Level.ToLower() switch 
-                                        {
-                                            "cơ bản" => "level-basic",
-                                            "trung cấp" => "level-intermediate", 
-                                            "nâng cao" => "level-advanced",
-                                            _ => "level-basic"
-                                        })">@course.Level</span>
+                                        <span class="level-badge @course.Level.GetLevelBadgeClass()">
+                                            @course.Level.GetLevelDisplay()
+                                        </span>
                                     </div>
                                     
                                 </div>

@@ -7,6 +7,73 @@
             public const string Beginner = "Beginner";
             public const string Intermediate = "Intermediate";
             public const string Advanced = "Advanced";
+            
+            // Vietnamese display names
+            public const string BeginnerDisplay = "Cơ bản";
+            public const string IntermediateDisplay = "Trung cấp";
+            public const string AdvancedDisplay = "Nâng cao";
+            
+            /// <summary>
+            /// Get display name for level
+            /// </summary>
+            public static string GetDisplayName(string level)
+            {
+                return level switch
+                {
+                    Beginner => BeginnerDisplay,
+                    Intermediate => IntermediateDisplay,
+                    Advanced => AdvancedDisplay,
+                    BeginnerDisplay => BeginnerDisplay,
+                    IntermediateDisplay => IntermediateDisplay,
+                    AdvancedDisplay => AdvancedDisplay,
+                    _ => level
+                };
+            }
+            
+            /// <summary>
+            /// Get level value from display name
+            /// </summary>
+            public static string GetLevelValue(string displayName)
+            {
+                return displayName switch
+                {
+                    BeginnerDisplay => Beginner,
+                    IntermediateDisplay => Intermediate,
+                    AdvancedDisplay => Advanced,
+                    Beginner => Beginner,
+                    Intermediate => Intermediate,
+                    Advanced => Advanced,
+                    _ => Beginner
+                };
+            }
+            
+            /// <summary>
+            /// Get CSS class for level badge
+            /// </summary>
+            public static string GetBadgeClass(string level)
+            {
+                var levelValue = GetLevelValue(level);
+                return levelValue switch
+                {
+                    Beginner => "level-basic",
+                    Intermediate => "level-intermediate",
+                    Advanced => "level-advanced",
+                    _ => "level-basic"
+                };
+            }
+            
+            /// <summary>
+            /// Get all available levels for dropdown
+            /// </summary>
+            public static Dictionary<string, string> GetAllLevels()
+            {
+                return new Dictionary<string, string>
+                {
+                    { Beginner, BeginnerDisplay },
+                    { Intermediate, IntermediateDisplay },
+                    { Advanced, AdvancedDisplay }
+                };
+            }
         }
 
         public static class Status

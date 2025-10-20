@@ -1,4 +1,6 @@
 @model InternalTrainingSystem.WebApp.Models.DTOs.CourseDto
+@using InternalTrainingSystem.WebApp.Constants
+@using InternalTrainingSystem.WebApp.Extensions
 @{
     ViewData["Title"] = "Chỉnh Sửa Khóa Học";
 }
@@ -112,9 +114,12 @@
                                 </label>
                                 <select asp-for="Level" class="form-select">
                                     <option value="">-- Chọn cấp độ --</option>
-                                    <option value="Cơ bản">🟢 Cơ bản</option>
-                                    <option value="Trung cấp">🟡 Trung cấp</option>
-                                    <option value="Nâng cao">🔴 Nâng cao</option>
+                                    @foreach (var level in CourseConstants.Levels.GetAllLevels())
+                                    {
+                                        <option value="@level.Key" selected="@(Model.Level == level.Key || Model.Level == level.Value)">
+                                            @level.Value
+                                        </option>
+                                    }
                                 </select>
                                 <span asp-validation-for="Level" class="text-danger"></span>
                             </div>

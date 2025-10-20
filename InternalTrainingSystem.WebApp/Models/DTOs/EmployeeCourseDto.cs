@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using InternalTrainingSystem.WebApp.Constants;
+using InternalTrainingSystem.WebApp.Extensions;
 
 namespace InternalTrainingSystem.WebApp.Models.DTOs
 {
@@ -16,6 +18,11 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public DateTime EndDate { get; set; }
         public string TrainerName { get; set; } = string.Empty;
         public string DepartmentName { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// Cấp độ khóa học: Beginner, Intermediate, Advanced
+        /// </summary>
+        public string Level { get; set; } = CourseConstants.Levels.Beginner;
         
         /// <summary>
         /// Trạng thái phản hồi: Pending, Accepted, Declined
@@ -36,11 +43,6 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         /// Ngày được mời tham gia
         /// </summary>
         public DateTime InvitedDate { get; set; }
-        
-        /// <summary>
-        /// Độ ưu tiên: High, Medium, Low
-        /// </summary>
-        public string Priority { get; set; } = "Medium";
         
         /// <summary>
         /// Số lượng học viên tối đa
@@ -131,17 +133,6 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         };
         
         /// <summary>
-        /// Hiển thị badge class cho độ ưu tiên
-        /// </summary>
-        public string PriorityBadgeClass => Priority.ToLower() switch
-        {
-            "high" => "badge-danger",
-            "medium" => "badge-warning",
-            "low" => "badge-info",
-            _ => "badge-secondary"
-        };
-        
-        /// <summary>
         /// Hiển thị badge class cho trạng thái khóa học
         /// </summary>
         public string CourseStatusBadgeClass => Status.ToLower() switch
@@ -164,6 +155,17 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
             "cancelled" => "Đã hủy",
             _ => "Không xác định"
         };
+        
+        /// <summary>
+        /// Hiển thị tên cấp độ
+        /// </summary>
+        public string LevelDisplay => Level.GetLevelDisplay();
+        
+        /// <summary>
+        /// Hiển thị badge class cho cấp độ
+        /// </summary>
+        public string LevelBadgeClass => Level.GetLevelBadgeClass();
+       
     }
 
     /// <summary>
