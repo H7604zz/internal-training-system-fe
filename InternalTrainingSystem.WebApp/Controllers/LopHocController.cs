@@ -1,5 +1,6 @@
 ﻿using InternalTrainingSystem.WebApp.Models.DTOs;
 using InternalTrainingSystem.WebApp.Services.Interface;
+using InternalTrainingSystem.WebApp.Constants;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InternalTrainingSystem.WebApp.Controllers
@@ -17,10 +18,13 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpGet("")]
-        public async Task<IActionResult> Index(int page = 1, int pageSize = 10)
+        public async Task<IActionResult> Index(int page = 1)
         {
             try
             {
+                // Sử dụng page size cố định từ constants cho danh sách lớp học
+                var pageSize = PaginationConstants.ClassPageSize;
+                
                 // var allClasses = await _classService.GetClassesAsync();
                 var allClasses = GetSampleClassData(); // Tạo data mẫu để test view
                 

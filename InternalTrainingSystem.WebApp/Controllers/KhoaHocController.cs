@@ -12,20 +12,20 @@ namespace InternalTrainingSystem.WebApp.Controllers
     {
         private readonly ICourseService _courseService;
         private readonly IAuthService _authService;
-        private readonly ILogger<KhoaHocController> _logger;
 
-        public KhoaHocController(ICourseService courseService,  ILogger<KhoaHocController> logger, IAuthService authService)
+        public KhoaHocController(ICourseService courseService, IAuthService authService)
         {
             _courseService = courseService;
-            _logger = logger;
             _authService = authService;
         }
 
         [HttpGet("")]
-        public async Task<IActionResult> Index(int page = 1, int pageSize = 9, string searchTerm = "", int categoryId = 0, int departmentId = 0)
+        public async Task<IActionResult> Index(int page = 1, string searchTerm = "", int categoryId = 0, int departmentId = 0)
         {
             try
             {
+                // Sử dụng page size cố định từ constants cho trang chính khóa học
+                var pageSize = PaginationConstants.CoursePageSize;
                 // var allCourses = await _courseService.GetCoursesAsync();
                 var allCourses = GetSampleCourseData(); // Sử dụng data mẫu để test
 
@@ -76,7 +76,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while getting courses list");
                 TempData["Error"] = "Đã xảy ra lỗi khi tải danh sách khóa học.";
                 return View(new List<CourseDto>());
             }
@@ -101,7 +100,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while getting course detail with ID: {CourseId}", id);
                 TempData["Error"] = "Đã xảy ra lỗi khi tải chi tiết khóa học.";
                 return RedirectToAction("Index");
             }
@@ -129,7 +127,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while getting course for edit with ID: {CourseId}", id);
                 TempData["Error"] = "Đã xảy ra lỗi khi tải thông tin khóa học.";
                 return RedirectToAction("Index");
             }
@@ -153,7 +150,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while updating course with ID: {CourseId}", model.CourseId);
                 TempData["Error"] = "Đã xảy ra lỗi khi cập nhật khóa học.";
                 ViewBag.Categories = GetCategories();
                 ViewBag.Departments = GetDepartments();
@@ -187,7 +183,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while creating course");
                 TempData["Error"] = "Đã xảy ra lỗi khi thêm khóa học.";
                 ViewBag.Categories = GetCategories();
                 ViewBag.Departments = GetDepartments();
@@ -225,10 +220,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 // - Create notification records
                 // - Send emails/push notifications
                 // - Save notification history
-
-                _logger.LogInformation("Notification sent for course '{CourseName}' to {EmployeeCount} employees in departments: {Departments}",
-                    courseName, totalEmployees, string.Join(", ", selectedDepartments.Select(d => d.Name)));
-
                 return Json(new {
                     success = true,
                     message = "Gửi thông báo thành công!",
@@ -238,7 +229,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while sending course notification");
                 return Json(new { success = false, message = "Đã xảy ra lỗi khi gửi thông báo. Vui lòng thử lại!" });
             }
         }
@@ -294,7 +284,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while getting employee responses for course ID: {CourseId}", id);
                 TempData["Error"] = "Đã xảy ra lỗi khi tải danh sách nhân viên.";
                 return RedirectToAction("Index");
             }
@@ -317,16 +306,10 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 // - Update employee status to "Pending" 
                 // - Send new notification email
                 // - Log the reinvite action
-
-                _logger.LogInformation("Reinvited employee {EmployeeId} for course {CourseId}",
-                    request.EmployeeId, request.CourseId);
-
                 return Json(new { success = true, message = "Đã gửi lại lời mời thành công!" });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while reinviting employee {EmployeeId} for course {CourseId}",
-                    request.EmployeeId, request.CourseId);
                 return Json(new { success = false, message = "Đã xảy ra lỗi khi gửi lời mời. Vui lòng thử lại!" });
             }
         }
@@ -360,7 +343,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while getting course for approval with ID: {CourseId}", id);
                 TempData["Error"] = "Đã xảy ra lỗi khi tải thông tin khóa học để phê duyệt.";
                 return RedirectToAction("Index");
             }
@@ -402,7 +384,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 if (request.Action.ToLower() == ApprovalAction.Approve)
                 {
                     // Simulate approval
-                    _logger.LogInformation("Course {CourseId} approved by {ApprovedBy}", request.CourseId, request.ApprovedBy);
 
                     return Json(new CourseApprovalResponse
                     {
@@ -420,7 +401,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while approving course with ID: {CourseId}", request.CourseId);
                 return Json(new CourseApprovalResponse
                 {
                     Success = false,
@@ -476,9 +456,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 if (request.Action.ToLower() == "reject")
                 {
                     // Simulate rejection
-                    _logger.LogInformation("Course {CourseId} rejected by {RejectedBy} with reason: {Reason}",
-                        request.CourseId, request.ApprovedBy, request.Reason);
-
                     return Json(new CourseApprovalResponse
                     {
                         Success = true,
@@ -495,7 +472,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while rejecting course with ID: {CourseId}", request.CourseId);
                 return Json(new CourseApprovalResponse
                 {
                     Success = false,
@@ -932,10 +908,13 @@ namespace InternalTrainingSystem.WebApp.Controllers
         /// Danh sách khóa học của nhân viên
         /// </summary>
         [HttpGet("danh-sach-khoa-hoc-cua-toi")]
-        public async Task<IActionResult> DanhSachKhoaHocCuaToi(string status = "all", int page = 1, int pageSize = 6)
+        public async Task<IActionResult> DanhSachKhoaHocCuaToi(string status = "all", int page = 1)
         {
             try
             {
+                // Sử dụng page size cố định từ constants cho khóa học của nhân viên
+                var pageSize = PaginationConstants.EmployeeCoursePageSize;
+                
                 // Kiểm tra đăng nhập
                 if (_authService.IsTokenExpired())
                 {

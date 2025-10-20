@@ -232,7 +232,7 @@
             @await Html.PartialAsync("_Pagination", new InternalTrainingSystem.WebApp.Models.ViewModels.PaginationViewModel(
                 ViewBag.CurrentPage ?? 1,
                 ViewBag.TotalPages ?? 1,
-                ViewBag.PageSize ?? 10,
+                ViewBag.PageSize ?? InternalTrainingSystem.WebApp.Constants.PaginationConstants.CoursePageSize,
                 "Index",
                 "KhoaHoc",
                 new Dictionary<string, object>
