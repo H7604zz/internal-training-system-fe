@@ -1,5 +1,6 @@
-﻿using InternalTrainingSystem.WebApp.Models.DTOs;
+using InternalTrainingSystem.WebApp.Models.DTOs;
 using InternalTrainingSystem.WebApp.Services.Interface;
+using InternalTrainingSystem.WebApp.Constants;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
@@ -255,7 +256,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 var responses = GetSampleEmployeeResponses(id);
                 
                 // Sort by priority: NotInvited first, then others
-                responses = responses.OrderBy(r => r.ResponseType == "NotInvited" ? 0 : 1)
+                responses = responses.OrderBy(r => r.ResponseType == EmployeeResponseType.NotInvited ? 0 : 1)
                                    .ThenBy(r => r.EmployeeName)
                                    .ToList();
                 
@@ -281,10 +282,10 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 ViewBag.DepartmentId = departmentId;
                 ViewBag.Departments = GetDepartments();
                 ViewBag.TotalEmployees = responses.Count;
-                ViewBag.AcceptedCount = responses.Count(r => r.ResponseType == "Accepted");
-                ViewBag.DeclinedCount = responses.Count(r => r.ResponseType == "Declined");
-                ViewBag.PendingCount = responses.Count(r => r.ResponseType == "Pending");
-                ViewBag.NotInvitedCount = responses.Count(r => r.ResponseType == "NotInvited");
+                ViewBag.AcceptedCount = responses.Count(r => r.ResponseType == EmployeeResponseType.Accepted);
+                ViewBag.DeclinedCount = responses.Count(r => r.ResponseType == EmployeeResponseType.Declined);
+                ViewBag.PendingCount = responses.Count(r => r.ResponseType == EmployeeResponseType.Pending);
+                ViewBag.NotInvitedCount = responses.Count(r => r.ResponseType == EmployeeResponseType.NotInvited);
 
                 return View(responses);
             }
@@ -342,7 +343,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     return RedirectToAction("Index");
                 }
 
-                if (course.Status != "Pending")
+                if (course.Status != CourseStatus.Pending)
                 {
                     TempData["Warning"] = "Khóa học này đã được xử lý phê duyệt.";
                     return RedirectToAction("ChiTiet", new { id });
@@ -373,7 +374,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     {
                         Success = false,
                         Message = "Thông tin yêu cầu không hợp lệ.",
-                        ErrorCode = "INVALID_REQUEST"
+                        ErrorCode = ErrorCode.InvalidRequest
                     });
                 }
 
@@ -391,11 +392,11 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     {
                         Success = false,
                         Message = "Không tìm thấy khóa học.",
-                        ErrorCode = "COURSE_NOT_FOUND"
+                        ErrorCode = ErrorCode.CourseNotFound
                     });
                 }
 
-                if (request.Action.ToLower() == "approve")
+                if (request.Action.ToLower() == ApprovalAction.Approve)
                 {
                     // Simulate approval
                     _logger.LogInformation("Course {CourseId} approved by {ApprovedBy}", request.CourseId, request.ApprovedBy);
@@ -411,7 +412,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 {
                     Success = false,
                     Message = "Hành động không được hỗ trợ.",
-                    ErrorCode = "INVALID_ACTION"
+                    ErrorCode = ErrorCode.InvalidAction
                 });
             }
             catch (Exception ex)
@@ -421,7 +422,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 {
                     Success = false,
                     Message = "Đã xảy ra lỗi khi phê duyệt khóa học. Vui lòng thử lại.",
-                    ErrorCode = "INTERNAL_ERROR"
+                    ErrorCode = ErrorCode.InternalError
                 });
             }
         }
@@ -437,7 +438,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     {
                         Success = false,
                         Message = "Vui lòng nhập đầy đủ thông tin và lý do từ chối.",
-                        ErrorCode = "INVALID_REQUEST"
+                        ErrorCode = ErrorCode.InvalidRequest
                     });
                 }
 
@@ -447,7 +448,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     {
                         Success = false,
                         Message = "Lý do từ chối phải có ít nhất 20 ký tự.",
-                        ErrorCode = "REASON_TOO_SHORT"
+                        ErrorCode = ErrorCode.ReasonTooShort
                     });
                 }
 
@@ -465,7 +466,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     {
                         Success = false,
                         Message = "Không tìm thấy khóa học.",
-                        ErrorCode = "COURSE_NOT_FOUND"
+                        ErrorCode = ErrorCode.CourseNotFound
                     });
                 }
 
@@ -486,7 +487,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 {
                     Success = false,
                     Message = "Hành động không được hỗ trợ.",
-                    ErrorCode = "INVALID_ACTION"
+                    ErrorCode = ErrorCode.InvalidAction
                 });
             }
             catch (Exception ex)
@@ -496,7 +497,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 {
                     Success = false,
                     Message = "Đã xảy ra lỗi khi từ chối khóa học. Vui lòng thử lại.",
-                    ErrorCode = "INTERNAL_ERROR"
+                    ErrorCode = ErrorCode.InternalError
                 });
             }
         }
@@ -519,7 +520,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     IsActive = true,
                     CreatedDate = DateTime.Now.AddDays(-30),
                     CreatedBy = "Nguyễn Văn Nam",
-                    Status = "Approved",
+                    Status = CourseStatus.Approved,
                     ApprovedBy = "Trần Thị Hương - Giám đốc",
                     ApprovalDate = DateTime.Now.AddDays(-25),
                     Departments = departments.Take(2).ToList()
@@ -536,7 +537,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     IsActive = true,
                     CreatedDate = DateTime.Now.AddDays(-25),
                     CreatedBy = "Lê Minh Đức",
-                    Status = "Approved",
+                    Status = CourseStatus.Approved,
                     ApprovedBy = "Trần Thị Hương - Giám đốc",
                     ApprovalDate = DateTime.Now.AddDays(-20),
                     Departments = departments.Where(d => d.Name.Contains("IT") || d.Name.Contains("Tech")).ToList()
@@ -553,7 +554,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     IsActive = true,
                     CreatedDate = DateTime.Now.AddDays(-20),
                     CreatedBy = "Phạm Thị Mai",
-                    Status = "Approved",
+                    Status = CourseStatus.Approved,
                     ApprovedBy = "Trần Thị Hương - Giám đốc",
                     ApprovalDate = DateTime.Now.AddDays(-15),
                     Departments = departments.Where(d => d.Name.Contains("IT")).ToList()
@@ -570,7 +571,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     IsActive = false,
                     CreatedDate = DateTime.Now.AddDays(-15),
                     CreatedBy = "Hoàng Văn Tùng",
-                    Status = "Rejected",
+                    Status = CourseStatus.Rejected,
                     ApprovedBy = "Trần Thị Hương - Giám đốc",
                     ApprovalDate = DateTime.Now.AddDays(-10),
                     RejectionReason = "Nội dung khóa học chưa chi tiết, thiếu thông tin về thực hành. Vui lòng bổ sung thêm các bài lab và project thực tế.",
@@ -588,7 +589,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     IsActive = true,
                     CreatedDate = DateTime.Now.AddDays(-10),
                     CreatedBy = "Vũ Thị Lan",
-                    Status = "Approved",
+                    Status = CourseStatus.Approved,
                     ApprovedBy = "Trần Thị Hương - Giám đốc",
                     ApprovalDate = DateTime.Now.AddDays(-5),
                     Departments = departments.Where(d => d.Name.Contains("IT") || d.Name.Contains("Dev")).ToList()
@@ -605,7 +606,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     IsActive = true,
                     CreatedDate = DateTime.Now.AddDays(-5),
                     CreatedBy = "Đặng Minh Quân",
-                    Status = "Pending",
+                    Status = CourseStatus.Pending,
                     Departments = departments.Where(d => d.Name.Contains("Data") || d.Name.Contains("Analytics")).ToList()
                 },
                 new CourseDto
@@ -620,7 +621,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     IsActive = true,
                     CreatedDate = DateTime.Now.AddDays(-2),
                     CreatedBy = "Bùi Văn Hải",
-                    Status = "Pending",
+                    Status = CourseStatus.Pending,
                     Departments = departments.Take(4).ToList()
                 },
                 new CourseDto
@@ -635,7 +636,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     IsActive = false,
                     CreatedDate = DateTime.Now.AddDays(-1),
                     CreatedBy = "Trịnh Thị Hoa",
-                    Status = "Pending",
+                    Status = CourseStatus.Pending,
                     Departments = departments.Where(d => d.Name.Contains("Mobile") || d.Name.Contains("IT")).ToList()
                 }
             };
@@ -645,7 +646,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             var allCourses = GetSampleCourseData();
             // Return courses that are pending approval for the approval view
-            return allCourses.Where(c => c.Status == "Pending").ToList();
+            return allCourses.Where(c => c.Status == CourseStatus.Pending).ToList();
         }
 
         private List<ApprovalHistoryDto> GetApprovalHistory(int courseId)
@@ -659,7 +660,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 {
                     Id = 1,
                     CourseId = courseId,
-                    Action = "Created",
+                    Action = ApprovalAction.Created,
                     Description = "Khóa học được tạo",
                     ActionBy = course.CreatedBy ?? "Nhân viên đào tạo",
                     ActionDate = course.CreatedDate
@@ -668,7 +669,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 {
                     Id = 2,
                     CourseId = courseId,
-                    Action = "Submitted",
+                    Action = ApprovalAction.Submitted,
                     Description = "Gửi yêu cầu phê duyệt",
                     Note = "Khóa học đã sẵn sàng để phê duyệt",
                     ActionBy = course.CreatedBy ?? "Nhân viên đào tạo",
@@ -677,26 +678,26 @@ namespace InternalTrainingSystem.WebApp.Controllers
             };
 
             // Add approval/rejection history if exists
-            if (course.Status == "Approved" && course.ApprovalDate.HasValue)
+            if (course.Status == CourseStatus.Approved && course.ApprovalDate.HasValue)
             {
                 history.Add(new ApprovalHistoryDto
                 {
                     Id = 3,
                     CourseId = courseId,
-                    Action = "Approved",
+                    Action = ApprovalAction.Approved,
                     Description = "Khóa học đã được phê duyệt",
                     Note = "Khóa học đã được phê duyệt và có thể tạo lớp học",
                     ActionBy = course.ApprovedBy ?? "Giám đốc",
                     ActionDate = course.ApprovalDate.Value
                 });
             }
-            else if (course.Status == "Rejected" && course.ApprovalDate.HasValue)
+            else if (course.Status == CourseStatus.Rejected && course.ApprovalDate.HasValue)
             {
                 history.Add(new ApprovalHistoryDto
                 {
                     Id = 3,
                     CourseId = courseId,
-                    Action = "Rejected",
+                    Action = ApprovalAction.Rejected,
                     Description = "Khóa học bị từ chối",
                     Note = course.RejectionReason,
                     ActionBy = course.ApprovedBy ?? "Giám đốc",
@@ -771,7 +772,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     EmployeeName = "Nguyễn Văn An",
                     DepartmentName = "IT Department",
                     Position = "Senior Developer",
-                    ResponseType = "Accepted",
+                    ResponseType = EmployeeResponseType.Accepted,
                     ResponseDate = DateTime.Now.AddHours(-2),
                     Note = "Tôi rất quan tâm đến khóa học này và mong muốn tham gia.",
                     ContactEmail = "an.nguyen@company.com"
@@ -784,7 +785,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     EmployeeName = "Trần Thị Bình",
                     DepartmentName = "Software Development",
                     Position = "Frontend Developer",
-                    ResponseType = "Accepted",
+                    ResponseType = EmployeeResponseType.Accepted,
                     ResponseDate = DateTime.Now.AddHours(-1),
                     Note = "Khóa học phù hợp với công việc hiện tại của tôi.",
                     ContactEmail = "binh.tran@company.com"
@@ -797,7 +798,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     EmployeeName = "Lê Minh Cường",
                     DepartmentName = "Data Analytics",
                     Position = "Data Analyst",
-                    ResponseType = "Declined",
+                    ResponseType = EmployeeResponseType.Declined,
                     ResponseDate = DateTime.Now.AddMinutes(-30),
                     Note = "Hiện tại tôi đang có dự án quan trọng, không thể tham gia lúc này.",
                     ContactEmail = "cuong.le@company.com"
@@ -810,7 +811,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     EmployeeName = "Phạm Thị Dung",
                     DepartmentName = "QA Testing",
                     Position = "QA Engineer",
-                    ResponseType = "Pending",
+                    ResponseType = EmployeeResponseType.Pending,
                     ResponseDate = null,
                     Note = null,
                     ContactEmail = "dung.pham@company.com"
@@ -823,7 +824,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     EmployeeName = "Vũ Văn Em",
                     DepartmentName = "Technical Support",
                     Position = "Support Engineer",
-                    ResponseType = "Accepted",
+                    ResponseType = EmployeeResponseType.Accepted,
                     ResponseDate = DateTime.Now.AddMinutes(-15),
                     Note = "Tôi muốn nâng cao kỹ năng kỹ thuật của mình.",
                     ContactEmail = "em.vu@company.com"
@@ -833,10 +834,10 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     Id = 6,
                     CourseId = courseId,
                     EmployeeId = 106,
-                    EmployeeName = "Hoàng Thị Phượng",
+                    EmployeeName = "Hoàng Thị Phương",
                     DepartmentName = "Mobile Development",
                     Position = "Mobile Developer",
-                    ResponseType = "Pending",
+                    ResponseType = EmployeeResponseType.Pending,
                     ResponseDate = null,
                     Note = null,
                     ContactEmail = "phuong.hoang@company.com"
@@ -849,7 +850,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     EmployeeName = "Đặng Văn Giang",
                     DepartmentName = "IT Department",
                     Position = "System Administrator",
-                    ResponseType = "Accepted",
+                    ResponseType = EmployeeResponseType.Accepted,
                     ResponseDate = DateTime.Now.AddMinutes(-45),
                     Note = "Khóa học này sẽ giúp tôi hiểu rõ hơn về hệ thống.",
                     ContactEmail = "giang.dang@company.com"
@@ -862,12 +863,12 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     EmployeeName = "Bùi Thị Hạnh",
                     DepartmentName = "Software Development",
                     Position = "Backend Developer",
-                    ResponseType = "Declined",
+                    ResponseType = EmployeeResponseType.Declined,
                     ResponseDate = DateTime.Now.AddHours(-3),
                     Note = "Tôi đã có kiến thức về chủ đề này rồi.",
                     ContactEmail = "hanh.bui@company.com"
                 },
-                // Nhân viên mới - chưa được mời
+                // Nh�n vi�n m?i - chua du?c m?i
                 new EmployeeResponseDto
                 {
                     Id = 9,
@@ -876,7 +877,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     EmployeeName = "Trần Minh Khôi",
                     DepartmentName = "IT Department",
                     Position = "Junior Developer",
-                    ResponseType = "NotInvited",
+                    ResponseType = EmployeeResponseType.NotInvited,
                     ResponseDate = null,
                     Note = null,
                     ContactEmail = "khoi.tran@company.com"
@@ -889,7 +890,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     EmployeeName = "Nguyễn Thị Lan",
                     DepartmentName = "Software Development",
                     Position = "Junior Frontend Developer",
-                    ResponseType = "NotInvited",
+                    ResponseType = EmployeeResponseType.NotInvited,
                     ResponseDate = null,
                     Note = null,
                     ContactEmail = "lan.nguyen@company.com"
@@ -902,7 +903,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     EmployeeName = "Lê Văn Minh",
                     DepartmentName = "Data Analytics",
                     Position = "Data Entry Specialist",
-                    ResponseType = "NotInvited",
+                    ResponseType = EmployeeResponseType.NotInvited,
                     ResponseDate = null,
                     Note = null,
                     ContactEmail = "minh.le@company.com"
@@ -915,7 +916,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     EmployeeName = "Phạm Văn Nam",
                     DepartmentName = "QA Testing",
                     Position = "Manual Tester",
-                    ResponseType = "NotInvited",
+                    ResponseType = EmployeeResponseType.NotInvited,
                     ResponseDate = null,
                     Note = null,
                     ContactEmail = "nam.pham@company.com"

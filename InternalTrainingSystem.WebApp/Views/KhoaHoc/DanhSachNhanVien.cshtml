@@ -1,4 +1,6 @@
 @model List<InternalTrainingSystem.WebApp.Models.DTOs.EmployeeResponseDto>
+@using InternalTrainingSystem.WebApp.Constants
+@using InternalTrainingSystem.WebApp.Extensions
 @{
     ViewData["Title"] = "Danh Sách Nhân Viên Khóa Học";
     var course = ViewBag.Course as InternalTrainingSystem.WebApp.Models.DTOs.CourseDto;
@@ -19,7 +21,7 @@
                         <h1 class="employee-list-title">
                             <i class="fas fa-users me-3"></i>Danh Sách Nhân Viên Khóa Học
                         </h1>
-                        
+
                         @if (course != null)
                         {
                             <div class="course-info">
@@ -28,7 +30,7 @@
                                 <p class="mb-0"><strong>Mô tả:</strong> @course.Description</p>
                             </div>
                         }
-                        
+
                         <div class="stats-row">
                             <div class="stat-item">
                                 <div class="stat-number">@ViewBag.TotalEmployees</div>
@@ -84,7 +86,7 @@
                 <div class="form-group">
                     <label class="form-label">Mã nhân viên</label>
                     <input type="text" class="form-control" name="employeeId" 
-                           value="@ViewBag.EmployeeId" placeholder="Nhập mã nhân viên...">
+                    value="@ViewBag.EmployeeId" placeholder="Nhập mã nhân viên...">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Phòng ban</label>
@@ -195,18 +197,18 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        @if (!string.IsNullOrEmpty(employee.Note) || !string.IsNullOrEmpty(employee.ContactEmail) || employee.ResponseType.ToLower() == "declined" || employee.ResponseType.ToLower() == "notinvited")
+
+                        @if (!string.IsNullOrEmpty(employee.Note) || !string.IsNullOrEmpty(employee.ContactEmail) || employee.ResponseType.IsDeclined() || employee.ResponseType.IsNotInvited())
                         {
                             <div class="employee-body">
                                 @if (!string.IsNullOrEmpty(employee.Note))
                                 {
                                     <div class="employee-note">
-                                        <i class="fas @(employee.ResponseType.ToLower() == "declined" ? "fa-exclamation-triangle" : "fa-comment-alt") me-2"></i>
-                                        <strong>@(employee.ResponseType.ToLower() == "declined" ? "Lý do từ chối:" : "Ghi chú:"):</strong> @employee.Note
+                                        <i class="fas @(employee.ResponseType.IsDeclined() ? "fa-exclamation-triangle" : "fa-comment-alt") me-2"></i>
+                                        <strong>@(employee.ResponseType.IsDeclined() ? "Lý do từ chối:" : "Ghi chú:"):</strong> @employee.Note
                                     </div>
                                 }
-                                
+
                                 <div class="d-flex justify-content-between align-items-center">
                                     @if (!string.IsNullOrEmpty(employee.ContactEmail))
                                     {
@@ -215,19 +217,19 @@
                                             <span>@employee.ContactEmail</span>
                                         </div>
                                     }
-                                    
+
                                     <div class="employee-actions">
-                                        @if (employee.ResponseType.ToLower() == "declined")
+                                        @if (employee.ResponseType.IsDeclined())
                                         {
                                             <button type="button" class="btn-invite" 
-                                                    onclick="reinviteEmployee(@employee.EmployeeId, '@employee.EmployeeName')">
+                                            onclick="reinviteEmployee(@employee.EmployeeId, '@employee.EmployeeName')">
                                                 <i class="fas fa-redo me-1"></i>Mời lại
                                             </button>
                                         }
-                                        @if (employee.ResponseType.ToLower() == "notinvited")
+                                        @if (employee.ResponseType.IsNotInvited())
                                         {
                                             <button type="button" class="btn-send-notification" 
-                                                    onclick="sendNotificationToEmployee(@employee.EmployeeId, '@employee.EmployeeName')">
+                                            onclick="sendNotificationToEmployee(@employee.EmployeeId, '@employee.EmployeeName')">
                                                 <i class="fas fa-paper-plane me-1"></i>Gửi thông báo
                                             </button>
                                         }

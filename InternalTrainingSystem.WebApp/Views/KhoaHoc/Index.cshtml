@@ -1,4 +1,6 @@
-﻿@model List<InternalTrainingSystem.WebApp.Models.DTOs.CourseDto>
+@model List<InternalTrainingSystem.WebApp.Models.DTOs.CourseDto>
+@using InternalTrainingSystem.WebApp.Constants
+@using InternalTrainingSystem.WebApp.Extensions
 @{
     ViewData["Title"] = "Danh Sách Khóa Học";
 }
@@ -172,7 +174,7 @@
                                             @course.ApprovalStatusDisplay
                                         </span>
                                     </div>
-                                    @if (course.Status == "Approved" && !string.IsNullOrEmpty(course.ApprovedBy))
+                                    @if (course.Status.IsApproved() && !string.IsNullOrEmpty(course.ApprovedBy))
                                     {
                                         <div class="meta-item">
                                             <i class="fas fa-user-check meta-icon"></i>
@@ -194,7 +196,7 @@
                                         <i class="fas fa-eye"></i>
                                         Chi tiết
                                     </a>
-                                    @if (course.Status == "Approved")
+                                    @if (course.Status.IsApproved())
                                     {
                                         <a href="@Url.Action("DanhSachNhanVien", new { id = course.CourseId })" 
                                            class="action-btn btn-response">
@@ -202,7 +204,7 @@
                                             Danh Sách
                                         </a>
                                     }
-                                    @if (course.Status == "Pending")
+                                    @if (course.Status.IsPending())
                                     {
                                         <a href="@Url.Action("PheDuyet", new { id = course.CourseId })" 
                                            class="action-btn btn-approve">

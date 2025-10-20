@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using InternalTrainingSystem.WebApp.Constants;
 
 namespace InternalTrainingSystem.WebApp.Models.DTOs
 {
@@ -145,14 +146,7 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string? Note { get; set; }
         public string ContactEmail { get; set; } = string.Empty;
         
-        public string ResponseTypeDisplay => ResponseType switch
-        {
-            "Accepted" => "Đồng ý tham gia",
-            "Declined" => "Từ chối",
-            "Pending" => "Chưa phản hồi",
-            "NotInvited" => "Chưa được mời",
-            _ => "Không xác định"
-        };
+        public string ResponseTypeDisplay => EmployeeResponseType.GetDisplayText(ResponseType);
 
         public string ResponseDateDisplay => ResponseDate?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa phản hồi";
     }
