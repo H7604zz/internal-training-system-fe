@@ -47,19 +47,19 @@
         <div class="filter-section">
             <div class="container">
                 <div class="filter-tabs">
-                    <a href="@Url.Action("DanhSachKhoaHocCuaToi", new { status = "all", page = 1 })" 
+                    <a href="@Url.Action("DanhSachKhoaHocCuaToi", "KhoaHoc", new { status = "all", page = 1 })" 
                        class="filter-tab @(ViewBag.CurrentStatus == "all" ? "active" : "")">
                         <i class="fas fa-list me-2"></i>Tất cả (@ViewBag.TotalCourses)
                     </a>
-                    <a href="@Url.Action("DanhSachKhoaHocCuaToi", new { status = "pending", page = 1 })" 
+                    <a href="@Url.Action("DanhSachKhoaHocCuaToi", "KhoaHoc", new { status = "pending", page = 1 })" 
                        class="filter-tab @(ViewBag.CurrentStatus == "pending" ? "active" : "")">
                         <i class="fas fa-clock me-2"></i>Chờ phản hồi (@ViewBag.PendingCount)
                     </a>
-                    <a href="@Url.Action("DanhSachKhoaHocCuaToi", new { status = "accepted", page = 1 })" 
+                    <a href="@Url.Action("DanhSachKhoaHocCuaToi", "KhoaHoc", new { status = "accepted", page = 1 })" 
                        class="filter-tab @(ViewBag.CurrentStatus == "accepted" ? "active" : "")">
                         <i class="fas fa-check-circle me-2"></i>Đã tham gia (@ViewBag.AcceptedCount)
                     </a>
-                    <a href="@Url.Action("DanhSachKhoaHocCuaToi", new { status = "declined", page = 1 })" 
+                    <a href="@Url.Action("DanhSachKhoaHocCuaToi", "KhoaHoc", new { status = "declined", page = 1 })" 
                        class="filter-tab @(ViewBag.CurrentStatus == "declined" ? "active" : "")">
                         <i class="fas fa-times-circle me-2"></i>Đã từ chối (@ViewBag.DeclinedCount)
                     </a>
@@ -93,8 +93,8 @@
                                         <span class="badge @course.StatusBadgeClass">
                                             <i class="fas @course.StatusIcon me-1"></i>@course.StatusText
                                         </span>
-                                        <span class="badge @course.PriorityBadgeClass">
-                                            @course.Priority
+                                        <span class="badge @course.LevelBadgeClass">
+                                            @course.LevelDisplay
                                         </span>
                                         <span class="badge @course.CourseStatusBadgeClass">
                                             @course.CourseStatusText
@@ -177,42 +177,19 @@
                     </div>
 
                     <!-- Pagination -->
-                    @if (ViewBag.TotalPages > 1)
+                    @if (ViewBag.TotalPages >= 1)
                     {
-                        <div class="pagination-section">
-                            <nav aria-label="Course pagination">
-                                <ul class="pagination justify-content-center">
-                                    @if (ViewBag.CurrentPage > 1)
-                                    {
-                                        <li class="page-item">
-                                            <a class="page-link" href="@Url.Action("DanhSachKhoaHocCuaToi", new { status = ViewBag.CurrentStatus, page = ViewBag.CurrentPage - 1 })">
-                                                <i class="fas fa-chevron-left"></i> Trước
-                                            </a>
-                                        </li>
-                                    }
-
-                                    @for (int i = Math.Max(1, ViewBag.CurrentPage - 2); i <= Math.Min(ViewBag.TotalPages, ViewBag.CurrentPage + 2); i++)
-                                    {
-                                        <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
-                                            <a class="page-link" href="@Url.Action("DanhSachKhoaHocCuaToi", new { status = ViewBag.CurrentStatus, page = i })">@i</a>
-                                        </li>
-                                    }
-
-                                    @if (ViewBag.CurrentPage < ViewBag.TotalPages)
-                                    {
-                                        <li class="page-item">
-                                            <a class="page-link" href="@Url.Action("DanhSachKhoaHocCuaToi", new { status = ViewBag.CurrentStatus, page = ViewBag.CurrentPage + 1 })">
-                                                Sau <i class="fas fa-chevron-right"></i>
-                                            </a>
-                                        </li>
-                                    }
-                                </ul>
-                            </nav>
-                            <div class="pagination-info">
-                                Hiển thị @((ViewBag.CurrentPage - 1) * ViewBag.PageSize + 1) - @(Math.Min(ViewBag.CurrentPage * ViewBag.PageSize, ViewBag.TotalItems)) 
-                                trong tổng số @ViewBag.TotalItems khóa học
-                            </div>
-                        </div>
+                        @await Html.PartialAsync("_Pagination", new InternalTrainingSystem.WebApp.Models.ViewModels.PaginationViewModel(
+                            ViewBag.CurrentPage ?? 1,
+                            ViewBag.TotalPages ?? 1,
+                            ViewBag.PageSize ?? 10,
+                            "DanhSachKhoaHocCuaToi",
+                            "KhoaHoc",
+                            new Dictionary<string, object>
+                            {
+                                ["status"] = ViewBag.CurrentStatus ?? "all"
+                            }
+                        ) { AriaLabel = "Phân trang khóa học của tôi", TotalItems = ViewBag.TotalItems })
                     }
                 }
                 else
@@ -227,7 +204,7 @@
                         else
                         {
                             <p>Không có khóa học nào ở trạng thái này.</p>
-                            <a href="@Url.Action("DanhSachKhoaHocCuaToi", new { status = "all" })" class="btn btn-primary">
+                            <a href="@Url.Action("DanhSachKhoaHocCuaToi", "KhoaHoc", new { status = "all" })" class="btn btn-primary">
                                 <i class="fas fa-list me-1"></i>Xem tất cả khóa học
                             </a>
                         }
@@ -319,7 +296,7 @@
             confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang xử lý...';
             
             // Call API
-            fetch('@Url.Action("PhanHoiKhoaHoc", "Auth")', {
+            fetch('@Url.Action("PhanHoiKhoaHoc", "KhoaHoc")', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

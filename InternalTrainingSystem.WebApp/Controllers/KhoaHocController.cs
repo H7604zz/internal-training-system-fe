@@ -3,6 +3,7 @@ using InternalTrainingSystem.WebApp.Services.Interface;
 using InternalTrainingSystem.WebApp.Constants;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using InternalTrainingSystem.WebApp.Services.Implement;
 
 namespace InternalTrainingSystem.WebApp.Controllers
 {
@@ -10,12 +11,14 @@ namespace InternalTrainingSystem.WebApp.Controllers
     public class KhoaHocController : Controller
     {
         private readonly ICourseService _courseService;
+        private readonly IAuthService _authService;
         private readonly ILogger<KhoaHocController> _logger;
 
-        public KhoaHocController(ICourseService courseService, ILogger<KhoaHocController> logger)
+        public KhoaHocController(ICourseService courseService,  ILogger<KhoaHocController> logger, IAuthService authService)
         {
             _courseService = courseService;
             _logger = logger;
+            _authService = authService;
         }
 
         [HttpGet("")]
@@ -25,33 +28,33 @@ namespace InternalTrainingSystem.WebApp.Controllers
             {
                 // var allCourses = await _courseService.GetCoursesAsync();
                 var allCourses = GetSampleCourseData(); // Sử dụng data mẫu để test
-                
+
                 // Filter theo search term
                 if (!string.IsNullOrEmpty(searchTerm))
                 {
-                    allCourses = allCourses.Where(c => 
+                    allCourses = allCourses.Where(c =>
                         c.CourseName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
                         c.Description?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) == true
                     ).ToList();
                 }
-                
+
                 // Filter theo category
                 if (categoryId > 0)
                 {
                     allCourses = allCourses.Where(c => c.CategoryName.Contains(GetCategoryName(categoryId))).ToList();
                 }
-                
+
                 // Filter theo department
                 if (departmentId > 0)
                 {
-                    allCourses = allCourses.Where(c => 
+                    allCourses = allCourses.Where(c =>
                         c.Departments.Any(d => d.Id == departmentId)
                     ).ToList();
                 }
 
                 var totalItems = allCourses.Count;
                 var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
-                
+
                 var pagedCourses = allCourses
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
@@ -64,7 +67,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 ViewBag.SearchTerm = searchTerm;
                 ViewBag.CategoryId = categoryId;
                 ViewBag.DepartmentId = departmentId;
-                
+
                 // Data cho dropdowns
                 ViewBag.Categories = GetCategories();
                 ViewBag.Departments = GetDepartments();
@@ -210,7 +213,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 // Simulate getting eligible employees from selected departments
                 var departments = GetDepartments();
                 var selectedDepartments = departments.Where(d => selectedDepartmentIds.Contains(d.Id)).ToList();
-                
+
                 // Simulate employee count (in real application, this would come from employee service)
                 var totalEmployees = selectedDepartments.Sum(d => GetEmployeeCountByDepartment(d.Id));
 
@@ -223,12 +226,12 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 // - Send emails/push notifications
                 // - Save notification history
 
-                _logger.LogInformation("Notification sent for course '{CourseName}' to {EmployeeCount} employees in departments: {Departments}", 
+                _logger.LogInformation("Notification sent for course '{CourseName}' to {EmployeeCount} employees in departments: {Departments}",
                     courseName, totalEmployees, string.Join(", ", selectedDepartments.Select(d => d.Name)));
 
-                return Json(new { 
-                    success = true, 
-                    message = "Gửi thông báo thành công!", 
+                return Json(new {
+                    success = true,
+                    message = "Gửi thông báo thành công!",
                     sentCount = totalEmployees,
                     departments = selectedDepartments.Select(d => d.Name).ToArray()
                 });
@@ -254,18 +257,18 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
                 // Get employee responses for this course
                 var responses = GetSampleEmployeeResponses(id);
-                
+
                 // Sort by priority: NotInvited first, then others
                 responses = responses.OrderBy(r => r.ResponseType == EmployeeResponseType.NotInvited ? 0 : 1)
                                    .ThenBy(r => r.EmployeeName)
                                    .ToList();
-                
+
                 // Apply filters
                 if (!string.IsNullOrEmpty(employeeId))
                 {
                     responses = responses.Where(r => r.EmployeeId.ToString().Contains(employeeId, StringComparison.OrdinalIgnoreCase)).ToList();
                 }
-                
+
                 if (departmentId > 0)
                 {
                     var departments = GetDepartments();
@@ -275,7 +278,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                         responses = responses.Where(r => r.DepartmentName.Contains(selectedDept.Name, StringComparison.OrdinalIgnoreCase)).ToList();
                     }
                 }
-                
+
                 ViewBag.Course = course;
                 ViewBag.CourseId = id;
                 ViewBag.EmployeeId = employeeId;
@@ -315,14 +318,14 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 // - Send new notification email
                 // - Log the reinvite action
 
-                _logger.LogInformation("Reinvited employee {EmployeeId} for course {CourseId}", 
+                _logger.LogInformation("Reinvited employee {EmployeeId} for course {CourseId}",
                     request.EmployeeId, request.CourseId);
 
                 return Json(new { success = true, message = "Đã gửi lại lời mời thành công!" });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while reinviting employee {EmployeeId} for course {CourseId}", 
+                _logger.LogError(ex, "Error occurred while reinviting employee {EmployeeId} for course {CourseId}",
                     request.EmployeeId, request.CourseId);
                 return Json(new { success = false, message = "Đã xảy ra lỗi khi gửi lời mời. Vui lòng thử lại!" });
             }
@@ -400,7 +403,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 {
                     // Simulate approval
                     _logger.LogInformation("Course {CourseId} approved by {ApprovedBy}", request.CourseId, request.ApprovedBy);
-                    
+
                     return Json(new CourseApprovalResponse
                     {
                         Success = true,
@@ -473,9 +476,9 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 if (request.Action.ToLower() == "reject")
                 {
                     // Simulate rejection
-                    _logger.LogInformation("Course {CourseId} rejected by {RejectedBy} with reason: {Reason}", 
+                    _logger.LogInformation("Course {CourseId} rejected by {RejectedBy} with reason: {Reason}",
                         request.CourseId, request.ApprovedBy, request.Reason);
-                    
+
                     return Json(new CourseApprovalResponse
                     {
                         Success = true,
@@ -505,7 +508,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         private List<CourseDto> GetSampleCourseData()
         {
             var departments = GetDepartments();
-            
+
             return new List<CourseDto>
             {
                 new CourseDto
@@ -708,7 +711,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             return history.OrderBy(h => h.ActionDate).ToList();
         }
 
-        
+
 
         private List<DepartmentDto> GetDepartments()
         {
@@ -920,6 +923,220 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     ResponseDate = null,
                     Note = null,
                     ContactEmail = "nam.pham@company.com"
+                }
+            };
+        }
+    
+
+        /// <summary>
+        /// Danh sách khóa học của nhân viên
+        /// </summary>
+        [HttpGet("danh-sach-khoa-hoc-cua-toi")]
+        public async Task<IActionResult> DanhSachKhoaHocCuaToi(string status = "all", int page = 1, int pageSize = 6)
+        {
+            try
+            {
+                // Kiểm tra đăng nhập
+                if (_authService.IsTokenExpired())
+                {
+                    return RedirectToAction("DangNhap", "Auth");
+                }
+
+                // Lấy thông tin nhân viên từ session
+                //var employeeId = HttpContext.Session.GetString("EmployeeId");
+                var employeeId = "He173343"; //test data
+                if (string.IsNullOrEmpty(employeeId))
+                {
+                    TempData["Error"] = "Không tìm thấy thông tin nhân viên.";
+                    return RedirectToAction("Index", "TrangChu");
+                }
+
+                // Lấy danh sách khóa học (dùng dữ liệu mẫu cho demo)
+                var allCourses = GetSampleEmployeeCourses(employeeId);
+
+                // Lọc theo trạng thái
+                var filteredCourses = status.ToLower() switch
+                {
+                    "accepted" => allCourses.Where(c => c.ResponseType == "Accepted").ToList(),
+                    "declined" => allCourses.Where(c => c.ResponseType == "Declined").ToList(),
+                    "pending" => allCourses.Where(c => c.ResponseType == "Pending").ToList(),
+                    _ => allCourses
+                };
+
+                // Phân trang
+                var totalItems = filteredCourses.Count;
+                var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+                var pagedCourses = filteredCourses
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                // Thống kê
+                ViewBag.TotalCourses = allCourses.Count;
+                ViewBag.AcceptedCount = allCourses.Count(c => c.ResponseType == "Accepted");
+                ViewBag.DeclinedCount = allCourses.Count(c => c.ResponseType == "Declined");
+                ViewBag.PendingCount = allCourses.Count(c => c.ResponseType == "Pending");
+
+                // Phân trang
+                ViewBag.CurrentPage = page;
+                ViewBag.TotalPages = totalPages;
+                ViewBag.PageSize = pageSize;
+                ViewBag.TotalItems = totalItems;
+                ViewBag.CurrentStatus = status;
+
+                return View(pagedCourses);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Đã xảy ra lỗi khi tải danh sách khóa học.";
+                return RedirectToAction("Index", "TrangChu");
+            }
+        }
+
+        /// <summary>
+        /// Phản hồi tham gia khóa học
+        /// </summary>
+        [HttpPost("phan-hoi-khoa-hoc")]
+        public async Task<IActionResult> PhanHoiKhoaHoc(int courseId, string responseType, string? note = null)
+        {
+            try
+            {
+                if (_authService.IsTokenExpired())
+                {
+                    return Json(new { success = false, message = "Phiên đăng nhập đã hết hạn" });
+                }
+
+                var employeeId = HttpContext.Session.GetString("EmployeeId");
+                if (string.IsNullOrEmpty(employeeId))
+                {
+                    return Json(new { success = false, message = "Không tìm thấy thông tin nhân viên" });
+                }
+
+                // TODO: Gọi API để cập nhật phản hồi
+                // var result = await _courseService.RespondToCourseAsync(courseId, employeeId, responseType, note);
+
+                // Simulate success response
+                var message = responseType.ToLower() switch
+                {
+                    "accepted" => "Đã xác nhận tham gia khóa học thành công!",
+                    "declined" => "Đã từ chối tham gia khóa học.",
+                    _ => "Đã cập nhật phản hồi thành công!"
+                };
+
+                return Json(new { success = true, message = message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Đã xảy ra lỗi khi cập nhật phản hồi" });
+            }
+        }
+
+        /// <summary>
+        /// Sample data for testing employee courses
+        /// </summary>
+        private List<EmployeeCourseDto> GetSampleEmployeeCourses(string employeeId)
+        {
+            return new List<EmployeeCourseDto>
+            {
+                new EmployeeCourseDto
+                {
+                    CourseId = 1,
+                    CourseCode = "COURSE001",
+                    CourseName = "Khóa học lập trình C# nâng cao",
+                    Description = "Khóa học lập trình C# từ cơ bản đến nâng cao, bao gồm ASP.NET Core, Entity Framework",
+                    Duration = "40 giờ",
+                    Level = CourseConstants.Levels.Advanced,
+                    StartDate = DateTime.Now.AddDays(15),
+                    EndDate = DateTime.Now.AddDays(45),
+                    TrainerName = "Nguyễn Văn Trainer",
+                    DepartmentName = "Phòng Đào Tạo",
+                    ResponseType = "Pending",
+                    ResponseDate = null,
+                    Note = null,
+                    InvitedDate = DateTime.Now.AddDays(-3),
+                    MaxParticipants = 20,
+                    CurrentParticipants = 15,
+                    Status = "Open"
+                },
+                new EmployeeCourseDto
+                {
+                    CourseId = 2,
+                    CourseCode = "COURSE002",
+                    CourseName = "Khóa học React.js Frontend Development",
+                    Description = "Học React.js để xây dựng ứng dụng web hiện đại, bao gồm Hooks, Context API, Redux",
+                    Duration = "32 giờ",
+                    Level = CourseConstants.Levels.Intermediate,
+                    StartDate = DateTime.Now.AddDays(-20),
+                    EndDate = DateTime.Now.AddDays(-5),
+                    TrainerName = "Trần Thị Frontend",
+                    DepartmentName = "Phòng Đào Tạo",
+                    ResponseType = "Accepted",
+                    ResponseDate = DateTime.Now.AddDays(-18),
+                    Note = "Rất hứng thú với khóa học này",
+                    InvitedDate = DateTime.Now.AddDays(-25),
+                    MaxParticipants = 15,
+                    CurrentParticipants = 12,
+                    Status = "Completed"
+                },
+                new EmployeeCourseDto
+                {
+                    CourseId = 3,
+                    CourseCode = "COURSE003",
+                    CourseName = "Khóa học Database Design & SQL Server",
+                    Description = "Thiết kế cơ sở dữ liệu và tối ưu hóa hiệu suất SQL Server",
+                    Duration = "24 giờ",
+                    Level = CourseConstants.Levels.Advanced,
+                    StartDate = DateTime.Now.AddDays(-45),
+                    EndDate = DateTime.Now.AddDays(-30),
+                    TrainerName = "Lê Văn Database",
+                    DepartmentName = "Phòng Đào Tạo",
+                    ResponseType = "Declined",
+                    ResponseDate = DateTime.Now.AddDays(-40),
+                    Note = "Hiện tại bận project khẩn cấp, không thể tham gia",
+                    InvitedDate = DateTime.Now.AddDays(-50),
+                    MaxParticipants = 25,
+                    CurrentParticipants = 18,
+                    Status = "Completed"
+                },
+                new EmployeeCourseDto
+                {
+                    CourseId = 4,
+                    CourseCode = "COURSE004",
+                    CourseName = "Khóa học DevOps và CI/CD Pipeline",
+                    Description = "Tìm hiểu về DevOps, Docker, Kubernetes và xây dựng CI/CD pipeline",
+                    Duration = "48 giờ",
+                    Level = CourseConstants.Levels.Advanced,
+                    StartDate = DateTime.Now.AddDays(30),
+                    EndDate = DateTime.Now.AddDays(75),
+                    TrainerName = "Phạm Văn DevOps",
+                    DepartmentName = "Phòng Đào Tạo",
+                    ResponseType = "Pending",
+                    ResponseDate = null,
+                    Note = null,
+                    InvitedDate = DateTime.Now.AddDays(-1),
+                    MaxParticipants = 12,
+                    CurrentParticipants = 8,
+                    Status = "Open"
+                },
+                new EmployeeCourseDto
+                {
+                    CourseId = 5,
+                    CourseCode = "COURSE005",
+                    CourseName = "Khóa học Agile & Scrum Methodology",
+                    Description = "Phương pháp quản lý dự án Agile và Scrum framework",
+                    Duration = "16 giờ",
+                    Level = CourseConstants.Levels.Beginner,
+                    StartDate = DateTime.Now.AddDays(-10),
+                    EndDate = DateTime.Now.AddDays(5),
+                    TrainerName = "Hoàng Thị Agile",
+                    DepartmentName = "Phòng Đào Tạo",
+                    ResponseType = "Accepted",
+                    ResponseDate = DateTime.Now.AddDays(-8),
+                    Note = "Cần thiết cho công việc hiện tại",
+                    InvitedDate = DateTime.Now.AddDays(-15),
+                    MaxParticipants = 30,
+                    CurrentParticipants = 25,
+                    Status = "InProgress"
                 }
             };
         }
