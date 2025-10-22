@@ -15,8 +15,8 @@
                 <h5 class="mb-2">
                     <i class="fas fa-clock text-danger"></i> Thời Gian Còn Lại
                 </h5>
-                <div class="timer-display" id="timer">
-                    <span id="minutes">60</span>:<span id="seconds">00</span>
+                <div class="timer-display" id="timer" data-time-limit="@Model.TimeLimit">
+                    <span id="minutes">@Model.TimeLimit.ToString("D2")</span>:<span id="seconds">00</span>
                 </div>
                 <div class="progress mt-2">
                     <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" 

@@ -1,14 +1,220 @@
 using Microsoft.AspNetCore.Mvc;
 using InternalTrainingSystem.WebApp.Models;
 using InternalTrainingSystem.WebApp.Models.Quiz;
+using InternalTrainingSystem.WebApp.Constants;
 
 namespace InternalTrainingSystem.WebApp.Controllers
 {
     public class QuizController : Controller
     {
-        public IActionResult DanhSachBaiQuiz()
+        public IActionResult DanhSachBaiQuiz(string search = "", int page = 1)
         {
-            return View();
+            var pageSize = PaginationConstants.QuizPageSize;
+            
+            // Lấy danh sách quiz mẫu với rich data
+            var allQuizzes = GetSampleQuizzes();
+            
+            // Tìm kiếm theo title, description, subject, createdBy
+            if (!string.IsNullOrEmpty(search))
+            {
+                var searchLower = search.ToLower();
+                allQuizzes = allQuizzes.Where(q => 
+                    q.Title.ToLower().Contains(searchLower) ||
+                    q.Description.ToLower().Contains(searchLower) ||
+                    q.Subject.ToLower().Contains(searchLower) ||
+                    q.CreatedBy.ToLower().Contains(searchLower)
+                ).ToList();
+            }
+            
+            // Phân trang
+            var totalItems = allQuizzes.Count;
+            var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+            var pagedQuizzes = allQuizzes
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+            
+            // ViewBag cho pagination và search
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalItems = totalItems;
+            ViewBag.CurrentSearch = search;
+            
+            // ViewBag cho thống kê
+            ViewBag.TotalQuizzes = GetSampleQuizzes().Count; // Tổng không filter
+            ViewBag.FilteredCount = allQuizzes.Count; // Số lượng sau khi search
+            ViewBag.CompletedCount = allQuizzes.Count(q => q.IsCompleted);
+            ViewBag.AvailableCount = allQuizzes.Count(q => q.Status == "Available");
+            
+            return View(pagedQuizzes);
+        }
+
+        private List<QuizViewModel> GetSampleQuizzes()
+        {
+            return new List<QuizViewModel>
+            {
+                new QuizViewModel
+                {
+                    Id = 1,
+                    Title = "Kiểm tra kiến thức C# cơ bản",
+                    Description = "Bài kiểm tra đánh giá kiến thức cơ bản về ngôn ngữ lập trình C#",
+                    Subject = "Lập trình",
+                    TimeLimit = 30,
+                    QuestionCount = 15,
+                    CreatedDate = DateTime.Now.AddDays(-10),
+                    CreatedBy = "Nguyễn Văn A",
+                    AttemptCount = 3,
+                    BestScore = 85.5,
+                    LastAttempt = DateTime.Now.AddDays(-2),
+                    IsCompleted = true,
+                    Status = "Completed"
+                },
+                new QuizViewModel
+                {
+                    Id = 2,
+                    Title = "SQL Server và T-SQL nâng cao",
+                    Description = "Kiểm tra khả năng viết query phức tạp và tối ưu hóa database",
+                    Subject = "Cơ sở dữ liệu",
+                    TimeLimit = 90,
+                    QuestionCount = 25,
+                    CreatedDate = DateTime.Now.AddDays(-15),
+                    CreatedBy = "Trần Thị B",
+                    AttemptCount = 1,
+                    BestScore = 72.0,
+                    LastAttempt = DateTime.Now.AddDays(-5),
+                    IsCompleted = true,
+                    Status = "Completed"
+                },
+                new QuizViewModel
+                {
+                    Id = 3,
+                    Title = "Cấu hình mạng và troubleshooting",
+                    Description = "Bài test về cấu hình router, switch và xử lý sự cố mạng",
+                    Subject = "Mạng máy tính",
+                    TimeLimit = 60,
+                    QuestionCount = 20,
+                    CreatedDate = DateTime.Now.AddDays(-5),
+                    CreatedBy = "Phạm Văn C",
+                    AttemptCount = 0,
+                    BestScore = null,
+                    LastAttempt = null,
+                    IsCompleted = false,
+                    Status = "Available"
+                },
+                new QuizViewModel
+                {
+                    Id = 4,
+                    Title = "Cybersecurity và bảo mật thông tin",
+                    Description = "Đánh giá kiến thức về bảo mật hệ thống và phòng chống tấn công",
+                    Subject = "Bảo mật",
+                    TimeLimit = 75,
+                    QuestionCount = 30,
+                    CreatedDate = DateTime.Now.AddDays(-20),
+                    CreatedBy = "Lê Thị D",
+                    AttemptCount = 2,
+                    BestScore = 78.5,
+                    LastAttempt = DateTime.Now.AddDays(-1),
+                    IsCompleted = true,
+                    Status = "Completed"
+                },
+                new QuizViewModel
+                {
+                    Id = 5,
+                    Title = "UI/UX Design principles",
+                    Description = "Kiểm tra hiểu biết về nguyên tắc thiết kế giao diện người dùng",
+                    Subject = "Thiết kế",
+                    TimeLimit = 45,
+                    QuestionCount = 18,
+                    CreatedDate = DateTime.Now.AddDays(-8),
+                    CreatedBy = "Hoàng Văn E",
+                    AttemptCount = 1,
+                    BestScore = 90.0,
+                    LastAttempt = DateTime.Now.AddDays(-3),
+                    IsCompleted = true,
+                    Status = "Completed"
+                },
+                new QuizViewModel
+                {
+                    Id = 6,
+                    Title = "Agile & Scrum Framework",
+                    Description = "Bài test về phương pháp quản lý dự án Agile và Scrum",
+                    Subject = "Quản lý dự án",
+                    TimeLimit = 40,
+                    QuestionCount = 22,
+                    CreatedDate = DateTime.Now.AddDays(-12),
+                    CreatedBy = "Võ Thị F",
+                    AttemptCount = 0,
+                    BestScore = null,
+                    LastAttempt = null,
+                    IsCompleted = false,
+                    Status = "Available"
+                },
+                new QuizViewModel
+                {
+                    Id = 7,
+                    Title = "Machine Learning cơ bản",
+                    Description = "Kiến thức nền tảng về học máy và các thuật toán cơ bản",
+                    Subject = "AI/ML",
+                    TimeLimit = 120,
+                    QuestionCount = 35,
+                    CreatedDate = DateTime.Now.AddDays(-25),
+                    CreatedBy = "Đặng Văn G",
+                    AttemptCount = 0,
+                    BestScore = null,
+                    LastAttempt = null,
+                    IsCompleted = false,
+                    Status = "Available"
+                },
+                new QuizViewModel
+                {
+                    Id = 8,
+                    Title = "Docker và Kubernetes",
+                    Description = "Kiểm tra kiến thức về containerization và orchestration",
+                    Subject = "DevOps",
+                    TimeLimit = 90,
+                    QuestionCount = 28,
+                    CreatedDate = DateTime.Now.AddDays(-6),
+                    CreatedBy = "Ngô Thị H",
+                    AttemptCount = 1,
+                    BestScore = 65.0,
+                    LastAttempt = DateTime.Now.AddDays(-4),
+                    IsCompleted = false,
+                    Status = "In-Progress"
+                },
+                new QuizViewModel
+                {
+                    Id = 9,
+                    Title = "React Native Development",
+                    Description = "Phát triển ứng dụng mobile với React Native framework",
+                    Subject = "Mobile",
+                    TimeLimit = 70,
+                    QuestionCount = 24,
+                    CreatedDate = DateTime.Now.AddDays(-18),
+                    CreatedBy = "Bùi Văn I",
+                    AttemptCount = 2,
+                    BestScore = 88.0,
+                    LastAttempt = DateTime.Now.AddDays(-7),
+                    IsCompleted = true,
+                    Status = "Completed"
+                },
+                new QuizViewModel
+                {
+                    Id = 10,
+                    Title = "Modern Web Development",
+                    Description = "Công nghệ web hiện đại: HTML5, CSS3, JavaScript ES6+",
+                    Subject = "Web Development",
+                    TimeLimit = 55,
+                    QuestionCount = 20,
+                    CreatedDate = DateTime.Now.AddDays(-3),
+                    CreatedBy = "Lý Thị K",
+                    AttemptCount = 0,
+                    BestScore = null,
+                    LastAttempt = null,
+                    IsCompleted = false,
+                    Status = "Available"
+                }
+            };
         }
 
         // Trang tạo quiz cho quản lý
@@ -114,7 +320,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             {
                 Id = id,
                 Title = "Bài Kiểm Tra Lập Trình C#",
-                Duration = 60, // 60 phút
+                TimeLimit = 60, // 60 phút
                 Questions = new List<QuestionViewModel>
                 {
                     new QuestionViewModel
