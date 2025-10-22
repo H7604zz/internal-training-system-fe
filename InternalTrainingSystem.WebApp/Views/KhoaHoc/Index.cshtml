@@ -66,49 +66,28 @@
             </h5>
             <form method="get" class="filter-form">
                 <div class="row">
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-6 mb-3">
                         <label class="form-label">Tìm kiếm khóa học</label>
                         <input type="text" class="form-control" name="searchTerm" 
                                value="@ViewBag.SearchTerm" placeholder="Nhập tên khóa học...">
                     </div>
                     <div class="col-md-3 mb-3">
-                        <label class="form-label">Danh mục</label>
-                        <select class="form-select" name="categoryId">
-                            <option value="0">Tất cả danh mục</option>
-                            @if (ViewBag.Categories != null)
-                            {
-                                @foreach (dynamic category in ViewBag.Categories)
-                                {
-                                    <option value="@category.Id" selected="@(ViewBag.CategoryId == category.Id)">
-                                        @category.Name
-                                    </option>
-                                }
-                            }
+                        <label class="form-label">Trạng thái</label>
+                        <select class="form-select" name="status">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="pending" selected="@(ViewBag.Status == "pending")">Chờ phê duyệt</option>
+                            <option value="approved" selected="@(ViewBag.Status == "approved")">Đã phê duyệt</option>
+                            <option value="rejected" selected="@(ViewBag.Status == "rejected")">Bị từ chối</option>
                         </select>
                     </div>
                     <div class="col-md-3 mb-3">
-                        <label class="form-label">Phòng ban</label>
-                        <select class="form-select" name="departmentId">
-                            <option value="0">Tất cả phòng ban</option>
-                            @if (ViewBag.Departments != null)
-                            {
-                                @foreach (var dept in ViewBag.Departments)
-                                {
-                                    <option value="@dept.Id" selected="@(ViewBag.DepartmentId == dept.Id)">
-                                        @dept.Name
-                                    </option>
-                                }
-                            }
-                        </select>
-                    </div>
-                    <div class="col-md-2 mb-3">
                         <label class="form-label">&nbsp;</label>
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn filter-btn flex-fill">
-                                <i class="fas fa-search"></i>
+                                <i class="fas fa-search me-2"></i>Lọc
                             </button>
-                            <a href="@Url.Action("Index")" class="btn reset-btn">
-                                <i class="fas fa-undo"></i>
+                            <a href="@Url.Action("Index")" class="btn reset-btn flex-fill">
+                                <i class="fas fa-undo me-2"></i>Reset
                             </a>
                         </div>
                     </div>
@@ -116,114 +95,112 @@
             </form>
         </div>
 
-        <!-- Course Cards -->
-        <div class="row">
-            @if (Model != null && Model.Any())
-            {
-                @foreach (var course in Model)
-                {
-                    <div class="col-lg-6 col-xl-4 mb-4">
-                        <div class="card course-card">
-                            <div class="course-header">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h3 class="course-title">@course.CourseName</h3>
-                                    <span class="course-code">@course.Code</span>
-                                </div>
-                                <div class="course-status-row">
-                                    <span class="status-badge @(course.IsActive ? "status-active" : "status-inactive")">
-                                        <i class="fas @(course.IsActive ? "fa-check-circle" : "fa-pause-circle") me-1"></i>
-                                        @course.StatusDisplay
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="course-body">
-                                <p class="course-description">@course.Description</p>
-                                
-                                <div class="course-meta">
-                                    <div class="meta-item">
-                                        <i class="fas fa-tag meta-icon"></i>
-                                        <span>@course.CategoryName</span>
-                                    </div>
-                                    <div class="meta-item">
-                                        <i class="fas fa-clock meta-icon"></i>
-                                        <span>@course.DurationDisplay</span>
-                                    </div>
-                                    <div class="meta-item">
+        <!-- Course Table -->
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="table course-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Khóa học</th>
+                            <th scope="col">Cấp độ</th>
+                            <th scope="col">Trạng thái</th>
+                            <th scope="col" class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var course in Model)
+                            {
+                                <tr class="course-row">
+                                    <td>
+                                        <div class="course-info">
+                                            <h6 class="course-name mb-1">@course.CourseName</h6>
+                                            <small class="course-code text-muted">@course.Code</small>
+                                            <div class="course-description-short mt-1">
+                                                @if (course.Description?.Length > 80)
+                                                {
+                                                    <span>@course.Description.Substring(0, 80)...</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>@course.Description</span>
+                                                }
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
                                         <span class="level-badge @course.Level.GetLevelBadgeClass()">
                                             @course.Level.GetLevelDisplay()
                                         </span>
-                                    </div>
-                                    
-                                </div>
-
-                                <!-- Approval Status -->
-                                <div class="course-meta">
-                                    <div class="meta-item">
-                                        <i class="fas fa-clipboard-check meta-icon"></i>
-                                        <span class="approval-badge @(course.Status?.ToLower() switch
+                                    </td>
+                                    <td>
+                                        <span class="status-badge @(course.Status?.ToLower() switch
                                         {
-                                            "pending" => "approval-pending",
-                                            "approved" => "approval-approved",
-                                            "rejected" => "approval-rejected",
-                                            _ => "approval-pending"
+                                            "pending" => "status-pending",
+                                            "approved" => "status-approved",
+                                            "rejected" => "status-rejected",
+                                            _ => "status-pending"
                                         })">
-                                            @course.ApprovalStatusDisplay
+                                            <i class="fas @(course.Status?.ToLower() switch
+                                            {
+                                                "pending" => "fa-clock",
+                                                "approved" => "fa-check-circle",
+                                                "rejected" => "fa-times-circle",
+                                                _ => "fa-clock"
+                                            }) me-1"></i>
+                                            @(course.Status?.ToLower() switch
+                                            {
+                                                "pending" => "Chờ phê duyệt",
+                                                "approved" => "Đã phê duyệt",
+                                                "rejected" => "Bị từ chối",
+                                                _ => "Chờ phê duyệt"
+                                            })
                                         </span>
-                                    </div>
-                                    @if (course.Status.IsApproved() && !string.IsNullOrEmpty(course.ApprovedBy))
-                                    {
-                                        <div class="meta-item">
-                                            <i class="fas fa-user-check meta-icon"></i>
-                                            <span>@course.ApprovedBy</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="action-buttons">
+                                            <a href="@Url.Action("ChiTiet", new { id = course.CourseId })" 
+                                               class="btn btn-sm btn-outline-primary me-1" 
+                                               title="Xem chi tiết">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            @if (course.Status.IsApproved())
+                                            {
+                                                <a href="@Url.Action("DanhSachNhanVien", new { id = course.CourseId })" 
+                                                   class="btn btn-sm btn-outline-success me-1" 
+                                                   title="Danh sách nhân viên">
+                                                    <i class="fas fa-users"></i>
+                                                </a>
+                                            }
+                                            @if (course.Status.IsPending())
+                                            {
+                                                <a href="@Url.Action("PheDuyet", new { id = course.CourseId })" 
+                                                   class="btn btn-sm btn-outline-warning" 
+                                                   title="Phê duyệt">
+                                                    <i class="fas fa-clipboard-check"></i>
+                                                </a>
+                                            }
                                         </div>
-                                    }
-                                </div>
-
-                                <div class="mb-3">
-                                    <strong class="d-block mb-2">
-                                        <i class="fas fa-building me-1"></i>Phòng ban áp dụng:
-                                    </strong>
-                                    <div class="departments-list">@course.DepartmentsDisplay</div>
-                                </div>
-
-                                <div class="course-actions">
-                                    <a href="@Url.Action("ChiTiet", new { id = course.CourseId })" 
-                                       class="action-btn btn-detail">
-                                        <i class="fas fa-eye"></i>
-                                        Chi tiết
-                                    </a>
-                                    @if (course.Status.IsApproved())
-                                    {
-                                        <a href="@Url.Action("DanhSachNhanVien", new { id = course.CourseId })" 
-                                           class="action-btn btn-response">
-                                            <i class="fa-solid fa-list"></i>
-                                            Danh Sách
-                                        </a>
-                                    }
-                                    @if (course.Status.IsPending())
-                                    {
-                                        <a href="@Url.Action("PheDuyet", new { id = course.CourseId })" 
-                                           class="action-btn btn-approve">
-                                            <i class="fas fa-clipboard-check"></i>
-                                            Phê duyệt
-                                        </a>
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                }
-            }
-            else
-            {
-                <div class="col-12">
-                    <div class="empty-state">
-                        <i class="fas fa-graduation-cap"></i>
-                        <h3>Không có khóa học nào</h3>
-                        <p>Hiện tại chưa có khóa học nào phù hợp với bộ lọc của bạn.</p>
-                    </div>
-                </div>
-            }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center py-5">
+                                    <div class="empty-state">
+                                        <i class="fas fa-graduation-cap text-muted mb-3" style="font-size: 3rem;"></i>
+                                        <h5 class="text-muted">Không có khóa học nào</h5>
+                                        <p class="text-muted">Hiện tại chưa có khóa học nào phù hợp với bộ lọc của bạn.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Pagination -->
@@ -238,8 +215,7 @@
                 new Dictionary<string, object>
                 {
                     ["searchTerm"] = ViewBag.SearchTerm ?? "",
-                    ["categoryId"] = ViewBag.CategoryId ?? 0,
-                    ["departmentId"] = ViewBag.DepartmentId ?? 0
+                    ["status"] = ViewBag.Status ?? ""
                 }
             ) { AriaLabel = "Phân trang khóa học", TotalItems = ViewBag.TotalItems })
         }

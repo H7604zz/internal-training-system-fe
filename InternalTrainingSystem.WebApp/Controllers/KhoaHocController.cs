@@ -20,7 +20,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpGet("")]
-        public async Task<IActionResult> Index(int page = 1, string searchTerm = "", int categoryId = 0, int departmentId = 0)
+        public async Task<IActionResult> Index(int page = 1, string searchTerm = "", string status = "")
         {
             try
             {
@@ -38,17 +38,11 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     ).ToList();
                 }
 
-                // Filter theo category
-                if (categoryId > 0)
+                // Filter theo status
+                if (!string.IsNullOrEmpty(status))
                 {
-                    allCourses = allCourses.Where(c => c.CategoryName.Contains(GetCategoryName(categoryId))).ToList();
-                }
-
-                // Filter theo department
-                if (departmentId > 0)
-                {
-                    allCourses = allCourses.Where(c =>
-                        c.Departments.Any(d => d.Id == departmentId)
+                    allCourses = allCourses.Where(c => 
+                        c.Status?.Equals(status, StringComparison.OrdinalIgnoreCase) == true
                     ).ToList();
                 }
 
@@ -65,10 +59,9 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 ViewBag.PageSize = pageSize;
                 ViewBag.TotalItems = totalItems;
                 ViewBag.SearchTerm = searchTerm;
-                ViewBag.CategoryId = categoryId;
-                ViewBag.DepartmentId = departmentId;
+                ViewBag.Status = status;
 
-                // Data cho dropdowns
+                // Data cho dropdowns - giữ lại để sử dụng ở các chỗ khác
                 ViewBag.Categories = GetCategories();
                 ViewBag.Departments = GetDepartments();
 
