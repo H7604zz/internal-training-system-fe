@@ -58,24 +58,6 @@
             </div>
         </div>
 
-        <!-- Send Notification Section -->
-        @if (ViewBag.NotInvitedCount > 0)
-        {
-            <div class="notification-section">
-                <h5 class="notification-title">
-                    <i class="fas fa-bell me-2"></i>Gửi Thông Báo Cho Nhân Viên Mới
-                </h5>
-                <div class="notification-info">
-                    <i class="fas fa-info-circle me-2"></i>
-                    Có <strong>@ViewBag.NotInvitedCount nhân viên</strong> chưa được mời tham gia khóa học này. 
-                    Bạn có thể gửi thông báo mời họ tham gia.
-                </div>
-                <button type="button" class="send-notification-btn" onclick="sendNotificationToNewEmployees()">
-                    <i class="fas fa-paper-plane me-2"></i>Gửi Thông Báo Cho Nhân Viên Mới
-                </button>
-            </div>
-        }
-
         <!-- Search & Department Filter -->
         <div class="search-filter-card">
             <h5 class="mb-3">
@@ -107,7 +89,7 @@
                     <button type="submit" class="btn-search">
                         <i class="fas fa-search me-1"></i>Tìm kiếm
                     </button>
-                    <a href="@Url.Action("PhanHoi", new { id = ViewBag.CourseId })" class="btn-reset">
+                    <a href="@Url.Action("DanhSachNhanVien", "KhoaHoc", new { id = ViewBag.CourseId })" class="btn-reset">
                         <i class="fas fa-undo me-1"></i>Reset
                     </a>
                 </div>
@@ -209,6 +191,32 @@
                                     </div>
                                 }
 
+                                <!-- Nút quyết định của Quản lý trực tiếp khi nhân viên từ chối -->
+                                @if (employee.ResponseType.IsDeclined())
+                                {
+                                    <div class="manager-decision-section mt-3">
+                                        <div class="manager-decision-header">
+                                            <i class="fas fa-user-shield me-2 text-warning"></i>
+                                            <strong>Quyết định của Quản lý trực tiếp:</strong>
+                                            <small class="text-muted">(Quyết định cuối cùng)</small>
+                                        </div>
+                                        <div class="manager-decision-actions mt-2">
+                                            <button type="button" class="btn btn-success btn-sm me-2" 
+                                                    onclick="submitManagerDecisionDirect(@employee.EmployeeId, '@employee.EmployeeName', 'Accept', @ViewBag.CourseId)">
+                                                <i class="fas fa-check me-1"></i>Chấp nhận từ chối
+                                            </button>
+                                            <button type="button" class="btn btn-danger btn-sm" 
+                                                    onclick="submitManagerDecisionDirect(@employee.EmployeeId, '@employee.EmployeeName', 'Reject', @ViewBag.CourseId)">
+                                                <i class="fas fa-times me-1"></i>Từ chối
+                                            </button>
+                                        </div>
+                                        <small class="text-muted d-block mt-1">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Quản lý có thể quyết định buộc nhân viên tham gia hoặc chấp nhận lý do từ chối của nhân viên.
+                                        </small>
+                                    </div>
+                                }
+
                                 <div class="d-flex justify-content-between align-items-center">
                                     @if (!string.IsNullOrEmpty(employee.ContactEmail))
                                     {
@@ -218,28 +226,6 @@
                                         </div>
                                     }
 
-                                    <div class="employee-actions">
-                                        @if (employee.ResponseType.IsDeclined())
-                                        {
-                                            <button type="button" class="btn-invite" 
-                                            onclick="reinviteEmployee(@employee.EmployeeId, '@employee.EmployeeName')">
-                                                <i class="fas fa-redo me-1"></i>Mời lại
-                                            </button>
-                                        }
-                                        @if (employee.ResponseType.IsNotInvited())
-                                        {
-                                            <button type="button" class="btn-send-notification" 
-                                            onclick="sendNotificationToEmployee(@employee.EmployeeId, '@employee.EmployeeName')">
-                                                <i class="fas fa-paper-plane me-1"></i>Gửi thông báo
-                                            </button>
-                                        }
-                                        @if (!string.IsNullOrEmpty(employee.ContactEmail))
-                                        {
-                                            <a href="mailto:@employee.ContactEmail" class="btn-contact">
-                                                <i class="fas fa-envelope me-1"></i>Liên hệ
-                                            </a>
-                                        }
-                                    </div>
                                 </div>
                             </div>
                         }
@@ -293,170 +279,48 @@
             });
         });
 
-        // Send notification to all new employees
-        function sendNotificationToNewEmployees() {
-            const course = {
-                name: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.Course?.CourseName ?? "")),
-                description: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.Course?.Description ?? ""))
-            };
+        // Function to submit manager decision with simple confirmation
+        function submitManagerDecisionDirect(employeeId, employeeName, decision, courseId) {
+            const decisionText = decision === 'Accept' ? 'chấp nhận' : 'từ chối';
+            const confirmMessage = `Nhân viên "${employeeName}" đã gửi yêu cầu từ chối tham gia khóa học.\n\n` +
+        `Với vai trò là quản lý, bạn có muốn ${decisionText.toLowerCase()} yêu cầu này không?\n\n` +
+        `Lưu ý: Quyết định này là cuối cùng và không thể hoàn tác.`;
+
             
-            if (confirm(`Bạn có chắc muốn gửi thông báo về khóa học "${course.name}" cho tất cả nhân viên mới chưa được mời?`)) {
-                // Get all NotInvited employees
-                const notInvitedEmployees = Array.from(document.querySelectorAll('[data-response-type="notinvited"]'));
-                const departmentIds = [...new Set(notInvitedEmployees.map(emp => {
-                    const deptName = emp.querySelector('.employee-meta:nth-child(2)').textContent.trim();
-                    return getDepartmentId(deptName);
-                }))].filter(id => id);
-
-                // Show loading state
-                const btn = event.target;
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang gửi thông báo...';
+            if (confirm(confirmMessage)) {
+                // Prepare data for API call
+                const requestData = {
+                    employeeId: employeeId,
+                    courseId: courseId,
+                    decisionType: decision,
+                    managerNote: `Quyết định ${decisionText} của quản lý trực tiếp`
+                };
                 
-                // Use the existing GuiThongBao method
-                const formData = new FormData();
-                formData.append('courseName', course.name);
-                formData.append('description', course.description);
-                departmentIds.forEach(deptId => {
-                    formData.append('selectedDepartmentIds', deptId);
-                });
-                
-                fetch('@Url.Action("GuiThongBao", "KhoaHoc")', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(`Đã gửi thông báo thành công cho ${data.sentCount} nhân viên!`);
-                        // Refresh page to update status
-                        location.reload();
-                    } else {
-                        alert(`Lỗi: ${data.message}`);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Có lỗi xảy ra khi gửi thông báo. Vui lòng thử lại!');
-                })
-                .finally(() => {
-                    // Reset button
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Gửi Thông Báo Cho Nhân Viên Mới';
-                });
-            }
-        }
-
-        // Send notification to individual employee
-        function sendNotificationToEmployee(employeeId, employeeName) {
-            const course = {
-                name: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.Course?.CourseName ?? "")),
-                description: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.Course?.Description ?? ""))
-            };
-            
-            if (confirm(`Bạn có chắc muốn gửi thông báo về khóa học "${course.name}" cho ${employeeName}?`)) {
-                // Show loading state
-                const btn = event.target;
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang gửi...';
-                
-                // Get employee's department ID
-                const employeeCard = btn.closest('.employee-card');
-                const deptName = employeeCard.querySelector('.employee-meta:nth-child(2)').textContent.trim();
-                const departmentId = getDepartmentId(deptName);
-                
-                const formData = new FormData();
-                formData.append('courseName', course.name);
-                formData.append('description', course.description);
-                formData.append('selectedDepartmentIds', departmentId);
-                
-                fetch('@Url.Action("GuiThongBao", "KhoaHoc")', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(`Đã gửi thông báo cho ${employeeName} thành công!`);
-                        // Update button to show sent status
-                        btn.innerHTML = '<i class="fas fa-check me-1"></i>Đã gửi';
-                        btn.disabled = true;
-                        btn.style.background = '#28a745';
-                    } else {
-                        alert(`Lỗi: ${data.message}`);
-                        // Reset button
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Gửi thông báo';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Có lỗi xảy ra khi gửi thông báo. Vui lòng thử lại!');
-                    // Reset button
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Gửi thông báo';
-                });
-            }
-        }
-
-        // Helper function to get department ID from name
-        function getDepartmentId(deptText) {
-            const deptName = deptText.replace(/\s*\w+\s*:\s*/, ''); // Remove icon and prefix
-            const deptMap = {
-                'IT Department': 1,
-                'Software Development': 2,
-                'Data Analytics': 3,
-                'QA Testing': 4,
-                'Technical Support': 5,
-                'Mobile Development': 6
-            };
-            return deptMap[deptName] || 1;
-        }
-
-        // Reinvite employee function
-        function reinviteEmployee(employeeId, employeeName) {
-            if (confirm(`Bạn có chắc muốn gửi lại lời mời tham gia khóa học cho ${employeeName}?`)) {
-                // Show loading state
-                event.target.disabled = true;
-                event.target.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang gửi...';
-                
-                // Simulate API call
-                fetch('@Url.Action("ReinviteEmployee", "KhoaHoc")', {
+                // Make API call
+                fetch('/khoa-hoc/manager-decision', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        courseId: @ViewBag.CourseId,
-                        employeeId: employeeId
-                    })
+                    body: JSON.stringify(requestData)
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
-                        // Show success message
-                        alert(`Đã gửi lại lời mời cho ${employeeName} thành công!`);
-                        
-                        // Reset button
-                        event.target.disabled = false;
-                        event.target.innerHTML = '<i class="fas fa-redo me-1"></i>Mời lại';
-                        
-                        // Optionally refresh the page or update the card status
-                        // location.reload();
+                        alert('Quyết định đã được ghi nhận thành công!');
+                        window.location.reload();
                     } else {
-                        alert(`Lỗi: ${data.message}`);
-                        // Reset button
-                        event.target.disabled = false;
-                        event.target.innerHTML = '<i class="fas fa-redo me-1"></i>Mời lại';
+                        alert('Có lỗi xảy ra: ' + (data.message || 'Vui lòng thử lại!'));
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Có lỗi xảy ra khi gửi lời mời. Vui lòng thử lại!');
-                    // Reset button
-                    event.target.disabled = false;
-                    event.target.innerHTML = '<i class="fas fa-redo me-1"></i>Mời lại';
+                    alert('Có lỗi xảy ra khi kết nối với server!');
                 });
             }
         }

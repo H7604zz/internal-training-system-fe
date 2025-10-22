@@ -1119,6 +1119,70 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 }
             };
         }
+
+        /// <summary>
+        /// API endpoint cho quyết định của quản lý trực tiếp
+        /// </summary>
+        [HttpPost("manager-decision")]
+        public async Task<IActionResult> ManagerDecision([FromBody] ManagerDecisionRequest request)
+        {
+            try
+            {
+                // Validate request
+                if (request == null)
+                {
+                    return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
+                }
+
+                if (request.EmployeeId <= 0 || request.CourseId <= 0)
+                {
+                    return Json(new { success = false, message = "ID nhân viên hoặc khóa học không hợp lệ" });
+                }
+
+                if (string.IsNullOrEmpty(request.DecisionType) || 
+                    (request.DecisionType != "Accept" && request.DecisionType != "Reject"))
+                {
+                    return Json(new { success = false, message = "Loại quyết định không hợp lệ" });
+                }
+
+                // Kiểm tra authentication
+                if (_authService.IsTokenExpired())
+                {
+                    return Json(new { success = false, message = "Phiên đăng nhập đã hết hạn" });
+                }
+
+                // TODO: Gọi API backend để lưu quyết định của quản lý
+                // var result = await _courseService.SaveManagerDecisionAsync(request);
+
+                // Simulate API call success
+                await Task.Delay(500); // Simulate processing time
+
+                var decisionText = request.DecisionType == "Accept" ? "chấp nhận" : "từ chối cuối cùng";
+                var message = $"Đã {decisionText} quyết định cho nhân viên thành công!";
+
+                return Json(new { 
+                    success = true, 
+                    message = message,
+                    data = new {
+                        employeeId = request.EmployeeId,
+                        courseId = request.CourseId,
+                        decision = request.DecisionType,
+                        note = request.ManagerNote,
+                        timestamp = DateTime.Now
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                // Log error
+                Console.WriteLine($"Error in ManagerDecision: {ex.Message}");
+                
+                return Json(new { 
+                    success = false, 
+                    message = "Có lỗi xảy ra khi xử lý quyết định. Vui lòng thử lại sau!" 
+                });
+            }
+        }
     }
 
     // Request models for API endpoints
@@ -1126,5 +1190,13 @@ namespace InternalTrainingSystem.WebApp.Controllers
     {
         public int CourseId { get; set; }
         public int EmployeeId { get; set; }
+    }
+
+    public class ManagerDecisionRequest
+    {
+        public int EmployeeId { get; set; }
+        public int CourseId { get; set; }
+        public string DecisionType { get; set; } = ""; // "Accept" hoặc "Reject"
+        public string ManagerNote { get; set; } = "";
     }
 }

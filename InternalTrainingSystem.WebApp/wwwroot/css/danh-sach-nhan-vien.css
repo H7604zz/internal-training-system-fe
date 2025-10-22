@@ -180,54 +180,6 @@
     margin-top: 15px;
 }
 
-.btn-invite {
-    background: linear-gradient(135deg, #28a745, #20c997);
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    transition: all 0.2s;
-    cursor: pointer;
-}
-
-.btn-invite:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
-    color: white;
-}
-
-.btn-contact {
-    background: linear-gradient(135deg, #007bff, #0056b3);
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    transition: all 0.2s;
-    text-decoration: none;
-}
-
-.btn-send-notification {
-    background: linear-gradient(135deg, #17a2b8, #138496);
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    transition: all 0.2s;
-    cursor: pointer;
-}
-
-.btn-send-notification:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(23, 162, 184, 0.3);
-    color: white;
-}
-
 .notification-section {
     background: linear-gradient(135deg, #e3f2fd, #f8f9fa);
     border: 2px solid #dee2e6;
