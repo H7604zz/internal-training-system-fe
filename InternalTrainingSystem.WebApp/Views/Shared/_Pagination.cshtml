@@ -122,8 +122,7 @@
     {
         var values = new Dictionary<string, object>(Model.RouteValues ?? new Dictionary<string, object>())
         {
-            ["page"] = page,
-            ["pageSize"] = Model.PageSize
+            ["page"] = page
         };
 
         return Url.Action(Model.ActionName, Model.ControllerName, values) ?? "#";
