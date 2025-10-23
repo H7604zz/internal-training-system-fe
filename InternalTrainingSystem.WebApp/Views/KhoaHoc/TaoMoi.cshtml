@@ -98,15 +98,26 @@
                                 <span asp-validation-for="Duration" class="text-danger"></span>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Trạng thái</label>
-                                <div class="form-check form-switch">
-                                    <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" checked>
-                                    <label asp-for="IsActive" class="form-check-label">
-                                        Khóa học đang hoạt động
-                                    </label>
+                                <label class="form-label">Tùy chọn khóa học</label>
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="form-check form-switch">
+                                        <input asp-for="IsOnline" class="form-check-input" type="checkbox" role="switch" checked>
+                                        <label asp-for="IsOnline" class="form-check-label">
+                                            Khóa học trực tuyến
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input asp-for="IsMandatory" class="form-check-input" type="checkbox" role="switch" checked>
+                                        <label asp-for="IsMandatory" class="form-check-label">
+                                            Khóa học bắt buộc
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Hidden field for IsActive (default false) -->
+                        <input asp-for="IsActive" type="hidden" value="false">
                     </div>
 
                     <!-- Department Selection -->
@@ -185,7 +196,7 @@
                             </div>
                             <div class="help-item">
                                 <i class="fas fa-lightbulb"></i>
-                                <span>Mã khóa học nên theo chuẩn: ABC-123</span>
+                                <span>Mã khóa học nên theo chuẩn: ABC123</span>
                             </div>
                             <div class="help-item">
                                 <i class="fas fa-lightbulb"></i>
@@ -199,30 +210,18 @@
                                 <i class="fas fa-lightbulb"></i>
                                 <span>Chọn ít nhất 1 phòng ban để áp dụng khóa học</span>
                             </div>
+                            <div class="help-item">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>Khóa học sẽ cần được phê duyệt trước khi hoạt động</span>
+                            </div>
+                            <div class="help-item">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>"Trực tuyến" cho khóa học online, "Bắt buộc" cho khóa học bắt buộc</span>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Quick Templates -->
-                    <div class="form-card">
-                        <h3 class="form-section-title">
-                            <i class="fas fa-templates me-2"></i>Mẫu Nhanh
-                        </h3>
-                        
-                        <div class="template-list">
-                            <button type="button" class="template-btn" data-template="it">
-                                <i class="fas fa-laptop-code"></i>
-                                <span>Khóa học IT</span>
-                            </button>
-                            <button type="button" class="template-btn" data-template="soft-skills">
-                                <i class="fas fa-users"></i>
-                                <span>Kỹ năng mềm</span>
-                            </button>
-                            <button type="button" class="template-btn" data-template="management">
-                                <i class="fas fa-chart-line"></i>
-                                <span>Quản lý</span>
-                            </button>
-                        </div>
-                    </div>
+                    
                 </div>
             </div>
         </form>
@@ -629,56 +628,9 @@
                 return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
             }
 
-            // Template buttons
-            const templateButtons = document.querySelectorAll('.template-btn');
-            templateButtons.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const template = this.dataset.template;
-                    applyTemplate(template);
-                });
-            });
+        
 
-            function applyTemplate(template) {
-                const templates = {
-                    'it': {
-                        name: 'Khóa học Lập trình Web',
-                        description: 'Khóa học về phát triển ứng dụng web hiện đại với các công nghệ mới nhất',
-                        level: '@CourseConstants.Levels.Intermediate',
-                        duration: 40
-                    },
-                    'soft-skills': {
-                        name: 'Kỹ năng Giao tiếp hiệu quả',
-                        description: 'Phát triển kỹ năng giao tiếp và làm việc nhóm trong môi trường doanh nghiệp',
-                        level: '@CourseConstants.Levels.Beginner',
-                        duration: 16
-                    },
-                    'management': {
-                        name: 'Khóa học Quản lý dự án',
-                        description: 'Học cách quản lý dự án hiệu quả với các phương pháp Agile và Scrum',
-                        level: '@CourseConstants.Levels.Intermediate',
-                        duration: 24
-                    }
-                };
-
-                const templateData = templates[template];
-                if (templateData) {
-                    if (formElements.name) formElements.name.value = templateData.name;
-                    
-                    const descriptionField = document.getElementById('Description');
-                    if (descriptionField) descriptionField.value = templateData.description;
-                    
-                    if (formElements.level) formElements.level.value = templateData.level;
-                    if (formElements.duration) formElements.duration.value = templateData.duration;
-
-                    // Generate code
-                    if (formElements.code) {
-                        const words = templateData.name.split(' ').slice(0, 2);
-                        const code = words.map(word => word.charAt(0).toUpperCase()).join('') + 
-                                   '-' + String(Math.floor(Math.random() * 100) + 1).padStart(3, '0');
-                        formElements.code.value = code;
-                    }
-                }
-            }
+           
 
             // Department selection counter
             const departmentCheckboxes = document.querySelectorAll('input[name="SelectedDepartmentIds"]');

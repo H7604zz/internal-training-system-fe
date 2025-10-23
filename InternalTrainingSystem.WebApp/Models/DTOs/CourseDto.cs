@@ -14,6 +14,8 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string Category { get; set; } = string.Empty;
         public string CategoryName { get; set; } = string.Empty;
         public bool IsActive { get; set; }
+        public bool IsOnline { get; set; }
+        public bool IsMandatory { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }

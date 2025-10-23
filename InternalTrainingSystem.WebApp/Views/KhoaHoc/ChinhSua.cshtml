@@ -140,15 +140,44 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">
-                                    <i class="fas fa-toggle-on me-1"></i>Trạng thái hoạt động
+                                    <i class="fas fa-cog me-1"></i>Tùy chọn khóa học
                                 </label>
-                                <div class="form-check form-switch mt-2">
-                                    <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch">
-                                    <label asp-for="IsActive" class="form-check-label">
-                                        <span class="fw-semibold">Khóa học đang hoạt động</span>
-                                        <br>
-                                        <small class="text-muted">Cho phép tạo lớp học và đăng ký mới</small>
-                                    </label>
+                                <div class="d-flex flex-column gap-2 mt-2">
+                                    <div class="form-check form-switch">
+                                        <input asp-for="IsOnline" class="form-check-input" type="checkbox" role="switch">
+                                        <label asp-for="IsOnline" class="form-check-label">
+                                            <span class="fw-semibold">Khóa học trực tuyến</span>
+                                            <br>
+                                            <small class="text-muted">Học viên có thể tham gia từ xa</small>
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input asp-for="IsMandatory" class="form-check-input" type="checkbox" role="switch">
+                                        <label asp-for="IsMandatory" class="form-check-label">
+                                            <span class="fw-semibold">Khóa học bắt buộc</span>
+                                            <br>
+                                            <small class="text-muted">Nhân viên bắt buộc phải tham gia</small>
+                                        </label>
+                                    </div>
+                                    @if (Model.Status == "Approved")
+                                    {
+                                        <div class="form-check form-switch">
+                                            <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch">
+                                            <label asp-for="IsActive" class="form-check-label">
+                                                <span class="fw-semibold">Khóa học đang hoạt động</span>
+                                                <br>
+                                                <small class="text-muted">Cho phép tạo lớp học và đăng ký mới</small>
+                                            </label>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <input asp-for="IsActive" type="hidden" value="false">
+                                        <div class="alert alert-info d-flex align-items-center">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            <small>Khóa học sẽ được kích hoạt sau khi được phê duyệt</small>
+                                        </div>
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -491,12 +520,36 @@
                                 </span>
                             </div>
                             <div class="help-item">
-                                <i class="fas fa-@(Model.IsActive ? "play-circle text-success" : "pause-circle text-warning")"></i>
+                                <i class="fas fa-clipboard-check @(Model.Status == "Approved" ? "text-success" : Model.Status == "Rejected" ? "text-danger" : "text-warning")"></i>
                                 <span>
-                                    <strong>Trạng thái:</strong><br>
-                                    <small class="text-muted">@(Model.IsActive ? "Đang hoạt động" : "Tạm dừng")</small>
+                                    <strong>Phê duyệt:</strong><br>
+                                    <small class="text-muted">@(Model.ApprovalStatusDisplay ?? "Chờ phê duyệt")</small>
                                 </span>
                             </div>
+                            <div class="help-item">
+                                <i class="fas fa-@(Model.IsOnline ? "wifi text-info" : "chalkboard-teacher text-primary")"></i>
+                                <span>
+                                    <strong>Hình thức:</strong><br>
+                                    <small class="text-muted">@(Model.IsOnline ? "Trực tuyến" : "Trực tiếp")</small>
+                                </span>
+                            </div>
+                            <div class="help-item">
+                                <i class="fas fa-@(Model.IsMandatory ? "star text-warning" : "star-o text-secondary")"></i>
+                                <span>
+                                    <strong>Yêu cầu:</strong><br>
+                                    <small class="text-muted">@(Model.IsMandatory ? "Bắt buộc" : "Tùy chọn")</small>
+                                </span>
+                            </div>
+                            @if (Model.Status == "Approved")
+                            {
+                                <div class="help-item">
+                                    <i class="fas fa-@(Model.IsActive ? "play-circle text-success" : "pause-circle text-warning")"></i>
+                                    <span>
+                                        <strong>Hoạt động:</strong><br>
+                                        <small class="text-muted">@(Model.IsActive ? "Đang hoạt động" : "Tạm dừng")</small>
+                                    </span>
+                                </div>
+                            }
                             <div class="help-item">
                                 <i class="fas fa-users text-info"></i>
                                 <span>
@@ -523,7 +576,7 @@
                             <div class="help-item">
                                 <i class="fas fa-lightbulb"></i>
                                 <span>
-                                    <strong>Mã khóa học:</strong> Theo định dạng chuẩn: ABC-123 (không được trùng)
+                                    <strong>Mã khóa học:</strong> Theo định dạng chuẩn: ABC123 (không được trùng)
                                 </span>
                             </div>
                             <div class="help-item">
@@ -536,6 +589,18 @@
                                 <i class="fas fa-lightbulb"></i>
                                 <span>
                                     <strong>Thời lượng:</strong> Tính theo giờ học thực tế (bao gồm lý thuyết + thực hành)
+                                </span>
+                            </div>
+                            <div class="help-item">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>
+                                    <strong>Trực tuyến:</strong> Bật nếu khóa học có thể tham gia từ xa
+                                </span>
+                            </div>
+                            <div class="help-item">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>
+                                    <strong>Bắt buộc:</strong> Bật nếu nhân viên bắt buộc phải tham gia khóa học
                                 </span>
                             </div>
                             <div class="help-item">

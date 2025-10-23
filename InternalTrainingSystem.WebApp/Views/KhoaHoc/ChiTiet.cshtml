@@ -105,10 +105,30 @@
                                 </span>
                             </div>
                             <div class="info-item">
-                                <label><i class="fas fa-toggle-on me-1"></i>Trạng thái:</label>
-                                <span class="status-badge @(Model.IsActive ? "status-active" : "status-inactive")">
-                                    <i class="fas @(Model.IsActive ? "fa-check-circle" : "fa-pause-circle") me-1"></i>
-                                    @Model.StatusDisplay
+                                <label><i class="fas fa-globe me-1"></i>Hình thức:</label>
+                                <span class="status-badge @(Model.IsOnline ? "status-online" : "status-offline")">
+                                    @(Model.IsOnline ? "Trực tuyến" : "Trực tiếp")
+                                </span>
+                            </div>
+                            <div class="info-item">
+                                <label><i class="fas fa-exclamation-circle me-1"></i>Yêu cầu:</label>
+                                <span class="status-badge @(Model.IsMandatory ? "status-mandatory" : "status-optional")">
+                                    @(Model.IsMandatory ? "Bắt buộc" : "Tùy chọn")
+                                </span>
+                            </div>
+                            @if (Model.Status == "Approved")
+                            {
+                                <div class="info-item">
+                                    <label><i class="fas fa-toggle-on me-1"></i>Trạng thái:</label>
+                                    <span class="status-badge @(Model.IsActive ? "status-active" : "status-inactive")">
+                                        @Model.StatusDisplay
+                                    </span>
+                                </div>
+                            }
+                            <div class="info-item">
+                                <label><i class="fas fa-clipboard-check me-1"></i>Phê duyệt:</label>
+                                <span class="status-badge @(Model.Status == "Approved" ? "status-approved" : Model.Status == "Rejected" ? "status-rejected" : "status-pending")">
+                                    @Model.ApprovalStatusDisplay
                                 </span>
                             </div>
                             <div class="info-item">
