@@ -75,9 +75,9 @@
                         <label class="form-label">Trạng thái</label>
                         <select class="form-select" name="status">
                             <option value="">Tất cả trạng thái</option>
-                            <option value="pending" selected="@(ViewBag.Status == "pending")">Chờ phê duyệt</option>
-                            <option value="approved" selected="@(ViewBag.Status == "approved")">Đã phê duyệt</option>
-                            <option value="rejected" selected="@(ViewBag.Status == "rejected")">Bị từ chối</option>
+                            <option value="@CourseStatus.Pending" selected="@(ViewBag.Status ==  CourseStatus.Pending)">Chờ phê duyệt</option>
+                            <option value="@CourseStatus.Approved" selected="@(ViewBag.Status == CourseStatus.Approved)">Đã phê duyệt</option>
+                            <option value="@CourseStatus.Rejected" selected="@(ViewBag.Status == CourseStatus.Rejected)">Bị từ chối</option>
                         </select>
                     </div>
                     <div class="col-md-3 mb-3">

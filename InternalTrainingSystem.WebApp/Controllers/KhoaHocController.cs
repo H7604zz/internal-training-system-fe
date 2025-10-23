@@ -12,11 +12,13 @@ namespace InternalTrainingSystem.WebApp.Controllers
     {
         private readonly ICourseService _courseService;
         private readonly IAuthService _authService;
+        private readonly ILogger<KhoaHocController> _logger;
 
-        public KhoaHocController(ICourseService courseService, IAuthService authService)
+        public KhoaHocController(ICourseService courseService, IAuthService authService, ILogger<KhoaHocController> logger)
         {
             _courseService = courseService;
             _authService = authService;
+            _logger = logger;
         }
 
         [HttpGet("")]
@@ -26,10 +28,12 @@ namespace InternalTrainingSystem.WebApp.Controllers
             {
                 // Sử dụng page size cố định từ constants cho trang chính khóa học
                 var pageSize = PaginationConstants.CoursePageSize;
-                // var allCourses = await _courseService.GetCoursesAsync();
-                var allCourses = GetSampleCourseData(); // Sử dụng data mẫu để test
+                
+                // Lấy PagedResult từ service (có chứa TotalCount từ DB)
+                var pagedResult = await _courseService.GetCoursesAsync(page, pageSize);
+                var allCourses = pagedResult.Items.ToList();
 
-                // Filter theo search term
+                // Filter theo search term (nếu cần filter ở client side)
                 if (!string.IsNullOrEmpty(searchTerm))
                 {
                     allCourses = allCourses.Where(c =>
@@ -38,7 +42,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     ).ToList();
                 }
 
-                // Filter theo status
+                // Filter theo status (nếu cần filter ở client side)
                 if (!string.IsNullOrEmpty(status))
                 {
                     allCourses = allCourses.Where(c => 
@@ -46,18 +50,14 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     ).ToList();
                 }
 
-                var totalItems = allCourses.Count;
+                // TotalItems từ DB (không phải đếm theo trang hiện tại)
+                var totalItems = pagedResult.TotalCount;
                 var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
-
-                var pagedCourses = allCourses
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToList();
 
                 ViewBag.CurrentPage = page;
                 ViewBag.TotalPages = totalPages;
                 ViewBag.PageSize = pageSize;
-                ViewBag.TotalItems = totalItems;
+                ViewBag.TotalItems = totalItems; // Tổng số bản ghi trong DB
                 ViewBag.SearchTerm = searchTerm;
                 ViewBag.Status = status;
 
@@ -65,10 +65,11 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 ViewBag.Categories = GetCategories();
                 ViewBag.Departments = GetDepartments();
 
-                return View(pagedCourses);
+                return View(allCourses);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error occurred while loading course list");
                 TempData["Error"] = "Đã xảy ra lỗi khi tải danh sách khóa học.";
                 return View(new List<CourseDto>());
             }
@@ -79,9 +80,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             try
             {
-                // var course = await _courseService.GetCourseByIdAsync(id);
-                var allCourses = GetSampleCourseData(); // Sử dụng data mẫu để test
-                var course = allCourses.FirstOrDefault(c => c.CourseId == id);
+                var course = await _courseService.GetCourseByIdAsync(id);
 
                 if (course == null)
                 {
@@ -103,9 +102,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             try
             {
-                // var course = await _courseService.GetCourseByIdAsync(id);
-                var allCourses = GetSampleCourseData(); // Sử dụng data mẫu để test
-                var course = allCourses.FirstOrDefault(c => c.CourseId == id);
+                var course = await _courseService.GetCourseByIdAsync(id);
 
                 if (course == null)
                 {
@@ -120,6 +117,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, $"Error occurred while loading course {id} for editing");
                 TempData["Error"] = "Đã xảy ra lỗi khi tải thông tin khóa học.";
                 return RedirectToAction("Index");
             }
@@ -137,12 +135,23 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     return View(model);
                 }
 
-                // await _courseService.UpdateCourseAsync(model);
-                TempData["SuccessMessage"] = "Cập nhật khóa học thành công!";
-                return RedirectToAction("ChiTiet", new { id = model.CourseId });
+                var result = await _courseService.UpdateCourseAsync(model);
+                if (result != null)
+                {
+                    TempData["SuccessMessage"] = "Cập nhật khóa học thành công!";
+                    return RedirectToAction("ChiTiet", new { id = model.CourseId });
+                }
+                else
+                {
+                    TempData["Error"] = "Không thể cập nhật khóa học. Vui lòng thử lại.";
+                    ViewBag.Categories = GetCategories();
+                    ViewBag.Departments = GetDepartments();
+                    return View(model);
+                }
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, $"Error occurred while updating course {model.CourseId}");
                 TempData["Error"] = "Đã xảy ra lỗi khi cập nhật khóa học.";
                 ViewBag.Categories = GetCategories();
                 ViewBag.Departments = GetDepartments();
@@ -170,12 +179,23 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     return View(model);
                 }
 
-                // await _courseService.CreateCourseAsync(model);
-                TempData["Success"] = "Thêm khóa học mới thành công! Khóa học đã được gửi để chờ phê duyệt.";
-                return RedirectToAction("Index");
+                var result = await _courseService.CreateCourseAsync(model);
+                if (result != null)
+                {
+                    TempData["Success"] = "Thêm khóa học mới thành công! Khóa học đã được gửi để chờ phê duyệt.";
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    TempData["Error"] = "Không thể tạo khóa học. Vui lòng thử lại.";
+                    ViewBag.Categories = GetCategories();
+                    ViewBag.Departments = GetDepartments();
+                    return View(model);
+                }
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error occurred while creating new course");
                 TempData["Error"] = "Đã xảy ra lỗi khi thêm khóa học.";
                 ViewBag.Categories = GetCategories();
                 ViewBag.Departments = GetDepartments();
@@ -231,22 +251,18 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             try
             {
-                var course = GetSampleCourseData().FirstOrDefault(c => c.CourseId == id);
+                var course = await _courseService.GetCourseByIdAsync(id);
                 if (course == null)
                 {
                     TempData["Error"] = "Không tìm thấy khóa học.";
                     return RedirectToAction("Index");
                 }
 
-                // Get employee responses for this course
-                var responses = GetSampleEmployeeResponses(id);
+                // TODO: Replace with actual API call to get employee responses
+                // For now, return empty list until employee response API is implemented
+                var responses = new List<EmployeeResponseDto>();
 
-                // Sort by priority: NotInvited first, then others
-                responses = responses.OrderBy(r => r.ResponseType == EmployeeResponseType.NotInvited ? 0 : 1)
-                                   .ThenBy(r => r.EmployeeName)
-                                   .ToList();
-
-                // Apply filters
+                // Apply filters when data is available
                 if (!string.IsNullOrEmpty(employeeId))
                 {
                     responses = responses.Where(r => r.EmployeeId.ToString().Contains(employeeId, StringComparison.OrdinalIgnoreCase)).ToList();
@@ -277,6 +293,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, $"Error occurred while getting employee list for course {id}");
                 TempData["Error"] = "Đã xảy ra lỗi khi tải danh sách nhân viên.";
                 return RedirectToAction("Index");
             }
@@ -312,9 +329,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             try
             {
-                // var course = await _courseService.GetCourseForApprovalAsync(id);
-                var allCourses = GetSampleCourseDataForApproval(); // Sử dụng data mẫu để test
-                var course = allCourses.FirstOrDefault(c => c.CourseId == id);
+                var course = await _courseService.GetCourseByIdAsync(id);
 
                 if (course == null)
                 {
@@ -330,12 +345,13 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
                 // Thêm thông tin người tạo và lịch sử phê duyệt
                 ViewBag.CreatedBy = course.CreatedBy ?? "Nhân viên đào tạo";
-                ViewBag.ApprovalHistory = GetApprovalHistory(id);
+                ViewBag.ApprovalHistory = await GetApprovalHistory(id);
 
                 return View(course);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, $"Error occurred while loading course {id} for approval");
                 TempData["Error"] = "Đã xảy ra lỗi khi tải thông tin khóa học để phê duyệt.";
                 return RedirectToAction("Index");
             }
@@ -356,44 +372,12 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     });
                 }
 
-                // Simulate processing time
-                await Task.Delay(1000);
-
-                // Here you would call the actual service
-                // var result = await _courseService.ApproveCourseAsync(request);
-
-                // For demo purposes, simulate success
-                var course = GetSampleCourseDataForApproval().FirstOrDefault(c => c.CourseId == request.CourseId);
-                if (course == null)
-                {
-                    return Json(new CourseApprovalResponse
-                    {
-                        Success = false,
-                        Message = "Không tìm thấy khóa học.",
-                        ErrorCode = ErrorCode.CourseNotFound
-                    });
-                }
-
-                if (request.Action.ToLower() == ApprovalAction.Approve)
-                {
-                    // Simulate approval
-
-                    return Json(new CourseApprovalResponse
-                    {
-                        Success = true,
-                        Message = "Khóa học đã được phê duyệt thành công!"
-                    });
-                }
-
-                return Json(new CourseApprovalResponse
-                {
-                    Success = false,
-                    Message = "Hành động không được hỗ trợ.",
-                    ErrorCode = ErrorCode.InvalidAction
-                });
+                var result = await _courseService.ApproveCourseAsync(request);
+                return Json(result);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, $"Error occurred while approving course {request.CourseId}");
                 return Json(new CourseApprovalResponse
                 {
                     Success = false,
@@ -428,43 +412,12 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     });
                 }
 
-                // Simulate processing time
-                await Task.Delay(1000);
-
-                // Here you would call the actual service
-                // var result = await _courseService.RejectCourseAsync(request);
-
-                // For demo purposes, simulate success
-                var course = GetSampleCourseDataForApproval().FirstOrDefault(c => c.CourseId == request.CourseId);
-                if (course == null)
-                {
-                    return Json(new CourseApprovalResponse
-                    {
-                        Success = false,
-                        Message = "Không tìm thấy khóa học.",
-                        ErrorCode = ErrorCode.CourseNotFound
-                    });
-                }
-
-                if (request.Action.ToLower() == "reject")
-                {
-                    // Simulate rejection
-                    return Json(new CourseApprovalResponse
-                    {
-                        Success = true,
-                        Message = "Khóa học đã bị từ chối. Thông báo đã được gửi tới người tạo."
-                    });
-                }
-
-                return Json(new CourseApprovalResponse
-                {
-                    Success = false,
-                    Message = "Hành động không được hỗ trợ.",
-                    ErrorCode = ErrorCode.InvalidAction
-                });
+                var result = await _courseService.RejectCourseAsync(request);
+                return Json(result);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, $"Error occurred while rejecting course {request.CourseId}");
                 return Json(new CourseApprovalResponse
                 {
                     Success = false,
@@ -474,226 +427,73 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
         }
 
-        private List<CourseDto> GetSampleCourseData()
-        {
-            var departments = GetDepartments();
 
-            return new List<CourseDto>
+
+        private async Task<List<ApprovalHistoryDto>> GetApprovalHistory(int courseId)
+        {
+            try
             {
-                new CourseDto
+                var course = await _courseService.GetCourseByIdAsync(courseId);
+                if (course == null) return new List<ApprovalHistoryDto>();
+
+                var history = new List<ApprovalHistoryDto>
                 {
-                    CourseId = 1,
-                    CourseName = "Lập Trình C# Cơ Bản",
-                    Code = "CS001",
-                    Description = "Khóa học cung cấp kiến thức nền tảng về ngôn ngữ lập trình C#, bao gồm cú pháp, OOP, và các khái niệm cơ bản.",
-                    Duration = 40,
-                    Level = "Cơ bản",
-                    CategoryName = "Lập trình",
-                    IsActive = true,
-                    IsOnline = false,
-                    IsMandatory = true,
-                    CreatedDate = DateTime.Now.AddDays(-30),
-                    CreatedBy = "Nguyễn Văn Nam",
-                    Status = CourseStatus.Approved,
-                    ApprovedBy = "Trần Thị Hương - Giám đốc",
-                    ApprovalDate = DateTime.Now.AddDays(-25),
-                    Departments = departments.Take(2).ToList()
-                },
-                new CourseDto
+                    new ApprovalHistoryDto
+                    {
+                        Id = 1,
+                        CourseId = courseId,
+                        Action = ApprovalAction.Created,
+                        Description = "Khóa học được tạo",
+                        ActionBy = course.CreatedBy ?? "Nhân viên đào tạo",
+                        ActionDate = course.CreatedDate
+                    },
+                    new ApprovalHistoryDto
+                    {
+                        Id = 2,
+                        CourseId = courseId,
+                        Action = ApprovalAction.Submitted,
+                        Description = "Gửi yêu cầu phê duyệt",
+                        Note = "Khóa học đã sẵn sàng để phê duyệt",
+                        ActionBy = course.CreatedBy ?? "Nhân viên đào tạo",
+                        ActionDate = course.CreatedDate.AddMinutes(30)
+                    }
+                };
+
+                // Add approval/rejection history if exists
+                if (course.Status == CourseStatus.Approved && course.ApprovalDate.HasValue)
                 {
-                    CourseId = 2,
-                    CourseName = "ASP.NET Core Web API Development",
-                    Code = "API001",
-                    Description = "Khóa học chuyên sâu về phát triển Web API sử dụng ASP.NET Core, bao gồm RESTful API, Authentication, Authorization.",
-                    Duration = 60,
-                    Level = "Trung cấp",
-                    CategoryName = "Web Development",
-                    IsActive = true,
-                    IsOnline = true,
-                    IsMandatory = false,
-                    CreatedDate = DateTime.Now.AddDays(-25),
-                    CreatedBy = "Lê Minh Đức",
-                    Status = CourseStatus.Approved,
-                    ApprovedBy = "Trần Thị Hương - Giám đốc",
-                    ApprovalDate = DateTime.Now.AddDays(-20),
-                    Departments = departments.Where(d => d.Name.Contains("IT") || d.Name.Contains("Tech")).ToList()
-                },
-                new CourseDto
-                {
-                    CourseId = 3,
-                    CourseName = "React JS Frontend Master",
-                    Code = "FE001",
-                    Description = "Khóa học toàn diện về React JS, từ cơ bản đến nâng cao, bao gồm Hooks, Context API, Redux, và các best practices.",
-                    Duration = 50,
-                    Level = "Nâng cao",
-                    CategoryName = "Frontend",
-                    IsActive = true,
-                    IsOnline = true,
-                    IsMandatory = false,
-                    CreatedDate = DateTime.Now.AddDays(-20),
-                    CreatedBy = "Phạm Thị Mai",
-                    Status = CourseStatus.Approved,
-                    ApprovedBy = "Trần Thị Hương - Giám đốc",
-                    ApprovalDate = DateTime.Now.AddDays(-15),
-                    Departments = departments.Where(d => d.Name.Contains("IT")).ToList()
-                },
-                new CourseDto
-                {
-                    CourseId = 4,
-                    CourseName = "Database Design & SQL Server",
-                    Code = "DB001",
-                    Description = "Khóa học về thiết kế cơ sở dữ liệu và quản trị SQL Server, bao gồm normalization, indexing, stored procedures.",
-                    Duration = 45,
-                    Level = "Trung cấp",
-                    CategoryName = "Database",
-                    IsActive = false,
-                    IsOnline = false,
-                    IsMandatory = true,
-                    CreatedDate = DateTime.Now.AddDays(-15),
-                    CreatedBy = "Hoàng Văn Tùng",
-                    Status = CourseStatus.Rejected,
-                    ApprovedBy = "Trần Thị Hương - Giám đốc",
-                    ApprovalDate = DateTime.Now.AddDays(-10),
-                    RejectionReason = "Nội dung khóa học chưa chi tiết, thiếu thông tin về thực hành. Vui lòng bổ sung thêm các bài lab và project thực tế.",
-                    Departments = departments.Take(3).ToList()
-                },
-                new CourseDto
-                {
-                    CourseId = 5,
-                    CourseName = "Angular Framework Complete Guide",
-                    Code = "NG001",
-                    Description = "Khóa học đầy đủ về Angular framework, từ cơ bản đến nâng cao, bao gồm TypeScript, RxJS, và Angular Material.",
-                    Duration = 55,
-                    Level = "Trung cấp",
-                    CategoryName = "Frontend",
-                    IsActive = true,
-                    IsOnline = true,
-                    IsMandatory = false,
-                    CreatedDate = DateTime.Now.AddDays(-10),
-                    CreatedBy = "Vũ Thị Lan",
-                    Status = CourseStatus.Approved,
-                    ApprovedBy = "Trần Thị Hương - Giám đốc",
-                    ApprovalDate = DateTime.Now.AddDays(-5),
-                    Departments = departments.Where(d => d.Name.Contains("IT") || d.Name.Contains("Dev")).ToList()
-                },
-                new CourseDto
-                {
-                    CourseId = 6,
-                    CourseName = "Python for Data Science",
-                    Code = "PY001",
-                    Description = "Khóa học Python ứng dụng trong Data Science, bao gồm pandas, numpy, matplotlib, scikit-learn.",
-                    Duration = 65,
-                    Level = "Nâng cao",
-                    CategoryName = "Data Science",
-                    IsActive = true,
-                    IsOnline = false,
-                    IsMandatory = true,
-                    CreatedDate = DateTime.Now.AddDays(-5),
-                    CreatedBy = "Đặng Minh Quân",
-                    Status = CourseStatus.Pending,
-                    Departments = departments.Where(d => d.Name.Contains("Data") || d.Name.Contains("Analytics")).ToList()
-                },
-                new CourseDto
-                {
-                    CourseId = 7,
-                    CourseName = "DevOps & CI/CD Pipeline",
-                    Code = "DO001",
-                    Description = "Khóa học về DevOps practices, CI/CD pipeline, Docker, Kubernetes, và cloud deployment.",
-                    Duration = 70,
-                    Level = "Nâng cao",
-                    CategoryName = "DevOps",
-                    IsActive = true,
-                    IsOnline = true,
-                    IsMandatory = false,
-                    CreatedDate = DateTime.Now.AddDays(-2),
-                    CreatedBy = "Bùi Văn Hải",
-                    Status = CourseStatus.Pending,
-                    Departments = departments.Take(4).ToList()
-                },
-                new CourseDto
-                {
-                    CourseId = 8,
-                    CourseName = "Mobile App Development with Flutter",
-                    Code = "FL001",
-                    Description = "Khóa học phát triển ứng dụng di động đa nền tảng sử dụng Flutter framework và Dart language.",
-                    Duration = 60,
-                    Level = "Trung cấp",
-                    CategoryName = "Mobile Development",
-                    IsActive = false,
-                    IsOnline = false,
-                    IsMandatory = false,
-                    CreatedDate = DateTime.Now.AddDays(-1),
-                    CreatedBy = "Trịnh Thị Hoa",
-                    Status = CourseStatus.Pending,
-                    Departments = departments.Where(d => d.Name.Contains("Mobile") || d.Name.Contains("IT")).ToList()
+                    history.Add(new ApprovalHistoryDto
+                    {
+                        Id = 3,
+                        CourseId = courseId,
+                        Action = ApprovalAction.Approved,
+                        Description = "Khóa học đã được phê duyệt",
+                        Note = "Khóa học đã được phê duyệt và có thể tạo lớp học",
+                        ActionBy = course.ApprovedBy ?? "Giám đốc",
+                        ActionDate = course.ApprovalDate.Value
+                    });
                 }
-            };
-        }
-
-        private List<CourseDto> GetSampleCourseDataForApproval()
-        {
-            var allCourses = GetSampleCourseData();
-            // Return courses that are pending approval for the approval view
-            return allCourses.Where(c => c.Status == CourseStatus.Pending).ToList();
-        }
-
-        private List<ApprovalHistoryDto> GetApprovalHistory(int courseId)
-        {
-            var course = GetSampleCourseData().FirstOrDefault(c => c.CourseId == courseId);
-            if (course == null) return new List<ApprovalHistoryDto>();
-
-            var history = new List<ApprovalHistoryDto>
-            {
-                new ApprovalHistoryDto
+                else if (course.Status == CourseStatus.Rejected && course.ApprovalDate.HasValue)
                 {
-                    Id = 1,
-                    CourseId = courseId,
-                    Action = ApprovalAction.Created,
-                    Description = "Khóa học được tạo",
-                    ActionBy = course.CreatedBy ?? "Nhân viên đào tạo",
-                    ActionDate = course.CreatedDate
-                },
-                new ApprovalHistoryDto
-                {
-                    Id = 2,
-                    CourseId = courseId,
-                    Action = ApprovalAction.Submitted,
-                    Description = "Gửi yêu cầu phê duyệt",
-                    Note = "Khóa học đã sẵn sàng để phê duyệt",
-                    ActionBy = course.CreatedBy ?? "Nhân viên đào tạo",
-                    ActionDate = course.CreatedDate.AddMinutes(30)
+                    history.Add(new ApprovalHistoryDto
+                    {
+                        Id = 3,
+                        CourseId = courseId,
+                        Action = ApprovalAction.Rejected,
+                        Description = "Khóa học bị từ chối",
+                        Note = course.RejectionReason,
+                        ActionBy = course.ApprovedBy ?? "Giám đốc",
+                        ActionDate = course.ApprovalDate.Value
+                    });
                 }
-            };
 
-            // Add approval/rejection history if exists
-            if (course.Status == CourseStatus.Approved && course.ApprovalDate.HasValue)
-            {
-                history.Add(new ApprovalHistoryDto
-                {
-                    Id = 3,
-                    CourseId = courseId,
-                    Action = ApprovalAction.Approved,
-                    Description = "Khóa học đã được phê duyệt",
-                    Note = "Khóa học đã được phê duyệt và có thể tạo lớp học",
-                    ActionBy = course.ApprovedBy ?? "Giám đốc",
-                    ActionDate = course.ApprovalDate.Value
-                });
+                return history.OrderBy(h => h.ActionDate).ToList();
             }
-            else if (course.Status == CourseStatus.Rejected && course.ApprovalDate.HasValue)
+            catch (Exception ex)
             {
-                history.Add(new ApprovalHistoryDto
-                {
-                    Id = 3,
-                    CourseId = courseId,
-                    Action = ApprovalAction.Rejected,
-                    Description = "Khóa học bị từ chối",
-                    Note = course.RejectionReason,
-                    ActionBy = course.ApprovedBy ?? "Giám đốc",
-                    ActionDate = course.ApprovalDate.Value
-                });
+                _logger.LogError(ex, $"Error occurred while getting approval history for course {courseId}");
+                return new List<ApprovalHistoryDto>();
             }
-
-            return history.OrderBy(h => h.ActionDate).ToList();
         }
 
 
@@ -748,169 +548,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             return employeeCounts.ContainsKey(departmentId) ? employeeCounts[departmentId] : 0;
         }
 
-        private List<EmployeeResponseDto> GetSampleEmployeeResponses(int courseId)
-        {
-            return new List<EmployeeResponseDto>
-            {
-                new EmployeeResponseDto
-                {
-                    Id = 1,
-                    CourseId = courseId,
-                    EmployeeId = 101,
-                    EmployeeName = "Nguyễn Văn An",
-                    DepartmentName = "IT Department",
-                    Position = "Senior Developer",
-                    ResponseType = EmployeeResponseType.Accepted,
-                    ResponseDate = DateTime.Now.AddHours(-2),
-                    Note = "Tôi rất quan tâm đến khóa học này và mong muốn tham gia.",
-                    ContactEmail = "an.nguyen@company.com"
-                },
-                new EmployeeResponseDto
-                {
-                    Id = 2,
-                    CourseId = courseId,
-                    EmployeeId = 102,
-                    EmployeeName = "Trần Thị Bình",
-                    DepartmentName = "Software Development",
-                    Position = "Frontend Developer",
-                    ResponseType = EmployeeResponseType.Accepted,
-                    ResponseDate = DateTime.Now.AddHours(-1),
-                    Note = "Khóa học phù hợp với công việc hiện tại của tôi.",
-                    ContactEmail = "binh.tran@company.com"
-                },
-                new EmployeeResponseDto
-                {
-                    Id = 3,
-                    CourseId = courseId,
-                    EmployeeId = 103,
-                    EmployeeName = "Lê Minh Cường",
-                    DepartmentName = "Data Analytics",
-                    Position = "Data Analyst",
-                    ResponseType = EmployeeResponseType.Declined,
-                    ResponseDate = DateTime.Now.AddMinutes(-30),
-                    Note = "Hiện tại tôi đang có dự án quan trọng, không thể tham gia lúc này.",
-                    ContactEmail = "cuong.le@company.com"
-                },
-                new EmployeeResponseDto
-                {
-                    Id = 4,
-                    CourseId = courseId,
-                    EmployeeId = 104,
-                    EmployeeName = "Phạm Thị Dung",
-                    DepartmentName = "QA Testing",
-                    Position = "QA Engineer",
-                    ResponseType = EmployeeResponseType.Pending,
-                    ResponseDate = null,
-                    Note = null,
-                    ContactEmail = "dung.pham@company.com"
-                },
-                new EmployeeResponseDto
-                {
-                    Id = 5,
-                    CourseId = courseId,
-                    EmployeeId = 105,
-                    EmployeeName = "Vũ Văn Em",
-                    DepartmentName = "Technical Support",
-                    Position = "Support Engineer",
-                    ResponseType = EmployeeResponseType.Accepted,
-                    ResponseDate = DateTime.Now.AddMinutes(-15),
-                    Note = "Tôi muốn nâng cao kỹ năng kỹ thuật của mình.",
-                    ContactEmail = "em.vu@company.com"
-                },
-                new EmployeeResponseDto
-                {
-                    Id = 6,
-                    CourseId = courseId,
-                    EmployeeId = 106,
-                    EmployeeName = "Hoàng Thị Phương",
-                    DepartmentName = "Mobile Development",
-                    Position = "Mobile Developer",
-                    ResponseType = EmployeeResponseType.Pending,
-                    ResponseDate = null,
-                    Note = null,
-                    ContactEmail = "phuong.hoang@company.com"
-                },
-                new EmployeeResponseDto
-                {
-                    Id = 7,
-                    CourseId = courseId,
-                    EmployeeId = 107,
-                    EmployeeName = "Đặng Văn Giang",
-                    DepartmentName = "IT Department",
-                    Position = "System Administrator",
-                    ResponseType = EmployeeResponseType.Accepted,
-                    ResponseDate = DateTime.Now.AddMinutes(-45),
-                    Note = "Khóa học này sẽ giúp tôi hiểu rõ hơn về hệ thống.",
-                    ContactEmail = "giang.dang@company.com"
-                },
-                new EmployeeResponseDto
-                {
-                    Id = 8,
-                    CourseId = courseId,
-                    EmployeeId = 108,
-                    EmployeeName = "Bùi Thị Hạnh",
-                    DepartmentName = "Software Development",
-                    Position = "Backend Developer",
-                    ResponseType = EmployeeResponseType.Declined,
-                    ResponseDate = DateTime.Now.AddHours(-3),
-                    Note = "Tôi đã có kiến thức về chủ đề này rồi.",
-                    ContactEmail = "hanh.bui@company.com"
-                },
-                // Nh�n vi�n m?i - chua du?c m?i
-                new EmployeeResponseDto
-                {
-                    Id = 9,
-                    CourseId = courseId,
-                    EmployeeId = 109,
-                    EmployeeName = "Trần Minh Khôi",
-                    DepartmentName = "IT Department",
-                    Position = "Junior Developer",
-                    ResponseType = EmployeeResponseType.NotInvited,
-                    ResponseDate = null,
-                    Note = null,
-                    ContactEmail = "khoi.tran@company.com"
-                },
-                new EmployeeResponseDto
-                {
-                    Id = 10,
-                    CourseId = courseId,
-                    EmployeeId = 110,
-                    EmployeeName = "Nguyễn Thị Lan",
-                    DepartmentName = "Software Development",
-                    Position = "Junior Frontend Developer",
-                    ResponseType = EmployeeResponseType.NotInvited,
-                    ResponseDate = null,
-                    Note = null,
-                    ContactEmail = "lan.nguyen@company.com"
-                },
-                new EmployeeResponseDto
-                {
-                    Id = 11,
-                    CourseId = courseId,
-                    EmployeeId = 111,
-                    EmployeeName = "Lê Văn Minh",
-                    DepartmentName = "Data Analytics",
-                    Position = "Data Entry Specialist",
-                    ResponseType = EmployeeResponseType.NotInvited,
-                    ResponseDate = null,
-                    Note = null,
-                    ContactEmail = "minh.le@company.com"
-                },
-                new EmployeeResponseDto
-                {
-                    Id = 12,
-                    CourseId = courseId,
-                    EmployeeId = 112,
-                    EmployeeName = "Phạm Văn Nam",
-                    DepartmentName = "QA Testing",
-                    Position = "Manual Tester",
-                    ResponseType = EmployeeResponseType.NotInvited,
-                    ResponseDate = null,
-                    Note = null,
-                    ContactEmail = "nam.pham@company.com"
-                }
-            };
-        }
+
     
 
         /// <summary>
@@ -931,16 +569,15 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 }
 
                 // Lấy thông tin nhân viên từ session
-                //var employeeId = HttpContext.Session.GetString("EmployeeId");
-                var employeeId = "He173343"; //test data
+                var employeeId = HttpContext.Session.GetString("EmployeeId") ?? "He173343"; // fallback for testing
                 if (string.IsNullOrEmpty(employeeId))
                 {
                     TempData["Error"] = "Không tìm thấy thông tin nhân viên.";
                     return RedirectToAction("Index", "TrangChu");
                 }
 
-                // Lấy danh sách khóa học (dùng dữ liệu mẫu cho demo)
-                var allCourses = GetSampleEmployeeCourses(employeeId);
+                // Lấy danh sách khóa học từ API
+                var allCourses = await _courseService.GetEmployeeCoursesAsync(employeeId);
 
                 // Lọc theo trạng thái
                 var filteredCourses = status.ToLower() switch
@@ -976,6 +613,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, $"Error occurred while getting employee courses");
                 TempData["Error"] = "Đã xảy ra lỗi khi tải danh sách khóa học.";
                 return RedirectToAction("Index", "TrangChu");
             }
@@ -1000,134 +638,32 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     return Json(new { success = false, message = "Không tìm thấy thông tin nhân viên" });
                 }
 
-                // TODO: Gọi API để cập nhật phản hồi
-                // var result = await _courseService.RespondToCourseAsync(courseId, employeeId, responseType, note);
+                var result = await _courseService.RespondToCourseAsync(courseId, employeeId, responseType, note);
 
-                // Simulate success response
-                var message = responseType.ToLower() switch
+                if (result)
                 {
-                    "accepted" => "Đã xác nhận tham gia khóa học thành công!",
-                    "declined" => "Đã từ chối tham gia khóa học.",
-                    _ => "Đã cập nhật phản hồi thành công!"
-                };
+                    var message = responseType.ToLower() switch
+                    {
+                        "accepted" => "Đã xác nhận tham gia khóa học thành công!",
+                        "declined" => "Đã từ chối tham gia khóa học.",
+                        _ => "Đã cập nhật phản hồi thành công!"
+                    };
 
-                return Json(new { success = true, message = message });
+                    return Json(new { success = true, message = message });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Không thể cập nhật phản hồi. Vui lòng thử lại." });
+                }
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, $"Error occurred while responding to course {courseId} for employee {HttpContext.Session.GetString("EmployeeId")}");
                 return Json(new { success = false, message = "Đã xảy ra lỗi khi cập nhật phản hồi" });
             }
         }
 
-        /// <summary>
-        /// Sample data for testing employee courses
-        /// </summary>
-        private List<EmployeeCourseDto> GetSampleEmployeeCourses(string employeeId)
-        {
-            return new List<EmployeeCourseDto>
-            {
-                new EmployeeCourseDto
-                {
-                    CourseId = 1,
-                    CourseCode = "COURSE001",
-                    CourseName = "Khóa học lập trình C# nâng cao",
-                    Description = "Khóa học lập trình C# từ cơ bản đến nâng cao, bao gồm ASP.NET Core, Entity Framework",
-                    Duration = "40 giờ",
-                    Level = CourseConstants.Levels.Advanced,
-                    StartDate = DateTime.Now.AddDays(15),
-                    EndDate = DateTime.Now.AddDays(45),
-                    TrainerName = "Nguyễn Văn Trainer",
-                    DepartmentName = "Phòng Đào Tạo",
-                    ResponseType = "Pending",
-                    ResponseDate = null,
-                    Note = null,
-                    InvitedDate = DateTime.Now.AddDays(-3),
-                    MaxParticipants = 20,
-                    CurrentParticipants = 15,
-                    Status = "Open"
-                },
-                new EmployeeCourseDto
-                {
-                    CourseId = 2,
-                    CourseCode = "COURSE002",
-                    CourseName = "Khóa học React.js Frontend Development",
-                    Description = "Học React.js để xây dựng ứng dụng web hiện đại, bao gồm Hooks, Context API, Redux",
-                    Duration = "32 giờ",
-                    Level = CourseConstants.Levels.Intermediate,
-                    StartDate = DateTime.Now.AddDays(-20),
-                    EndDate = DateTime.Now.AddDays(-5),
-                    TrainerName = "Trần Thị Frontend",
-                    DepartmentName = "Phòng Đào Tạo",
-                    ResponseType = "Accepted",
-                    ResponseDate = DateTime.Now.AddDays(-18),
-                    Note = "Rất hứng thú với khóa học này",
-                    InvitedDate = DateTime.Now.AddDays(-25),
-                    MaxParticipants = 15,
-                    CurrentParticipants = 12,
-                    Status = "Completed"
-                },
-                new EmployeeCourseDto
-                {
-                    CourseId = 3,
-                    CourseCode = "COURSE003",
-                    CourseName = "Khóa học Database Design & SQL Server",
-                    Description = "Thiết kế cơ sở dữ liệu và tối ưu hóa hiệu suất SQL Server",
-                    Duration = "24 giờ",
-                    Level = CourseConstants.Levels.Advanced,
-                    StartDate = DateTime.Now.AddDays(-45),
-                    EndDate = DateTime.Now.AddDays(-30),
-                    TrainerName = "Lê Văn Database",
-                    DepartmentName = "Phòng Đào Tạo",
-                    ResponseType = "Declined",
-                    ResponseDate = DateTime.Now.AddDays(-40),
-                    Note = "Hiện tại bận project khẩn cấp, không thể tham gia",
-                    InvitedDate = DateTime.Now.AddDays(-50),
-                    MaxParticipants = 25,
-                    CurrentParticipants = 18,
-                    Status = "Completed"
-                },
-                new EmployeeCourseDto
-                {
-                    CourseId = 4,
-                    CourseCode = "COURSE004",
-                    CourseName = "Khóa học DevOps và CI/CD Pipeline",
-                    Description = "Tìm hiểu về DevOps, Docker, Kubernetes và xây dựng CI/CD pipeline",
-                    Duration = "48 giờ",
-                    Level = CourseConstants.Levels.Advanced,
-                    StartDate = DateTime.Now.AddDays(30),
-                    EndDate = DateTime.Now.AddDays(75),
-                    TrainerName = "Phạm Văn DevOps",
-                    DepartmentName = "Phòng Đào Tạo",
-                    ResponseType = "Pending",
-                    ResponseDate = null,
-                    Note = null,
-                    InvitedDate = DateTime.Now.AddDays(-1),
-                    MaxParticipants = 12,
-                    CurrentParticipants = 8,
-                    Status = "Open"
-                },
-                new EmployeeCourseDto
-                {
-                    CourseId = 5,
-                    CourseCode = "COURSE005",
-                    CourseName = "Khóa học Agile & Scrum Methodology",
-                    Description = "Phương pháp quản lý dự án Agile và Scrum framework",
-                    Duration = "16 giờ",
-                    Level = CourseConstants.Levels.Beginner,
-                    StartDate = DateTime.Now.AddDays(-10),
-                    EndDate = DateTime.Now.AddDays(5),
-                    TrainerName = "Hoàng Thị Agile",
-                    DepartmentName = "Phòng Đào Tạo",
-                    ResponseType = "Accepted",
-                    ResponseDate = DateTime.Now.AddDays(-8),
-                    Note = "Cần thiết cho công việc hiện tại",
-                    InvitedDate = DateTime.Now.AddDays(-15),
-                    MaxParticipants = 30,
-                    CurrentParticipants = 25,
-                    Status = "InProgress"
-                }
-            };
-        }
+
 
         /// <summary>
         /// API endpoint cho quyết định của quản lý trực tiếp
@@ -1160,10 +696,10 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     return Json(new { success = false, message = "Phiên đăng nhập đã hết hạn" });
                 }
 
-                // TODO: Gọi API backend để lưu quyết định của quản lý
+                // TODO: Implement actual API call when manager decision endpoint is available
                 // var result = await _courseService.SaveManagerDecisionAsync(request);
 
-                // Simulate API call success
+                // Simulate API call success for now
                 await Task.Delay(500); // Simulate processing time
 
                 var decisionText = request.DecisionType == "Accept" ? "chấp nhận" : "từ chối cuối cùng";
@@ -1183,8 +719,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
             catch (Exception ex)
             {
-                // Log error
-                Console.WriteLine($"Error in ManagerDecision: {ex.Message}");
+                _logger.LogError(ex, "Error in ManagerDecision");
                 
                 return Json(new { 
                     success = false, 

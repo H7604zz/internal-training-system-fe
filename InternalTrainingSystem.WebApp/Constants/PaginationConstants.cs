@@ -8,7 +8,7 @@ namespace InternalTrainingSystem.WebApp.Constants
         /// <summary>
         /// Số lượng khóa học hiển thị trên mỗi trang - dùng cho trang chính khóa học
         /// </summary>
-        public const int CoursePageSize = 9;
+        public const int CoursePageSize = 10;
 
         /// <summary>
         /// Số lượng lớp học hiển thị trên mỗi trang - dùng cho danh sách lớp học
