@@ -29,36 +29,7 @@
             </div>
         </div>
 
-        <!-- Statistics -->
-        <div class="stats-container">
-            <div class="row">
-                <div class="col-md-3 col-6 mb-3">
-                    <div class="stat-card">
-                        <div class="stat-number">@ViewBag.TotalItems</div>
-                        <div class="stat-label">Tổng khóa học</div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6 mb-3">
-                    <div class="stat-card">
-                        <div class="stat-number">@(Model?.Count(c => c.IsActive) ?? 0)</div>
-                        <div class="stat-label">Đang hoạt động</div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6 mb-3">
-                    <div class="stat-card">
-                        <div class="stat-number">@(ViewBag.Categories?.Count ?? 0)</div>
-                        <div class="stat-label">Danh mục</div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6 mb-3">
-                    <div class="stat-card">
-                        <div class="stat-number">@(ViewBag.Departments?.Count ?? 0)</div>
-                        <div class="stat-label">Phòng ban</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+       
         <!-- Filter Section -->
         <div class="filter-section">
             <h5 class="filter-title">
