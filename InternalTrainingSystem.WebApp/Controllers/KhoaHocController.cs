@@ -13,12 +13,21 @@ namespace InternalTrainingSystem.WebApp.Controllers
     {
         private readonly ICourseService _courseService;
         private readonly IAuthService _authService;
+        private readonly ICategoryService _categoryService;
+        private readonly IDepartmentService _departmentService;
         private readonly ILogger<KhoaHocController> _logger;
 
-        public KhoaHocController(ICourseService courseService, IAuthService authService, ILogger<KhoaHocController> logger)
+        public KhoaHocController(
+            ICourseService courseService, 
+            IAuthService authService, 
+            ICategoryService categoryService,
+            IDepartmentService departmentService,
+            ILogger<KhoaHocController> logger)
         {
             _courseService = courseService;
             _authService = authService;
+            _categoryService = categoryService;
+            _departmentService = departmentService;
             _logger = logger;
         }
 
@@ -49,10 +58,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 ViewBag.TotalItems = totalItems; // Tổng số bản ghi từ DB (đã được filter)
                 ViewBag.SearchTerm = searchTerm;
                 ViewBag.Status = status;
-
-                // Data cho dropdowns - giữ lại để sử dụng ở các chỗ khác
-                ViewBag.Categories = GetCategories();
-                ViewBag.Departments = GetDepartments();
 
                 return View(courses);
             }
@@ -99,8 +104,8 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     return RedirectToAction("Index");
                 }
 
-                ViewBag.Categories = GetCategories();
-                ViewBag.Departments = GetDepartments();
+                ViewBag.Categories = await _categoryService.GetAllCategoriesAsync();
+                ViewBag.Departments = await _departmentService.GetAllDepartmentsAsync();
 
                 return View(course);
             }
@@ -119,8 +124,8 @@ namespace InternalTrainingSystem.WebApp.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    ViewBag.Categories = GetCategories();
-                    ViewBag.Departments = GetDepartments();
+                    ViewBag.Categories = await _categoryService.GetAllCategoriesAsync();
+                    ViewBag.Departments = await _departmentService.GetAllDepartmentsAsync();
                     return View(model);
                 }
 
@@ -133,8 +138,8 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 else
                 {
                     TempData["Error"] = "Không thể cập nhật khóa học. Vui lòng thử lại.";
-                    ViewBag.Categories = GetCategories();
-                    ViewBag.Departments = GetDepartments();
+                    ViewBag.Categories = await _categoryService.GetAllCategoriesAsync();
+                    ViewBag.Departments = await _departmentService.GetAllDepartmentsAsync();
                     return View(model);
                 }
             }
@@ -142,17 +147,17 @@ namespace InternalTrainingSystem.WebApp.Controllers
             {
                 _logger.LogError(ex, $"Error occurred while updating course {model.CourseId}");
                 TempData["Error"] = "Đã xảy ra lỗi khi cập nhật khóa học.";
-                ViewBag.Categories = GetCategories();
-                ViewBag.Departments = GetDepartments();
+                ViewBag.Categories = await _categoryService.GetAllCategoriesAsync();
+                ViewBag.Departments = await _departmentService.GetAllDepartmentsAsync();
                 return View(model);
             }
         }
 
         [HttpGet("tao-moi")]
-        public IActionResult TaoMoi()
+        public async Task<IActionResult> TaoMoi()
         {
-            ViewBag.Categories = GetCategories();
-            ViewBag.Departments = GetDepartments();
+            ViewBag.Categories = await _categoryService.GetAllCategoriesAsync();
+            ViewBag.Departments = await _departmentService.GetAllDepartmentsAsync();
             return View(new CourseDto());
         }
 
@@ -163,8 +168,8 @@ namespace InternalTrainingSystem.WebApp.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    ViewBag.Categories = GetCategories();
-                    ViewBag.Departments = GetDepartments();
+                    ViewBag.Categories = await _categoryService.GetAllCategoriesAsync();
+                    ViewBag.Departments = await _departmentService.GetAllDepartmentsAsync();
                     return View(model);
                 }
 
@@ -177,8 +182,8 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 else
                 {
                     TempData["Error"] = "Không thể tạo khóa học. Vui lòng thử lại.";
-                    ViewBag.Categories = GetCategories();
-                    ViewBag.Departments = GetDepartments();
+                    ViewBag.Categories = await _categoryService.GetAllCategoriesAsync();
+                    ViewBag.Departments = await _departmentService.GetAllDepartmentsAsync();
                     return View(model);
                 }
             }
@@ -186,8 +191,8 @@ namespace InternalTrainingSystem.WebApp.Controllers
             {
                 _logger.LogError(ex, "Error occurred while creating new course");
                 TempData["Error"] = "Đã xảy ra lỗi khi thêm khóa học.";
-                ViewBag.Categories = GetCategories();
-                ViewBag.Departments = GetDepartments();
+                ViewBag.Categories = await _categoryService.GetAllCategoriesAsync();
+                ViewBag.Departments = await _departmentService.GetAllDepartmentsAsync();
                 return View(model);
             }
         }
@@ -208,11 +213,11 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 }
 
                 // Simulate getting eligible employees from selected departments
-                var departments = GetDepartments();
-                var selectedDepartments = departments.Where(d => selectedDepartmentIds.Contains(d.Id)).ToList();
+                var departments = await _departmentService.GetAllDepartmentsAsync();
+                var selectedDepartments = departments.Where(d => selectedDepartmentIds.Contains(d.DepartmentId)).ToList();
 
                 // Simulate employee count (in real application, this would come from employee service)
-                var totalEmployees = selectedDepartments.Sum(d => GetEmployeeCountByDepartment(d.Id));
+                var totalEmployees = selectedDepartments.Sum(d => GetEmployeeCountByDepartment(d.DepartmentId));
 
                 // Simulate sending notifications
                 await Task.Delay(1000); // Simulate processing time
@@ -226,7 +231,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     success = true,
                     message = "Gửi thông báo thành công!",
                     sentCount = totalEmployees,
-                    departments = selectedDepartments.Select(d => d.Name).ToArray()
+                    departments = selectedDepartments.Select(d => d.DepartmentName).ToArray()
                 });
             }
             catch (Exception ex)
@@ -259,11 +264,11 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
                 if (departmentId > 0)
                 {
-                    var departments = GetDepartments();
-                    var selectedDept = departments.FirstOrDefault(d => d.Id == departmentId);
+                    var departments = await _departmentService.GetAllDepartmentsAsync();
+                    var selectedDept = departments.FirstOrDefault(d => d.DepartmentId == departmentId);
                     if (selectedDept != null)
                     {
-                        responses = responses.Where(r => r.DepartmentName.Contains(selectedDept.Name, StringComparison.OrdinalIgnoreCase)).ToList();
+                        responses = responses.Where(r => r.DepartmentName.Contains(selectedDept.DepartmentName, StringComparison.OrdinalIgnoreCase)).ToList();
                     }
                 }
 
@@ -271,7 +276,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 ViewBag.CourseId = id;
                 ViewBag.EmployeeId = employeeId;
                 ViewBag.DepartmentId = departmentId;
-                ViewBag.Departments = GetDepartments();
+                ViewBag.Departments = await _departmentService.GetAllDepartmentsAsync();
                 ViewBag.TotalEmployees = responses.Count;
                 ViewBag.AcceptedCount = responses.Count(r => r.ResponseType == EmployeeResponseType.Accepted);
                 ViewBag.DeclinedCount = responses.Count(r => r.ResponseType == EmployeeResponseType.Declined);
@@ -483,42 +488,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 _logger.LogError(ex, $"Error occurred while getting approval history for course {courseId}");
                 return new List<ApprovalHistoryDto>();
             }
-        }
-
-
-
-        private List<DepartmentDto> GetDepartments()
-        {
-            return new List<DepartmentDto>
-            {
-                new DepartmentDto { Id = 1, Name = "IT Department", Code = "IT", IsActive = true },
-                new DepartmentDto { Id = 2, Name = "Software Development", Code = "DEV", IsActive = true },
-                new DepartmentDto { Id = 3, Name = "Data Analytics", Code = "DATA", IsActive = true },
-                new DepartmentDto { Id = 4, Name = "QA Testing", Code = "QA", IsActive = true },
-                new DepartmentDto { Id = 5, Name = "Technical Support", Code = "TECH", IsActive = true },
-                new DepartmentDto { Id = 6, Name = "Mobile Development", Code = "MOBILE", IsActive = true }
-            };
-        }
-
-        private List<object> GetCategories()
-        {
-            return new List<object>
-            {
-                new { Id = 1, Name = "Lập trình" },
-                new { Id = 2, Name = "Web Development" },
-                new { Id = 3, Name = "Frontend" },
-                new { Id = 4, Name = "Database" },
-                new { Id = 5, Name = "Data Science" },
-                new { Id = 6, Name = "DevOps" },
-                new { Id = 7, Name = "Mobile Development" }
-            };
-        }
-
-        private string GetCategoryName(int categoryId)
-        {
-            var categories = GetCategories();
-            var category = categories.FirstOrDefault(c => ((dynamic)c).Id == categoryId);
-            return category != null ? ((dynamic)category).Name : "";
         }
 
         private int GetEmployeeCountByDepartment(int departmentId)

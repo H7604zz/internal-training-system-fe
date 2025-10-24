@@ -67,9 +67,9 @@
                                     <option value="">Chọn danh mục</option>
                                     @if (ViewBag.Categories != null)
                                     {
-                                        @foreach (dynamic category in ViewBag.Categories)
+                                        @foreach (var category in ViewBag.Categories)
                                         {
-                                            <option value="@category.Id">@category.Name</option>
+                                            <option value="@category.CourseCategoryId">@category.CategoryName</option>
                                         }
                                     }
                                 </select>
@@ -133,12 +133,12 @@
                                 @foreach (var dept in ViewBag.Departments)
                                 {
                                     <div class="form-check department-check">
-                                        <input class="form-check-input" type="checkbox" 
-                                               name="SelectedDepartmentIds" value="@dept.Id" 
-                                               id="dept_@dept.Id">
-                                        <label class="form-check-label" for="dept_@dept.Id">
+                                        <input class="form-check-input" type="checkbox"
+                                               name="SelectedDepartmentIds" value="@dept.DepartmentId"
+                                               id="dept_@dept.DepartmentId">
+                                        <label class="form-check-label" for="dept_@dept.DepartmentId">
                                             <i class="fas fa-building me-2"></i>
-                                            @dept.Name
+                                            @dept.DepartmentName
                                         </label>
                                     </div>
                                 }
@@ -196,7 +196,7 @@
                             </div>
                             <div class="help-item">
                                 <i class="fas fa-lightbulb"></i>
-                                <span>Mã khóa học nên theo chuẩn: ABC123</span>
+                                <span>Mã khóa học nên theo chuẩn: AB-123</span>
                             </div>
                             <div class="help-item">
                                 <i class="fas fa-lightbulb"></i>

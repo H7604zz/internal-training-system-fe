@@ -202,7 +202,7 @@
                                         <input class="form-check-input" type="checkbox" 
                                                name="SelectedDepartmentIds" value="@dept.Id" 
                                                id="dept_@dept.Id"
-                                               checked="@(Model.Departments?.Any(d => d.Id == dept.Id) == true)">
+                                               checked="@(Model.Departments?.Any(d => d.DepartmentId == dept.Id) == true)">
                                         <label class="form-check-label" for="dept_@dept.Id">
                                             <i class="fas fa-building me-2"></i>
                                             <span class="fw-semibold">@dept.Name</span>
@@ -576,7 +576,7 @@
                             <div class="help-item">
                                 <i class="fas fa-lightbulb"></i>
                                 <span>
-                                    <strong>Mã khóa học:</strong> Theo định dạng chuẩn: ABC123 (không được trùng)
+                                    <strong>Mã khóa học:</strong> Theo định dạng chuẩn: AB-123 (không được trùng)
                                 </span>
                             </div>
                             <div class="help-item">

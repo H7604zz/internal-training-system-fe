@@ -32,16 +32,14 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         // Computed properties
         public string StatusDisplay => IsActive ? "Hoạt động" : "Không hoạt động";
         public string DurationDisplay => Duration > 0 ? $"{Duration} giờ" : "Chưa xác định";
-        public string DepartmentsDisplay => Departments.Any() ? string.Join(", ", Departments.Select(d => d.Name)) : "Tất cả phòng ban";
+        public string DepartmentsDisplay => Departments.Any() ? string.Join(", ", Departments.Select(d => d.DepartmentName)) : "Tất cả phòng ban";
         public string ApprovalStatusDisplay => CourseStatus.GetDisplayText(Status ?? CourseStatus.Pending);
     }
 
     public class DepartmentDto
     {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Code { get; set; } = string.Empty;
-        public bool IsActive { get; set; }
+        public int DepartmentId { get; set; }
+        public string DepartmentName { get; set; } = string.Empty;
     }
 
     public class CourseDetailDto
