@@ -74,6 +74,53 @@
             </li>
         </ul>
     </li>
+
+    <!-- User Menu & Notification Scripts -->
+    <script src="~/js/notifications.js" asp-append-version="true"></script>
+    <script>
+        // Logout function
+        function logout() {
+            if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                window.location.href = '@Url.Action("DangXuat", "Auth")';
+            }
+        }
+
+        // Get user profile function
+        function getUserProfile() {
+            fetch('@Url.Action("GetCurrentUser", "Auth")')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Display user profile in modal or redirect to profile page
+                        alert('Thông tin người dùng: ' + JSON.stringify(data.data, null, 2));
+                    } else {
+                        alert('Không thể lấy thông tin người dùng: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Đã xảy ra lỗi khi lấy thông tin người dùng');
+                });
+        }
+
+        // Auto logout when session expires
+        function checkSessionExpiry() {
+            fetch('@Url.Action("GetCurrentUser", "Auth")')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success && data.message.includes('hết hạn')) {
+                        alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                        window.location.href = '@Url.Action("DangNhap", "Auth")';
+                    }
+                })
+                .catch(error => {
+                    console.error('Session check error:', error);
+                });
+        }
+
+        // Check session every 5 minutes
+        setInterval(checkSessionExpiry, 5 * 60 * 1000);
+    </script>
 }
 else
 {
