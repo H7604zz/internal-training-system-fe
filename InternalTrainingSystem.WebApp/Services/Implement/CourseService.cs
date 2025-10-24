@@ -19,7 +19,7 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
             _logger = logger;
         }
 
-        public async Task<PagedResult<CourseDto>> GetAllCoursesAsync(int page = 1, int pageSize = 10)
+        public async Task<PagedResult<CourseDto>> GetCoursesAsync(int page, int pageSize)
         {
             try
             {
@@ -41,7 +41,7 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
 
                     // API trả về PagedResult<CourseDto>
                     var pagedResult = JsonSerializer.Deserialize<PagedResult<CourseDto>>(jsonString, options);
-                    
+
                     return pagedResult ?? new PagedResult<CourseDto>();
                 }
                 else
@@ -60,11 +60,6 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
                 _logger.LogError(ex, "Error occurred while getting all courses");
                 return new PagedResult<CourseDto>();
             }
-        }
-
-        public async Task<PagedResult<CourseDto>> GetCoursesAsync(int page = 1, int pageSize = 10)
-        {
-            return await GetAllCoursesAsync(page, pageSize);
         }
 
         public async Task<List<CourseDto>> GetCoursesByIdentifiersAsync(List<string> identifiers)

@@ -5,7 +5,6 @@ namespace InternalTrainingSystem.WebApp.Services.Interface
 {
     public interface ICourseService
     {
-        Task<PagedResult<CourseDto>> GetAllCoursesAsync(int page = 1, int pageSize = 10);
         Task<List<CourseDto>> GetCoursesByIdentifiersAsync(List<string> identifiers);
         Task<CourseDto?> GetCourseByIdAsync(int courseId);
         Task<PagedResult<CourseDto>> GetCoursesAsync(int page = 1, int pageSize = 10);

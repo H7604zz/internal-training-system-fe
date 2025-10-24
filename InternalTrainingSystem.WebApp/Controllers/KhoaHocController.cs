@@ -4,6 +4,7 @@ using InternalTrainingSystem.WebApp.Constants;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using InternalTrainingSystem.WebApp.Services.Implement;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace InternalTrainingSystem.WebApp.Controllers
 {
@@ -22,15 +23,15 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpGet("")]
-        public async Task<IActionResult> Index(int page = 1, string searchTerm = "", string status = "")
+        public async Task<IActionResult> Index(string searchTerm, string status, int page = 1)
         {
             try
             {
                 // Sử dụng page size cố định từ constants cho trang chính khóa học
                 var pageSize = PaginationConstants.CoursePageSize;
                 
-                // Lấy PagedResult từ service (có chứa TotalCount từ DB)
                 var pagedResult = await _courseService.GetCoursesAsync(page, pageSize);
+
                 var allCourses = pagedResult.Items.ToList();
 
                 // Filter theo search term (nếu cần filter ở client side)
