@@ -30,35 +30,23 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 // Sử dụng page size cố định từ constants cho trang chính khóa học
                 var pageSize = PaginationConstants.CoursePageSize;
                 
-                var pagedResult = await _courseService.GetCoursesAsync(page, pageSize);
+                // Gọi API với các tham số filter và pagination - backend sẽ xử lý
+                var pagedResult = await _courseService.GetCoursesAsync(
+                    search: searchTerm,
+                    status: status,
+                    page: page,
+                    pageSize: pageSize
+                );
 
-                var allCourses = pagedResult.Items.ToList();
-
-                // Filter theo search term (nếu cần filter ở client side)
-                if (!string.IsNullOrEmpty(searchTerm))
-                {
-                    allCourses = allCourses.Where(c =>
-                        c.CourseName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                        c.Description?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) == true
-                    ).ToList();
-                }
-
-                // Filter theo status (nếu cần filter ở client side)
-                if (!string.IsNullOrEmpty(status))
-                {
-                    allCourses = allCourses.Where(c => 
-                        c.Status?.Equals(status, StringComparison.OrdinalIgnoreCase) == true
-                    ).ToList();
-                }
-
-                // TotalItems từ DB (không phải đếm theo trang hiện tại)
+                // Lấy dữ liệu từ PagedResult
+                var courses = pagedResult.Items?.ToList() ?? new List<CourseDto>();
                 var totalItems = pagedResult.TotalCount;
-                var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+                var totalPages = pagedResult.TotalPages;
 
                 ViewBag.CurrentPage = page;
                 ViewBag.TotalPages = totalPages;
                 ViewBag.PageSize = pageSize;
-                ViewBag.TotalItems = totalItems; // Tổng số bản ghi trong DB
+                ViewBag.TotalItems = totalItems; // Tổng số bản ghi từ DB (đã được filter)
                 ViewBag.SearchTerm = searchTerm;
                 ViewBag.Status = status;
 
@@ -66,7 +54,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 ViewBag.Categories = GetCategories();
                 ViewBag.Departments = GetDepartments();
 
-                return View(allCourses);
+                return View(courses);
             }
             catch (Exception ex)
             {

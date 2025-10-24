@@ -7,7 +7,7 @@ namespace InternalTrainingSystem.WebApp.Services.Interface
     {
         Task<List<CourseDto>> GetCoursesByIdentifiersAsync(List<string> identifiers);
         Task<CourseDto?> GetCourseByIdAsync(int courseId);
-        Task<PagedResult<CourseDto>> GetCoursesAsync(int page = 1, int pageSize = 10);
+        Task<PagedResult<CourseDto>> GetCoursesAsync(string? search = null, string? status = null, int page = 1, int pageSize = 10);
         Task<CourseDto?> CreateCourseAsync(CourseDto course);
         Task<CourseDto?> UpdateCourseAsync(CourseDto course);
         Task<bool> DeleteCourseAsync(int courseId);

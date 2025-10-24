@@ -19,11 +19,31 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
             _logger = logger;
         }
 
-        public async Task<PagedResult<CourseDto>> GetCoursesAsync(int page, int pageSize)
+        public async Task<PagedResult<CourseDto>> GetCoursesAsync(string? search = null, string? status = null, int page = 1, int pageSize = 10)
         {
             try
             {
-                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/course?page={page}&pageSize={pageSize}"));
+                // Xây dựng query string với các tham số
+                var queryParams = new List<string>
+                {
+                    $"page={page}",
+                    $"pageSize={pageSize}"
+                };
+
+                if (!string.IsNullOrEmpty(search))
+                {
+                    queryParams.Add($"search={Uri.EscapeDataString(search)}");
+                }
+
+                if (!string.IsNullOrEmpty(status))
+                {
+                    queryParams.Add($"status={Uri.EscapeDataString(status)}");
+                }
+
+                var queryString = string.Join("&", queryParams);
+                var url = Utilities.GetAbsoluteUrl($"api/course?{queryString}");
+
+                var response = await _httpClient.GetAsync(url);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -46,7 +66,7 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
                 }
                 else
                 {
-                    _logger.LogError($"Failed to get all courses. Status: {response.StatusCode}");
+                    _logger.LogError($"Failed to get courses. Status: {response.StatusCode}");
                     return new PagedResult<CourseDto>();
                 }
             }
@@ -57,7 +77,7 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while getting all courses");
+                _logger.LogError(ex, "Error occurred while getting courses");
                 return new PagedResult<CourseDto>();
             }
         }
