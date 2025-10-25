@@ -70,5 +70,38 @@ namespace InternalTrainingSystem.WebApp.Extensions
         {
             return string.Equals(responseType, EmployeeResponseType.NotInvited, StringComparison.OrdinalIgnoreCase);
         }
+
+        // Employee Status Extensions
+        /// <summary>
+        /// Check if employee status is not enrolled
+        /// </summary>
+        public static bool IsNotEnrolled(this string? status)
+        {
+            return string.Equals(status, EmployeeStatus.NotEnrolled, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Check if employee status is enrolled
+        /// </summary>
+        public static bool IsEnrolled(this string? status)
+        {
+            return string.Equals(status, EmployeeStatus.Enrolled, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Check if employee status is in progress
+        /// </summary>
+        public static bool IsInProgress(this string? status)
+        {
+            return string.Equals(status, EmployeeStatus.InProgress, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Check if employee status is completed
+        /// </summary>
+        public static bool IsCompleted(this string? status)
+        {
+            return string.Equals(status, EmployeeStatus.Completed, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

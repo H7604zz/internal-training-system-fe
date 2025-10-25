@@ -131,6 +131,37 @@
     display: inline-block;
 }
 
+.badge-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.badge-danger {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.badge-warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.badge-primary {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.badge-secondary {
+    background: #e2e3e5;
+    color: #383d41;
+    border: 1px solid #c6c8ca;
+}
+
+/* Legacy status classes for backward compatibility */
 .status-accepted {
     background: #d4edda;
     color: #155724;
@@ -232,20 +263,52 @@
 }
 
 .search-form {
-    display: flex;
-    gap: 15px;
-    align-items: end;
-    flex-wrap: wrap;
+    width: 100%;
 }
 
 .search-form .form-group {
-    flex: 1;
-    min-width: 200px;
+    margin-bottom: 0;
 }
 
-.search-form .btn-group {
+.search-form .form-label {
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.search-form .form-control,
+.search-form .form-select {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px 12px;
+    transition: all 0.2s;
+}
+
+.search-form .form-control:focus,
+.search-form .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.search-buttons {
     display: flex;
-    gap: 8px;
+    gap: 10px;
+    width: 100%;
+}
+
+.search-buttons .btn-search,
+.search-buttons .btn-reset {
+    flex: 1;
+    text-align: center;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
 }
 
 .btn-search {
@@ -337,7 +400,7 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .response-title {
+    .employee-list-title {
         font-size: 1.5rem;
     }
     
@@ -369,5 +432,54 @@
     .filter-tab {
         padding: 8px 15px;
         font-size: 0.9rem;
+    }
+    
+    .search-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .search-buttons .btn-search,
+    .search-buttons .btn-reset {
+        flex: none;
+        width: 100%;
+    }
+}
+
+@media (max-width: 992px) {
+    .search-buttons {
+        margin-top: 15px;
+    }
+}
+
+@media (max-width: 576px) {
+    .employee-list-container {
+        padding: 10px 0;
+    }
+    
+    .search-filter-card {
+        margin: 0 10px 20px;
+        padding: 15px;
+    }
+    
+    .employees-list {
+        margin: 0 10px;
+    }
+    
+    .employee-card {
+        margin-bottom: 15px;
+    }
+    
+    .employee-header-card {
+        padding: 15px;
+    }
+    
+    .employee-body {
+        padding: 15px;
+    }
+    
+    .search-buttons {
+        flex-direction: column;
+        gap: 8px;
     }
 }

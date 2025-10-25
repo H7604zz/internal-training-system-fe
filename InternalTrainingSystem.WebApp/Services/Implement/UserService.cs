@@ -51,7 +51,7 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
             }
         }
 
-        public async Task<List<EligibleStaffResponse>> GetUserRoleEligibleStaff(int courseId)
+        public async Task<List<EligibleStaffDto>> GetUserRoleEligibleStaff(int courseId)
         {
             try
             {
@@ -60,18 +60,18 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
 
                 var responseContent = await response.Content.ReadAsStringAsync();
 
-                var result = JsonSerializer.Deserialize<List<EligibleStaffResponse>>(responseContent,
+                var result = JsonSerializer.Deserialize<List<EligibleStaffDto>>(responseContent,
                     new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     });
 
-                return result ?? new List<EligibleStaffResponse>();
+                return result ?? new List<EligibleStaffDto>();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error when getting staff confirmation for course {CourseId}", courseId);
-                return new List<EligibleStaffResponse>();
+                return new List<EligibleStaffDto>();
             }
         }
 

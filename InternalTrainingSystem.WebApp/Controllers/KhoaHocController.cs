@@ -1,6 +1,7 @@
 using InternalTrainingSystem.WebApp.Models.DTOs;
 using InternalTrainingSystem.WebApp.Services.Interface;
 using InternalTrainingSystem.WebApp.Constants;
+using InternalTrainingSystem.WebApp.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using InternalTrainingSystem.WebApp.Services.Implement;
@@ -241,7 +242,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpGet("danh-sach-nhan-vien/{id}")]
-        public async Task<IActionResult> DanhSachNhanVien(int id, string employeeId = "", int departmentId = 0)
+        public async Task<IActionResult> DanhSachNhanVien(int id, string employeeId = "", string status = "", int page = 1)
         {
             try
             {
@@ -252,38 +253,32 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     return RedirectToAction("Index");
                 }
 
-                // TODO: Replace with actual API call to get employee responses
-                // For now, return empty list until employee response API is implemented
-                var responses = new List<EmployeeResponseDto>();
+                // Sử dụng page size cố định từ constants
+                var pageSize = PaginationConstants.CoursePageSize;
 
-                // Apply filters when data is available
-                if (!string.IsNullOrEmpty(employeeId))
-                {
-                    responses = responses.Where(r => r.EmployeeId.ToString().Contains(employeeId, StringComparison.OrdinalIgnoreCase)).ToList();
-                }
-
-                if (departmentId > 0)
-                {
-                    var departments = await _departmentService.GetAllDepartmentsAsync();
-                    var selectedDept = departments.FirstOrDefault(d => d.DepartmentId == departmentId);
-                    if (selectedDept != null)
-                    {
-                        responses = responses.Where(r => r.DepartmentName.Contains(selectedDept.DepartmentName, StringComparison.OrdinalIgnoreCase)).ToList();
-                    }
-                }
+                // Gọi API để lấy danh sách nhân viên đủ điều kiện với filters
+                var eligibleStaffResult = await _courseService.GetEligibleStaffAsync(id, page, pageSize, employeeId, status);
+                var staff = eligibleStaffResult.Items?.ToList() ?? new List<EligibleStaffDto>();
 
                 ViewBag.Course = course;
                 ViewBag.CourseId = id;
                 ViewBag.EmployeeId = employeeId;
-                ViewBag.DepartmentId = departmentId;
-                ViewBag.Departments = await _departmentService.GetAllDepartmentsAsync();
-                ViewBag.TotalEmployees = responses.Count;
-                ViewBag.AcceptedCount = responses.Count(r => r.ResponseType == EmployeeResponseType.Accepted);
-                ViewBag.DeclinedCount = responses.Count(r => r.ResponseType == EmployeeResponseType.Declined);
-                ViewBag.PendingCount = responses.Count(r => r.ResponseType == EmployeeResponseType.Pending);
-                ViewBag.NotInvitedCount = responses.Count(r => r.ResponseType == EmployeeResponseType.NotInvited);
+                ViewBag.Status = status;
+                
+                // Statistics từ dữ liệu đã được filter từ API
+                ViewBag.TotalEmployees = eligibleStaffResult.TotalCount; // Tổng từ API
+                ViewBag.EnrolledCount = staff.Count(r => r.Status.IsEnrolled());
+                ViewBag.NotEnrolledCount = staff.Count(r => r.Status.IsNotEnrolled());
+                
+                // Phân trang - sử dụng tương tự như Index action
+                ViewBag.CurrentPage = page;
+                ViewBag.TotalPages = eligibleStaffResult.TotalPages;
+                ViewBag.PageSize = pageSize;
+                ViewBag.TotalItems = eligibleStaffResult.TotalCount; // Tổng số bản ghi từ API
+                ViewBag.HasPreviousPage = eligibleStaffResult.HasPreviousPage;
+                ViewBag.HasNextPage = eligibleStaffResult.HasNextPage;
 
-                return View(responses);
+                return View(staff);
             }
             catch (Exception ex)
             {
@@ -538,11 +533,11 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 var allCourses = await _courseService.GetEmployeeCoursesAsync(employeeId);
 
                 // Lọc theo trạng thái
-                var filteredCourses = status.ToLower() switch
+                var filteredCourses = status switch
                 {
-                    "accepted" => allCourses.Where(c => c.ResponseType == "Accepted").ToList(),
-                    "declined" => allCourses.Where(c => c.ResponseType == "Declined").ToList(),
-                    "pending" => allCourses.Where(c => c.ResponseType == "Pending").ToList(),
+                    var s when s.Equals(EmployeeResponseType.Accepted, StringComparison.OrdinalIgnoreCase) => allCourses.Where(c => c.ResponseType == EmployeeResponseType.Accepted).ToList(),
+                    var s when s.Equals(EmployeeResponseType.Declined, StringComparison.OrdinalIgnoreCase) => allCourses.Where(c => c.ResponseType == EmployeeResponseType.Declined).ToList(),
+                    var s when s.Equals(EmployeeResponseType.Pending, StringComparison.OrdinalIgnoreCase) => allCourses.Where(c => c.ResponseType == EmployeeResponseType.Pending).ToList(),
                     _ => allCourses
                 };
 

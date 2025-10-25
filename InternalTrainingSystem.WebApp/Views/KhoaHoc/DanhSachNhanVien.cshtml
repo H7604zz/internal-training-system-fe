@@ -1,4 +1,4 @@
-@model List<InternalTrainingSystem.WebApp.Models.DTOs.EmployeeResponseDto>
+@model List<InternalTrainingSystem.WebApp.Models.DTOs.EligibleStaffDto>
 @using InternalTrainingSystem.WebApp.Constants
 @using InternalTrainingSystem.WebApp.Extensions
 @{
@@ -37,20 +37,12 @@
                                 <div class="stat-label">Tổng nhân viên</div>
                             </div>
                             <div class="stat-item">
-                                <div class="stat-number">@ViewBag.AcceptedCount</div>
-                                <div class="stat-label">Tham gia</div>
+                                <div class="stat-number">@ViewBag.EnrolledCount</div>
+                                <div class="stat-label">Đồng ý tham gia</div>
                             </div>
                             <div class="stat-item">
-                                <div class="stat-number">@ViewBag.DeclinedCount</div>
-                                <div class="stat-label">Từ chối</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-number">@ViewBag.PendingCount</div>
+                                <div class="stat-number">@ViewBag.NotEnrolledCount</div>
                                 <div class="stat-label">Chưa tham gia</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-number">@ViewBag.NotInvitedCount</div>
-                                <div class="stat-label">Chưa được mời</div>
                             </div>
                         </div>
                     </div>
@@ -58,66 +50,48 @@
             </div>
         </div>
 
-        <!-- Search & Department Filter -->
+        <!-- Search & Filter -->
         <div class="search-filter-card">
             <h5 class="mb-3">
                 <i class="fas fa-search me-2"></i>Tìm Kiếm & Lọc
             </h5>
             <form method="get" class="search-form">
                 <input type="hidden" name="id" value="@ViewBag.CourseId" />
-                <div class="form-group">
-                    <label class="form-label">Mã nhân viên</label>
-                    <input type="text" class="form-control" name="employeeId" 
-                    value="@ViewBag.EmployeeId" placeholder="Nhập mã nhân viên...">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Phòng ban</label>
-                    <select class="form-select" name="departmentId">
-                        <option value="">Tất cả phòng ban</option>
-                        @if (ViewBag.Departments != null)
-                        {
-                            @foreach (var dept in ViewBag.Departments)
-                            {
-                                <option value="@dept.Id" selected="@(ViewBag.DepartmentId == dept.Id)">
-                                    @dept.Name
-                                </option>
-                            }
-                        }
-                    </select>
-                </div>
-                <div class="btn-group">
-                    <button type="submit" class="btn-search">
-                        <i class="fas fa-search me-1"></i>Tìm kiếm
-                    </button>
-                    <a href="@Url.Action("DanhSachNhanVien", "KhoaHoc", new { id = ViewBag.CourseId })" class="btn-reset">
-                        <i class="fas fa-undo me-1"></i>Reset
-                    </a>
+                <div class="row g-3">
+                    <div class="col-lg-4 col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Mã NV/Tên/Email</label>
+                            <input type="text" class="form-control" name="employeeId" 
+                                   value="@ViewBag.EmployeeId" placeholder="Nhập mã nhân viên, tên hoặc email...">
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Trạng thái</label>
+                            <select class="form-select" name="status">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="@EmployeeStatus.NotEnrolled" selected="@(ViewBag.Status == EmployeeStatus.NotEnrolled)">@EmployeeStatus.GetDisplayText(EmployeeStatus.NotEnrolled)</option>
+                                <option value="@EmployeeStatus.Enrolled" selected="@(ViewBag.Status == EmployeeStatus.Enrolled)">@EmployeeStatus.GetDisplayText(EmployeeStatus.Enrolled)</option>
+                                <option value="@EmployeeStatus.InProgress" selected="@(ViewBag.Status == EmployeeStatus.InProgress)">@EmployeeStatus.GetDisplayText(EmployeeStatus.InProgress)</option>
+                                <option value="@EmployeeStatus.Completed" selected="@(ViewBag.Status == EmployeeStatus.Completed)">@EmployeeStatus.GetDisplayText(EmployeeStatus.Completed)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-12">
+                        <div class="form-group">
+                            <label class="form-label d-block">&nbsp;</label>
+                            <div class="search-buttons">
+                                <button type="submit" class="btn-search">
+                                    <i class="fas fa-search me-1"></i>Tìm kiếm
+                                </button>
+                                <a href="@Url.Action("DanhSachNhanVien", "KhoaHoc", new { id = ViewBag.CourseId })" class="btn-reset">
+                                    <i class="fas fa-undo me-1"></i>Reset
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </form>
-        </div>
-
-        <!-- Status Filters -->
-        <div class="filter-card">
-            <h5 class="mb-3">
-                <i class="fas fa-filter me-2"></i>Lọc Theo Trạng Thái
-            </h5>
-            <div class="filter-tabs">
-                <a href="#" class="filter-tab active" data-filter="all">
-                    Tất cả (@ViewBag.TotalEmployees)
-                </a>
-                <a href="#" class="filter-tab" data-filter="accepted">
-                    Tham gia (@ViewBag.AcceptedCount)
-                </a>
-                <a href="#" class="filter-tab" data-filter="declined">
-                    Từ chối (@ViewBag.DeclinedCount)
-                </a>
-                <a href="#" class="filter-tab" data-filter="pending">
-                    Chưa tham gia (@ViewBag.PendingCount)
-                </a>
-                <a href="#" class="filter-tab" data-filter="notinvited">
-                    Chưa được mời (@ViewBag.NotInvitedCount)
-                </a>
-            </div>
         </div>
 
         <!-- Employee List -->
@@ -126,106 +100,51 @@
             {
                 @foreach (var employee in Model)
                 {
-                    <div class="employee-card" data-response-type="@employee.ResponseType.ToLower()">
+                    <div class="employee-card" data-status="@employee.Status.ToLower()">
                         <div class="employee-header-card">
                             <div class="employee-info">
                                 <div class="employee-avatar">
-                                    @(employee.EmployeeName.Split(' ').LastOrDefault()?.FirstOrDefault().ToString().ToUpper())
+                                    @(employee.FullName.Split(' ').LastOrDefault()?.FirstOrDefault().ToString().ToUpper())
                                 </div>
                                 <div class="employee-details">
-                                    <h5>@employee.EmployeeName</h5>
+                                    <h5>@employee.FullName</h5>
                                     <div class="employee-meta">
                                         <i class="fas fa-id-card me-1"></i>Mã NV: @employee.EmployeeId
                                     </div>
                                     <div class="employee-meta">
-                                        <i class="fas fa-building me-1"></i>@employee.DepartmentName
+                                        <i class="fas fa-building me-1"></i>@employee.Department
                                     </div>
                                     <div class="employee-meta">
                                         <i class="fas fa-user-tie me-1"></i>@employee.Position
                                     </div>
                                 </div>
                                 <div class="response-status">
-                                    <span class="status-badge @(employee.ResponseType.ToLower() switch 
-                                    {
-                                        "accepted" => "status-accepted",
-                                        "declined" => "status-declined", 
-                                        "pending" => "status-pending",
-                                        "notinvited" => "status-not-invited",
-                                        _ => "status-pending"
-                                    })">
-                                        <i class="fas @(employee.ResponseType.ToLower() switch 
-                                        {
-                                            "accepted" => "fa-check-circle",
-                                            "declined" => "fa-times-circle", 
-                                            "pending" => "fa-clock",
-                                            "notinvited" => "fa-user-plus",
-                                            _ => "fa-question-circle"
-                                        }) me-1"></i>
-                                        @(employee.ResponseType.ToLower() switch 
-                                        {
-                                            "accepted" => "Đã tham gia",
-                                            "declined" => "Từ chối", 
-                                            "pending" => "Chưa tham gia",
-                                            "notinvited" => "Chưa được mời",
-                                            _ => "Không xác định"
-                                        })
+                                    <span class="status-badge @employee.StatusBadgeClass">
+                                        @employee.StatusText
                                     </span>
-                                    @if (employee.ResponseDate.HasValue)
-                                    {
-                                        <div class="response-date">
-                                            <i class="fas fa-calendar-alt me-1"></i>@employee.ResponseDateDisplay
-                                        </div>
-                                    }
                                 </div>
                             </div>
                         </div>
 
-                        @if (!string.IsNullOrEmpty(employee.Note) || !string.IsNullOrEmpty(employee.ContactEmail) || employee.ResponseType.IsDeclined() || employee.ResponseType.IsNotInvited())
+                        @if (!string.IsNullOrEmpty(employee.Reason) || !string.IsNullOrEmpty(employee.Email))
                         {
                             <div class="employee-body">
-                                @if (!string.IsNullOrEmpty(employee.Note))
+                                @if (!string.IsNullOrEmpty(employee.Reason))
                                 {
                                     <div class="employee-note">
-                                        <i class="fas @(employee.ResponseType.IsDeclined() ? "fa-exclamation-triangle" : "fa-comment-alt") me-2"></i>
-                                        <strong>@(employee.ResponseType.IsDeclined() ? "Lý do từ chối:" : "Ghi chú:"):</strong> @employee.Note
-                                    </div>
-                                }
-
-                                <!-- Nút quyết định của Quản lý trực tiếp khi nhân viên từ chối -->
-                                @if (employee.ResponseType.IsDeclined())
-                                {
-                                    <div class="manager-decision-section mt-3">
-                                        <div class="manager-decision-header">
-                                            <i class="fas fa-user-shield me-2 text-warning"></i>
-                                            <strong>Quyết định của Quản lý trực tiếp:</strong>
-                                            <small class="text-muted">(Quyết định cuối cùng)</small>
-                                        </div>
-                                        <div class="manager-decision-actions mt-2">
-                                            <button type="button" class="btn btn-success btn-sm me-2" 
-                                                    onclick="submitManagerDecisionDirect(@employee.EmployeeId, '@employee.EmployeeName', 'Accept', @ViewBag.CourseId)">
-                                                <i class="fas fa-check me-1"></i>Chấp nhận từ chối
-                                            </button>
-                                            <button type="button" class="btn btn-danger btn-sm" 
-                                                    onclick="submitManagerDecisionDirect(@employee.EmployeeId, '@employee.EmployeeName', 'Reject', @ViewBag.CourseId)">
-                                                <i class="fas fa-times me-1"></i>Từ chối
-                                            </button>
-                                        </div>
-                                        <small class="text-muted d-block mt-1">
-                                            <i class="fas fa-info-circle me-1"></i>
-                                            Quản lý có thể quyết định buộc nhân viên tham gia hoặc chấp nhận lý do từ chối của nhân viên.
-                                        </small>
+                                        <i class="fas fa-comment-alt me-2"></i>
+                                        <strong>Ghi chú:</strong> @employee.Reason
                                     </div>
                                 }
 
                                 <div class="d-flex justify-content-between align-items-center">
-                                    @if (!string.IsNullOrEmpty(employee.ContactEmail))
+                                    @if (!string.IsNullOrEmpty(employee.Email))
                                     {
                                         <div class="contact-info">
                                             <i class="fas fa-envelope me-1"></i>
-                                            <span>@employee.ContactEmail</span>
+                                            <span>@employee.Email</span>
                                         </div>
                                     }
-
                                 </div>
                             </div>
                         }
@@ -241,88 +160,27 @@
                 </div>
             }
         </div>
+
+        <!-- Pagination -->
+        @if (ViewBag.TotalPages > 1)
+        {
+            var paginationModel = new InternalTrainingSystem.WebApp.Models.ViewModels.PaginationViewModel
+            {
+                CurrentPage = ViewBag.CurrentPage,
+                TotalPages = ViewBag.TotalPages,
+                PageSize = ViewBag.PageSize,
+                TotalItems = ViewBag.TotalItems,
+                ActionName = "DanhSachNhanVien",
+                ControllerName = "KhoaHoc",
+                RouteValues = new Dictionary<string, object>
+                {
+                    { "id", ViewBag.CourseId },
+                    { "employeeId", ViewBag.EmployeeId ?? "" },
+                    { "status", ViewBag.Status ?? "" }
+                }
+            };
+            
+            @await Html.PartialAsync("_Pagination", paginationModel)
+        }
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const filterTabs = document.querySelectorAll('.filter-tab');
-            const employeeCards = document.querySelectorAll('.employee-card');
-
-            // Status filter functionality
-            filterTabs.forEach(tab => {
-                tab.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    // Remove active class from all tabs
-                    filterTabs.forEach(t => t.classList.remove('active'));
-                    
-                    // Add active class to clicked tab
-                    this.classList.add('active');
-                    
-                    const filter = this.dataset.filter;
-                    
-                    // Show/hide employee cards based on filter
-                    employeeCards.forEach(card => {
-                        const responseType = card.dataset.responseType;
-                        
-                        if (filter === 'all') {
-                            card.style.display = 'block';
-                        } else if (filter === responseType) {
-                            card.style.display = 'block';
-                        } else {
-                            card.style.display = 'none';
-                        }
-                    });
-                });
-            });
-        });
-
-        // Function to submit manager decision with simple confirmation
-        function submitManagerDecisionDirect(employeeId, employeeName, decision, courseId) {
-            const decisionText = decision === 'Accept' ? 'chấp nhận' : 'từ chối';
-            const confirmMessage = `Nhân viên "${employeeName}" đã gửi yêu cầu từ chối tham gia khóa học.\n\n` +
-        `Với vai trò là quản lý, bạn có muốn ${decisionText.toLowerCase()} yêu cầu này không?\n\n` +
-        `Lưu ý: Quyết định này là cuối cùng và không thể hoàn tác.`;
-
-            
-            if (confirm(confirmMessage)) {
-                // Prepare data for API call
-                const requestData = {
-                    employeeId: employeeId,
-                    courseId: courseId,
-                    decisionType: decision,
-                    managerNote: `Quyết định ${decisionText} của quản lý trực tiếp`
-                };
-                
-                // Make API call
-                fetch('/khoa-hoc/manager-decision', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(requestData)
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        alert('Quyết định đã được ghi nhận thành công!');
-                        window.location.reload();
-                    } else {
-                        alert('Có lỗi xảy ra: ' + (data.message || 'Vui lòng thử lại!'));
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Có lỗi xảy ra khi kết nối với server!');
-                });
-            }
-        }
-    </script>
-}

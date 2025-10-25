@@ -77,20 +77,6 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
     }
 
     /// <summary>
-    /// DTO cho danh sách nhân viên đủ điều kiện
-    /// </summary>
-    public class EligibleStaffResponse
-    {
-        public string? EmployeeId { get; set; }
-        public string FullName { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string? Department { get; set; }
-        public string? Position { get; set; }
-        public string? Status { get; set; }
-        public string? Reason { get; set; }
-    }
-
-    /// <summary>
     /// DTO cho nhân viên xác nhận khóa học
     /// </summary>
     public class StaffConfirmCourseResponse

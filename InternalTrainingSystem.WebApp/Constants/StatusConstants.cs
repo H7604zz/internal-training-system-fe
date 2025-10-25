@@ -32,6 +32,67 @@ namespace InternalTrainingSystem.WebApp.Constants
     }
 
     /// <summary>
+    /// Constants for Employee Status
+    /// </summary>
+    public static class EmployeeStatus
+    {
+        public const string NotEnrolled = "NotEnrolled"; // chưa tham gia
+        public const string Enrolled = "Enrolled"; // đồng ý tham gia
+        public const string InProgress = "InProgress"; // trong quá trình học
+        public const string Completed = "Completed"; // hoàn thành
+
+        /// <summary>
+        /// Get all available employee statuses
+        /// </summary>
+        public static readonly string[] AllStatuses = { NotEnrolled, Enrolled, InProgress, Completed };
+
+        /// <summary>
+        /// Get display text for employee status
+        /// </summary>
+        public static string GetDisplayText(string status)
+        {
+            return status switch
+            {
+                NotEnrolled => "Chưa tham gia",
+                Enrolled => "Đồng ý tham gia", 
+                InProgress => "Trong quá trình học",
+                Completed => "Hoàn thành",
+                _ => "Không xác định"
+            };
+        }
+
+        /// <summary>
+        /// Get icon class for employee status
+        /// </summary>
+        public static string GetIcon(string status)
+        {
+            return status switch
+            {
+                NotEnrolled => "fa-circle",
+                Enrolled => "fa-check-circle",
+                InProgress => "fa-clock",
+                Completed => "fa-trophy",
+                _ => "fa-question-circle"
+            };
+        }
+
+        /// <summary>
+        /// Get badge class for employee status
+        /// </summary>
+        public static string GetBadgeClass(string status)
+        {
+            return status switch
+            {
+                NotEnrolled => "badge-secondary",
+                Enrolled => "badge-success",
+                InProgress => "badge-warning",
+                Completed => "badge-primary",
+                _ => "badge-secondary"
+            };
+        }
+    }
+
+    /// <summary>
     /// Constants for Employee Response Type
     /// </summary>
     public static class EmployeeResponseType

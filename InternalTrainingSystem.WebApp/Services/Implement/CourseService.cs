@@ -435,5 +435,69 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
                 return false;
             }
         }
+
+        public async Task<PagedResult<EligibleStaffDto>> GetEligibleStaffAsync(int courseId, int page = 1, int pageSize = 10, string? employeeId = null, string? status = null)
+        {
+            try
+            {
+                // Xây dựng query string với các tham số phân trang và filter
+                var queryParams = new List<string>
+                {
+                    $"page={page}",
+                    $"pageSize={pageSize}"
+                };
+
+                // Thêm filter parameters nếu có
+                if (!string.IsNullOrEmpty(employeeId))
+                {
+                    queryParams.Add($"employeeId={Uri.EscapeDataString(employeeId)}");
+                }
+
+                if (!string.IsNullOrEmpty(status))
+                {
+                    queryParams.Add($"status={Uri.EscapeDataString(status)}");
+                }
+
+                var queryString = string.Join("&", queryParams);
+                var url = Utilities.GetAbsoluteUrl($"api/course/{courseId}/eligible-staff?{queryString}");
+
+                var response = await _httpClient.GetAsync(url);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonString = await response.Content.ReadAsStringAsync();
+
+                    if (string.IsNullOrWhiteSpace(jsonString))
+                    {
+                        return new PagedResult<EligibleStaffDto>();
+                    }
+
+                    var options = new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    };
+
+                    // API trả về PagedResult<EligibleStaffDto>
+                    var pagedResult = JsonSerializer.Deserialize<PagedResult<EligibleStaffDto>>(jsonString, options);
+
+                    return pagedResult ?? new PagedResult<EligibleStaffDto>();
+                }
+                else
+                {
+                    _logger.LogError($"Failed to get eligible staff for course {courseId}. Status: {response.StatusCode}");
+                    return new PagedResult<EligibleStaffDto>();
+                }
+            }
+            catch (JsonException jsonEx)
+            {
+                _logger.LogError(jsonEx, $"JSON deserialization error when getting eligible staff for course {courseId}. The API response format may not match the expected structure.");
+                return new PagedResult<EligibleStaffDto>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error occurred while getting eligible staff for course {courseId}");
+                return new PagedResult<EligibleStaffDto>();
+            }
+        }
     }
 }

@@ -16,5 +16,6 @@ namespace InternalTrainingSystem.WebApp.Services.Interface
         Task<List<CourseDto>> GetPendingCoursesAsync();
         Task<List<EmployeeCourseDto>> GetEmployeeCoursesAsync(string employeeId);
         Task<bool> RespondToCourseAsync(int courseId, string employeeId, string responseType, string? note = null);
+        Task<PagedResult<EligibleStaffDto>> GetEligibleStaffAsync(int courseId, int page = 1, int pageSize = 10, string? employeeId = null, string? status = null);
     }
 }
