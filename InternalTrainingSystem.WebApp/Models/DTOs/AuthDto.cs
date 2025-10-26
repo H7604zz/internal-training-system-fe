@@ -69,7 +69,46 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
     }
 
     /// <summary>
-    /// DTO cho response API chung
+    /// DTO cho response đổi mật khẩu
+    /// </summary>
+    public class ChangePasswordResponseDto
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public List<string> Errors { get; set; } = new List<string>();
+    }
+
+    /// <summary>
+    /// DTO cho response quên mật khẩu
+    /// </summary>
+    public class ForgotPasswordResponseDto
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public List<string> Errors { get; set; } = new List<string>();
+    }
+
+    /// <summary>
+    /// DTO cho response đăng xuất
+    /// </summary>
+    public class LogoutResponseDto
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// DTO cho response lấy profile
+    /// </summary>
+    public class ProfileResponseDto
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public UserProfileDto? Data { get; set; }
+    }
+
+    /// <summary>
+    /// DTO cho response API chung - chỉ dùng khi thực sự cần thiết
     /// </summary>
     public class ApiResponseDto
     {
