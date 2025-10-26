@@ -1,4 +1,5 @@
 ﻿using InternalTrainingSystem.WebApp.Models.DTOs;
+using InternalTrainingSystem.WebApp.Models.ViewModels;
 using InternalTrainingSystem.WebApp.Services.Interface;
 using InternalTrainingSystem.WebApp.Constants;
 using Microsoft.AspNetCore.Mvc;
@@ -25,8 +26,8 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 // Sử dụng page size cố định từ constants cho danh sách lớp học
                 var pageSize = PaginationConstants.ClassPageSize;
                 
-                // var allClasses = await _classService.GetClassesAsync();
-                var allClasses = GetSampleClassData(); // Tạo data mẫu để test view
+                var allClasses = await _classService.GetClassesAsync();
+               // var allClasses = GetSampleClassData(); // Tạo data mẫu để test view
                 
                 var totalItems = allClasses.Count;
                 var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
@@ -74,6 +75,98 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 TempData["Error"] = "Đã xảy ra lỗi khi tải chi tiết lớp học.";
                 return RedirectToAction("Index");
             }
+        }
+
+        [HttpGet("tao-lop")]
+        public IActionResult TaoLop()
+        {
+            try
+            {
+                var model = new CreateClassViewModel
+                {
+                    Courses = GetSampleCourses(),
+                    Mentors = GetSampleMentors(),
+                    StartDate = DateTime.Today,
+                    EndDate = DateTime.Today.AddMonths(3),
+                    Capacity = 20,
+                    Schedule = new List<ClassScheduleItem>()
+                };
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while loading create class page");
+                TempData["Error"] = "Đã xảy ra lỗi khi tải trang tạo lớp học.";
+                return RedirectToAction("Index");
+            }
+        }
+
+        [HttpPost("tao-lop")]
+        public async Task<IActionResult> TaoLop(CreateClassViewModel model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    model.Courses = GetSampleCourses();
+                    model.Mentors = GetSampleMentors();
+                    return View(model);
+                }
+
+                // Validate dates
+                if (model.EndDate <= model.StartDate)
+                {
+                    ModelState.AddModelError("EndDate", "Ngày kết thúc phải sau ngày bắt đầu");
+                    model.Courses = GetSampleCourses();
+                    model.Mentors = GetSampleMentors();
+                    return View(model);
+                }
+
+                // TODO: Implement actual class creation logic
+                // await _classService.CreateClassAsync(model);
+
+                TempData["Success"] = "Tạo lớp học thành công!";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while creating class");
+                TempData["Error"] = "Đã xảy ra lỗi khi tạo lớp học.";
+                model.Courses = GetSampleCourses();
+                model.Mentors = GetSampleMentors();
+                return View(model);
+            }
+        }
+
+        private List<CourseDto> GetSampleCourses()
+        {
+            return new List<CourseDto>
+            {
+                new CourseDto { CourseId = 101, CourseName = "Lập Trình C# Cơ Bản", Level = "Beginner" },
+                new CourseDto { CourseId = 102, CourseName = "ASP.NET Core Web API Development", Level = "Intermediate" },
+                new CourseDto { CourseId = 103, CourseName = "React JS Frontend Development", Level = "Intermediate" },
+                new CourseDto { CourseId = 104, CourseName = "SQL Server Database Administration", Level = "Beginner" },
+                new CourseDto { CourseId = 105, CourseName = "Angular Framework Development", Level = "Advanced" },
+                new CourseDto { CourseId = 106, CourseName = "Python Django Web Development", Level = "Intermediate" },
+                new CourseDto { CourseId = 107, CourseName = "Java Spring Boot Development", Level = "Advanced" },
+                new CourseDto { CourseId = 108, CourseName = "DevOps & Continuous Integration/Deployment", Level = "Advanced" }
+            };
+        }
+
+        private List<MentorResponse> GetSampleMentors()
+        {
+            return new List<MentorResponse>
+            {
+                new MentorResponse { Id = "M001", FullName = "Nguyễn Văn Nam", Email = "nam.nguyen@fpt.edu.vn" },
+                new MentorResponse { Id = "M002", FullName = "Trần Văn Hùng", Email = "hung.tran@fpt.edu.vn" },
+                new MentorResponse { Id = "M003", FullName = "Lê Thị Hương", Email = "huong.le@fpt.edu.vn" },
+                new MentorResponse { Id = "M004", FullName = "Phạm Văn Đức", Email = "duc.pham@fpt.edu.vn" },
+                new MentorResponse { Id = "M005", FullName = "Võ Văn Tài", Email = "tai.vo@fpt.edu.vn" },
+                new MentorResponse { Id = "M006", FullName = "Bùi Văn Nghĩa", Email = "nghia.bui@fpt.edu.vn" },
+                new MentorResponse { Id = "M007", FullName = "Ngô Thị Phương", Email = "phuong.ngo@fpt.edu.vn" },
+                new MentorResponse { Id = "M008", FullName = "Hà Văn Quý", Email = "quy.ha@fpt.edu.vn" }
+            };
         }
 
         private List<ClassDto> GetSampleClassData()
