@@ -9,6 +9,7 @@ namespace InternalTrainingSystem.WebApp.Services.Interface
         Task<CourseDto?> GetCourseByIdAsync(int courseId);
         Task<PagedResult<CourseDto>> GetCoursesAsync(string? search = null, string? status = null, int page = 1, int pageSize = 10);
         Task<CourseDto?> CreateCourseAsync(CourseDto course);
+        Task<CreateCourseResponse> CreateFullCourseAsync(CreateFullCourseDto course);
         Task<CourseDto?> UpdateCourseAsync(CourseDto course);
         Task<bool> DeleteCourseAsync(int courseId);
         Task<CourseApprovalResponse> ApproveCourseAsync(CourseApprovalRequest request);

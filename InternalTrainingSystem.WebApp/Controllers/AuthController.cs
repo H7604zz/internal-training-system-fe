@@ -125,28 +125,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         /// <summary>
-        /// Lấy thông tin người dùng hiện tại (API endpoint)
-        /// </summary>
-        [HttpGet]
-        public async Task<IActionResult> GetCurrentUser()
-        {
-            try
-            {
-                if (_authService.IsTokenExpired())
-                {
-                    return Json(new { success = false, message = "Phiên đăng nhập đã hết hạn" });
-                }
-
-                var result = await _authService.GetProfileAsync();
-                return Json(result);
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Đã xảy ra lỗi khi lấy thông tin người dùng" });
-            }
-        }
-
-        /// <summary>
         /// Đăng xuất
         /// </summary>
         public async Task<IActionResult> DangXuat()
@@ -233,12 +211,19 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     return RedirectToAction("DangNhap");
                 }
 
-                // Lấy thông tin user từ session hoặc API
-                var userProfile = GetSampleUserProfile(); // Dùng data mẫu để test
+                // Lấy thông tin user từ API
+                var userProfile = await _authService.GetProfileAsync();
                 
-                return View(userProfile);
+                if (userProfile != null)
+                {
+                    return View(userProfile);
+                }
+                
+                // Nếu không lấy được profile, redirect về trang chủ với thông báo lỗi
+                TempData["Error"] = "Không thể lấy thông tin cá nhân.";
+                return RedirectToAction("Index", "TrangChu");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 TempData["Error"] = "Đã xảy ra lỗi khi tải thông tin cá nhân.";
                 return RedirectToAction("Index", "TrangChu");
@@ -255,9 +240,16 @@ namespace InternalTrainingSystem.WebApp.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    var userProfile = GetSampleUserProfile();
-                    ViewBag.ShowUpdateForm = true;
-                    return View("ThongTinCaNhan", userProfile);
+                    // Lấy lại thông tin user để hiển thị form
+                    var userProfile = await _authService.GetProfileAsync();
+                    if (userProfile != null)
+                    {
+                        ViewBag.ShowUpdateForm = true;
+                        return View("ThongTinCaNhan", userProfile);
+                    }
+                    
+                    TempData["Error"] = "Không thể lấy thông tin cá nhân để hiển thị form.";
+                    return RedirectToAction("ThongTinCaNhan");
                 }
 
                 // var result = await _authService.UpdateProfileAsync(model);
@@ -265,7 +257,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 TempData["Success"] = "Cập nhật thông tin thành công!";
                 return RedirectToAction("ThongTinCaNhan");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 TempData["Error"] = "Đã xảy ra lỗi khi cập nhật thông tin.";
                 return RedirectToAction("ThongTinCaNhan");
@@ -273,73 +265,33 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         /// <summary>
-        /// Sample data for testing user profile
+        /// API endpoint để lấy thông tin người dùng hiện tại
         /// </summary>
-        private UserProfileDto GetSampleUserProfile()
+        [HttpGet]
+        [Route("api/user/profile")]
+        public async Task<IActionResult> GetProfile()
         {
-            return new UserProfileDto
+            try
             {
-                Id = "USR001",
-                EmployeeId = "EMP2024001", 
-                FullName = "Nguyễn Văn An",
-                Email = "nguyenvanan@company.com",
-                PhoneNumber = "0123456789",
-                Department = "IT Department",
-                Position = "Senior Developer",
-                CurrentRole = "System Administrator",
-                YearsOfExperience = 5,
-                JoinDate = DateTime.Now.AddYears(-3),
-                LastLoginDate = DateTime.Now.AddHours(-2),
-                IsActive = true,
-                Roles = new List<string> { "Admin", "Developer", "Trainer" },
-                RoleHistory = new List<UserRoleHistoryDto>
+                if (_authService.IsTokenExpired())
                 {
-                    new UserRoleHistoryDto
-                    {
-                        Id = 1,
-                        RoleName = "System Administrator",
-                        RoleDescription = "Quản trị hệ thống toàn quyền",
-                        StartDate = DateTime.Now.AddMonths(-6),
-                        EndDate = null,
-                        AssignedBy = "HR Manager",
-                        IsCurrent = true,
-                        Status = "Đang hoạt động"
-                    },
-                    new UserRoleHistoryDto
-                    {
-                        Id = 2,
-                        RoleName = "Senior Developer",
-                        RoleDescription = "Phát triển và duy trì hệ thống",
-                        StartDate = DateTime.Now.AddYears(-2),
-                        EndDate = DateTime.Now.AddMonths(-6),
-                        AssignedBy = "Technical Lead",
-                        IsCurrent = false,
-                        Status = "Đã kết thúc"
-                    },
-                    new UserRoleHistoryDto
-                    {
-                        Id = 3,
-                        RoleName = "Developer",
-                        RoleDescription = "Phát triển tính năng mới",
-                        StartDate = DateTime.Now.AddYears(-3),
-                        EndDate = DateTime.Now.AddYears(-2),
-                        AssignedBy = "Project Manager",
-                        IsCurrent = false,
-                        Status = "Đã kết thúc"
-                    },
-                    new UserRoleHistoryDto
-                    {
-                        Id = 4,
-                        RoleName = "Trainee",
-                        RoleDescription = "Thực tập sinh phát triển phần mềm",
-                        StartDate = DateTime.Now.AddYears(-3).AddMonths(-6),
-                        EndDate = DateTime.Now.AddYears(-3),
-                        AssignedBy = "HR Department",
-                        IsCurrent = false,
-                        Status = "Đã hoàn thành"
-                    }
+                    return Json(new { success = false, message = "Phiên đăng nhập đã hết hạn" });
                 }
-            };
+
+                var userProfile = await _authService.GetProfileAsync();
+                if (userProfile != null)
+                {
+                    return Json(new { success = true, data = userProfile });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Không thể lấy thông tin người dùng" });
+                }
+            }
+            catch (Exception)
+            {
+                return Json(new { success = false, message = "Đã xảy ra lỗi khi lấy thông tin người dùng" });
+            }
         }
     }
 }

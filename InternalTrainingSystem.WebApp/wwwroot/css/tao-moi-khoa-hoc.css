@@ -1,0 +1,93 @@
+/* Tao Moi Khoa Hoc - Course Creation Page Styles */
+
+/* Module Card Styles */
+.module-card {
+    border: 1px solid #e3e6f0;
+    border-radius: 0.375rem;
+    margin-bottom: 1rem;
+    background: #f8f9fc;
+}
+
+.module-header {
+    background: #4e73df;
+    color: white;
+    padding: 1rem;
+    border-radius: 0.375rem 0.375rem 0 0;
+}
+
+/* Lesson Item Styles */
+.lesson-item {
+    background: white;
+    border: 1px solid #e3e6f0;
+    border-radius: 0.25rem;
+    margin-bottom: 0.5rem;
+    padding: 1rem;
+}
+
+.lesson-type-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Button Styles */
+.remove-btn {
+    background: #e74a3b;
+    border: none;
+    color: white;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.add-lesson-btn {
+    background: #1cc88a;
+    border: none;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+}
+
+/* Button Group Alignment Styles */
+.module-header .btn-group,
+.lesson-item .btn-group {
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+}
+
+.module-header .btn,
+.lesson-item .btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 0.875rem;
+}
+
+/* Module Header Button Styles */
+.module-header .btn-outline-light {
+    border-color: rgba(255,255,255,0.3);
+    color: white;
+}
+
+.module-header .btn-outline-light:hover {
+    background-color: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.5);
+}
+
+/* Lesson Item Button Styles */
+.lesson-item .btn-outline-secondary {
+    border-color: #6c757d;
+    color: #6c757d;
+}
+
+.lesson-item .btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: white;
+}

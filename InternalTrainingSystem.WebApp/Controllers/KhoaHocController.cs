@@ -159,11 +159,11 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             ViewBag.Categories = await _categoryService.GetAllCategoriesAsync();
             ViewBag.Departments = await _departmentService.GetAllDepartmentsAsync();
-            return View(new CourseDto());
+            return View(new CreateFullCourseDto());
         }
 
-        [HttpPost("tao-moi")]
-        public async Task<IActionResult> TaoMoi(CourseDto model)
+        [HttpPost]
+        public async Task<IActionResult> TaoMoi(CreateFullCourseDto model)
         {
             try
             {
@@ -174,15 +174,15 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     return View(model);
                 }
 
-                var result = await _courseService.CreateCourseAsync(model);
-                if (result != null)
+                var result = await _courseService.CreateFullCourseAsync(model);
+                if (result != null && result.Success)
                 {
                     TempData["Success"] = "Thêm khóa học mới thành công! Khóa học đã được gửi để chờ phê duyệt.";
                     return RedirectToAction("Index");
                 }
                 else
                 {
-                    TempData["Error"] = "Không thể tạo khóa học. Vui lòng thử lại.";
+                    TempData["Error"] = result?.Message ?? "Không thể tạo khóa học. Vui lòng thử lại.";
                     ViewBag.Categories = await _categoryService.GetAllCategoriesAsync();
                     ViewBag.Departments = await _departmentService.GetAllDepartmentsAsync();
                     return View(model);

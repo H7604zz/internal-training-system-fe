@@ -13,9 +13,9 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
         private readonly HttpClient _httpClient;
         private readonly ILogger<CourseService> _logger;
 
-        public CourseService(HttpClient httpClient, ILogger<CourseService> logger)
+        public CourseService(IHttpClientFactory httpClientFactory, ILogger<CourseService> logger)
         {
-            _httpClient = httpClient;
+            _httpClient = httpClientFactory.CreateClient("ApiClient");
             _logger = logger;
         }
 
@@ -185,6 +185,120 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
             {
                 _logger.LogError(ex, "Error occurred while creating course");
                 return null;
+            }
+        }
+
+        public async Task<CreateCourseResponse> CreateFullCourseAsync(CreateFullCourseDto course)
+        {
+            try
+            {
+                // Chuẩn bị metadata
+                var metadata = new
+                {
+                    CourseCode = course.CourseCode,
+                    CourseName = course.CourseName,
+                    Description = course.Description,
+                    CourseCategoryId = course.CourseCategoryId,
+                    Duration = course.Duration,
+                    Level = course.Level,
+                    IsOnline = course.IsOnline,
+                    IsMandatory = course.IsMandatory,
+                    Departments = course.SelectedDepartmentIds,
+                    Modules = course.Modules.Select(m => new
+                    {
+                        Title = m.Title,
+                        Description = m.Description,
+                        OrderIndex = m.OrderIndex,
+                        Lessons = m.Lessons.Select(l => new
+                        {
+                            Title = l.Title,
+                            OrderIndex = l.OrderIndex,
+                            Type = (int)l.Type,
+                            ContentUrl = l.ContentUrl,
+                            ContentHtml = l.ContentHtml,
+                            UploadBinary = l.UploadBinary,
+                            QuizTitle = l.QuizTitle,
+                            IsQuizExcel = l.IsQuizExcel
+                        }).ToList()
+                    }).ToList()
+                };
+
+                var metadataJson = JsonSerializer.Serialize(metadata, new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+
+                // Chuẩn bị form data
+                using var formData = new MultipartFormDataContent();
+                formData.Add(new StringContent(metadataJson, Encoding.UTF8, "application/json"), "metadata");
+
+                // Thêm files nếu có
+                if (course.LessonFiles != null && course.LessonFiles.Any())
+                {
+                    for (int i = 0; i < course.LessonFiles.Count; i++)
+                    {
+                        var file = course.LessonFiles[i];
+                        if (file != null && file.Length > 0)
+                        {
+                            var fileContent = new StreamContent(file.OpenReadStream());
+                            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType ?? "application/octet-stream");
+                            formData.Add(fileContent, "lessonFiles", file.FileName);
+                        }
+                    }
+                }
+
+                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl("api/course"), formData);
+
+                _logger.LogInformation($"API Response Status: {response.StatusCode}");
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonString = await response.Content.ReadAsStringAsync();
+                    var result = JsonSerializer.Deserialize<dynamic>(jsonString);
+                    
+                    return new CreateCourseResponse
+                    {
+                        Success = true,
+                        Message = "Khóa học đã được tạo thành công!",
+                        CourseId = result?.GetProperty("courseId").GetInt32(),
+                        CourseName = course.CourseName
+                    };
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError($"Failed to create full course. Status: {response.StatusCode}, Error: {errorContent}");
+                    
+                    // Xử lý lỗi từ API
+                    try
+                    {
+                        var errorResponse = JsonSerializer.Deserialize<dynamic>(errorContent);
+                        var message = errorResponse?.GetProperty("message").GetString() ?? "Không thể tạo khóa học.";
+                        
+                        return new CreateCourseResponse
+                        {
+                            Success = false,
+                            Message = message
+                        };
+                    }
+                    catch
+                    {
+                        return new CreateCourseResponse
+                        {
+                            Success = false,
+                            Message = "Không thể tạo khóa học. Vui lòng thử lại."
+                        };
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while creating full course");
+                return new CreateCourseResponse
+                {
+                    Success = false,
+                    Message = "Đã xảy ra lỗi khi tạo khóa học. Vui lòng thử lại."
+                };
             }
         }
 

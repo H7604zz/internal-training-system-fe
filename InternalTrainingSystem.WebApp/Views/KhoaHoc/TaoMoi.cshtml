@@ -1,4 +1,4 @@
-@model InternalTrainingSystem.WebApp.Models.DTOs.CourseDto
+@model InternalTrainingSystem.WebApp.Models.DTOs.CreateFullCourseDto
 @using InternalTrainingSystem.WebApp.Constants
 @using InternalTrainingSystem.WebApp.Extensions
 @{
@@ -7,6 +7,7 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/khoa-hoc.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/tao-moi-khoa-hoc.css" asp-append-version="true" />
 }
 
 <div class="course-container">
@@ -29,7 +30,7 @@
         </div>
 
         <!-- Add Form -->
-        <form method="post" asp-action="TaoMoi" class="course-edit-form" novalidate>
+        <form method="post" asp-controller="KhoaHoc" asp-action="TaoMoi" enctype="multipart/form-data" class="course-edit-form" novalidate>
             @Html.AntiForgeryToken()
 
             <div class="row">
@@ -47,9 +48,9 @@
                                 <span asp-validation-for="CourseName" class="text-danger"></span>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label asp-for="Code" class="form-label required">Mã khóa học</label>
-                                <input asp-for="Code" class="form-control" placeholder="VD: IT-001">
-                                <span asp-validation-for="Code" class="text-danger"></span>
+                                <label asp-for="CourseCode" class="form-label required">Mã khóa học</label>
+                                <input asp-for="CourseCode" class="form-control" placeholder="VD: IT-001">
+                                <span asp-validation-for="CourseCode" class="text-danger"></span>
                             </div>
                         </div>
 
@@ -62,8 +63,8 @@
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label asp-for="Category" class="form-label required">Danh mục</label>
-                                <select asp-for="Category" class="form-select">
+                                <label asp-for="CourseCategoryId" class="form-label required">Danh mục</label>
+                                <select asp-for="CourseCategoryId" class="form-select">
                                     <option value="">Chọn danh mục</option>
                                     @if (ViewBag.Categories != null)
                                     {
@@ -73,18 +74,15 @@
                                         }
                                     }
                                 </select>
-                                <span asp-validation-for="Category" class="text-danger"></span>
+                                <span asp-validation-for="CourseCategoryId" class="text-danger"></span>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label asp-for="Level" class="form-label required">Cấp độ</label>
                                 <select asp-for="Level" class="form-select">
                                     <option value="">Chọn cấp độ</option>
-                                    @foreach (var level in CourseConstants.Levels.GetAllLevels())
-                                    {
-                                        <option value="@level.Key">
-                                            @level.Value
-                                        </option>
-                                    }
+                                    <option value="Beginner">Cơ bản</option>
+                                    <option value="Intermediate">Trung cấp</option>
+                                    <option value="Advanced">Nâng cao</option>
                                 </select>
                                 <span asp-validation-for="Level" class="text-danger"></span>
                             </div>
@@ -107,7 +105,7 @@
                                         </label>
                                     </div>
                                     <div class="form-check form-switch">
-                                        <input asp-for="IsMandatory" class="form-check-input" type="checkbox" role="switch" checked>
+                                        <input asp-for="IsMandatory" class="form-check-input" type="checkbox" role="switch">
                                         <label asp-for="IsMandatory" class="form-check-label">
                                             Khóa học bắt buộc
                                         </label>
@@ -115,9 +113,6 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Hidden field for IsActive (default false) -->
-                        <input asp-for="IsActive" type="hidden" value="false">
                     </div>
 
                     <!-- Department Selection -->
@@ -151,16 +146,21 @@
                         <h3 class="form-section-title">
                             <i class="fas fa-book me-2"></i>Nội Dung Khóa Học
                         </h3>
-                        <p class="form-help-text">Tạo các module và bài học cho khóa học</p>
+                        <p class="form-help-text">Tạo các module và bài học cho khóa học. Khóa học phải có ít nhất 1 module và mỗi module phải có ít nhất 1 bài học.</p>
 
                         <!-- Modules Container -->
                         <div id="modules-container">
-                            <!-- Module template will be added here -->
+                            <!-- Modules will be dynamically added here -->
                         </div>
 
-                        <button type="button" class="btn btn-outline-primary mt-3" id="add-module-btn">
-                            <i class="fas fa-plus me-2"></i>Thêm Module
-                        </button>
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-outline-primary" id="add-module-btn">
+                                <i class="fas fa-plus me-2"></i>Thêm Module
+                            </button>
+                        </div>
+
+                        <!-- Hidden file input for lesson files -->
+                        <input type="file" id="lesson-file-input" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.mp4,.mp3" style="display: none;">
                     </div>
                 </div>
 
@@ -225,422 +225,448 @@
                 </div>
             </div>
         </form>
+    </div>
+</div>
 
-        <!-- Hidden Templates -->
-        <div id="module-template" style="display: none;">
-            <div class="module-item mb-4" data-module-index="">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <i class="fas fa-folder me-2"></i>Module <span class="module-number"></span>
-                        </h5>
-                        <div>
-                            <button type="button" class="btn btn-sm btn-outline-secondary move-up-module" title="Di chuyển lên">
-                                <i class="fas fa-arrow-up"></i>
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary move-down-module" title="Di chuyển xuống">
-                                <i class="fas fa-arrow-down"></i>
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-danger remove-module" title="Xóa module">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label required">Tên Module</label>
-                                <input type="text" name="Modules[].ModuleName" class="form-control" placeholder="Nhập tên module">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label required">Thứ tự</label>
-                                <input type="number" name="Modules[].Order" class="form-control module-order" min="1" readonly>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Mô tả Module</label>
-                            <textarea name="Modules[].Description" class="form-control" rows="2" placeholder="Nhập mô tả module..."></textarea>
-                        </div>
-
-                        <!-- Lessons Section -->
-                        <div class="lessons-section">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h6><i class="fas fa-play-circle me-2"></i>Bài Học</h6>
-                                <button type="button" class="btn btn-sm btn-outline-primary add-lesson-btn">
-                                    <i class="fas fa-plus me-1"></i>Thêm Bài Học
-                                </button>
-                            </div>
-                            <div class="lessons-container">
-                                <!-- Lessons will be added here -->
-                            </div>
-                        </div>
-                    </div>
+<!-- Module Template -->
+<template id="module-template">
+    <div class="module-card" data-module-index="">
+        <div class="module-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-folder me-2"></i>Module <span class="module-number">1</span>
+                </h5>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline-light move-up-module" title="Di chuyển lên">
+                        <i class="fas fa-arrow-up"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-light move-down-module" title="Di chuyển xuống">
+                        <i class="fas fa-arrow-down"></i>
+                    </button>
+                    <button type="button" class="btn btn-danger remove-module" title="Xóa module">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             </div>
         </div>
+        <div class="p-3">
+            <div class="row mb-3">
+                <div class="col-md-8">
+                    <label class="form-label required">Tên Module</label>
+                    <input type="text" name="Modules[0].Title" class="form-control" placeholder="Nhập tên module" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Thứ tự</label>
+                    <input type="number" name="Modules[0].OrderIndex" class="form-control module-order" min="1" value="1" readonly>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Mô tả Module</label>
+                <textarea name="Modules[0].Description" class="form-control" rows="2" placeholder="Nhập mô tả module..."></textarea>
+            </div>
 
-        <div id="lesson-template" style="display: none;">
-            <div class="lesson-item mb-3" data-lesson-index="">
-                <div class="card border-start border-primary border-3">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <h6 class="card-title mb-0">
-                                <i class="fas fa-play me-2"></i>Bài học <span class="lesson-number"></span>
-                            </h6>
-                            <div>
-                                <button type="button" class="btn btn-sm btn-outline-secondary move-up-lesson" title="Di chuyển lên">
-                                    <i class="fas fa-arrow-up"></i>
-                                </button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary move-down-lesson" title="Di chuyển xuống">
-                                    <i class="fas fa-arrow-down"></i>
-                                </button>
-                                <button type="button" class="btn btn-sm btn-outline-danger remove-lesson" title="Xóa bài học">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-8">
-                                <label class="form-label required">Tên Bài Học</label>
-                                <input type="text" name="Modules[].Lessons[].LessonName" class="form-control" placeholder="Nhập tên bài học">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label required">Thứ tự</label>
-                                <input type="number" name="Modules[].Lessons[].Order" class="form-control lesson-order" min="1" readonly>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Nội dung học</label>
-                            <div class="content-upload-area">
-                                <div class="upload-tabs mb-3">
-                                    <div class="btn-group" role="group">
-                                        <input type="radio" class="btn-check content-type" name="content-type-" id="video-" value="video">
-                                        <label class="btn btn-outline-primary" for="video-">
-                                            <i class="fas fa-video me-1"></i>Video
-                                        </label>
-
-                                        <input type="radio" class="btn-check content-type" name="content-type-" id="pdf-" value="pdf">
-                                        <label class="btn btn-outline-primary" for="pdf-">
-                                            <i class="fas fa-file-pdf me-1"></i>PDF
-                                        </label>
-
-                                        <input type="radio" class="btn-check content-type" name="content-type-" id="image-" value="image">
-                                        <label class="btn btn-outline-primary" for="image-">
-                                            <i class="fas fa-image me-1"></i>Hình ảnh
-                                        </label>
-
-                                        <input type="radio" class="btn-check content-type" name="content-type-" id="document-" value="document">
-                                        <label class="btn btn-outline-primary" for="document-">
-                                            <i class="fas fa-file-alt me-1"></i>Tài liệu
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div class="file-upload-container">
-                                    <div class="file-upload-area">
-                                        <input type="file" name="Modules[].Lessons[].ContentFile" class="form-control content-file-input" accept="">
-                                        <div class="upload-placeholder text-center p-4">
-                                            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-2"></i>
-                                            <p class="text-muted mb-0">Chọn loại nội dung và tải lên tệp</p>
-                                            <small class="text-muted">Hỗ trợ: Video (MP4), PDF, Hình ảnh (JPG, PNG), Tài liệu (DOCX, PPTX)</small>
-                                        </div>
-                                    </div>
-                                    <div class="file-info mt-2" style="display: none;">
-                                        <div class="alert alert-info">
-                                            <i class="fas fa-file me-2"></i>
-                                            <span class="file-name"></span>
-                                            <span class="file-size text-muted ms-2"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <!-- Lessons Section -->
+            <div class="lessons-section">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6><i class="fas fa-play-circle me-2"></i>Bài Học</h6>
+                    <button type="button" class="add-lesson-btn btn btn-sm">
+                        <i class="fas fa-plus me-1"></i>Thêm Bài Học
+                    </button>
+                </div>
+                <div class="lessons-container">
+                    <!-- Lessons will be added here -->
                 </div>
             </div>
         </div>
     </div>
-</div>
+</template>
+
+<!-- Lesson Template -->
+<template id="lesson-template">
+    <div class="lesson-item" data-lesson-index="">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <h6 class="mb-0">
+                <i class="fas fa-play me-2"></i>Bài học <span class="lesson-number">1</span>
+            </h6>
+            <div class="btn-group">
+                <button type="button" class="btn btn-outline-secondary move-up-lesson" title="Di chuyển lên">
+                    <i class="fas fa-arrow-up"></i>
+                </button>
+                <button type="button" class="btn btn-outline-secondary move-down-lesson" title="Di chuyển xuống">
+                    <i class="fas fa-arrow-down"></i>
+                </button>
+                <button type="button" class="btn btn-outline-danger remove-lesson" title="Xóa bài học">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-8">
+                <label class="form-label required">Tên Bài Học</label>
+                <input type="text" name="Modules[0].Lessons[0].Title" class="form-control" placeholder="Nhập tên bài học" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Thứ tự</label>
+                <input type="number" name="Modules[0].Lessons[0].OrderIndex" class="form-control lesson-order" min="1" value="1" readonly>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label required">Loại Bài Học</label>
+                <select name="Modules[0].Lessons[0].Type" class="form-select lesson-type" required>
+                    <option value="">Chọn loại bài học</option>
+                    <option value="1">Video</option>
+                    <option value="2">Đọc hiểu</option>
+                    <option value="3">Tệp tin</option>
+                    <option value="4">Liên kết</option>
+                    <option value="5">Bài kiểm tra</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <div class="lesson-type-badge">
+                    <span class="badge bg-secondary type-indicator">Chọn loại</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content fields (shown/hidden based on lesson type) -->
+        <div class="lesson-content-fields">
+            <!-- URL field for Video/Link types -->
+            <div class="content-field url-field" style="display: none;">
+                <label class="form-label">URL</label>
+                <input type="url" name="Modules[0].Lessons[0].ContentUrl" class="form-control" placeholder="Nhập URL">
+            </div>
+
+            <!-- File upload field for File type -->
+            <div class="content-field file-field" style="display: none;">
+                <label class="form-label">Tệp tin</label>
+                <input type="file" name="LessonFiles" class="form-control" accept=".pdf,.doc,.docx,.ppt,.pptx,.mp4,.mp3">
+                <input type="hidden" name="Modules[0].Lessons[0].UploadBinary" value="true">
+            </div>
+
+            <!-- HTML content field for Reading type -->
+            <div class="content-field html-field" style="display: none;">
+                <label class="form-label">Nội dung</label>
+                <textarea name="Modules[0].Lessons[0].ContentHtml" class="form-control" rows="4" placeholder="Nhập nội dung bài học..."></textarea>
+            </div>
+
+            <!-- Quiz fields for Quiz type -->
+            <div class="content-field quiz-field" style="display: none;">
+                <div class="mb-3">
+                    <label class="form-label">Tiêu đề Quiz</label>
+                    <input type="text" name="Modules[0].Lessons[0].QuizTitle" class="form-control" placeholder="Nhập tiêu đề quiz">
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" name="Modules[0].Lessons[0].IsQuizExcel" class="form-check-input">
+                    <label class="form-check-label">Quiz từ file Excel</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            let moduleIndex = 0;
+        $(document).ready(function() {
+            let moduleCount = 0;
 
-            const formElements = {
-                name: document.getElementById('CourseName'),
-                code: document.getElementById('Code'),
-                level: document.getElementById('Level'),
-                duration: document.getElementById('Duration')
-            };
+            // Auto-generate course code from course name
+            $('#CourseName').on('blur', function() {
+                const courseName = $(this).val().trim();
+                const courseCodeField = $('#CourseCode');
+                
+                if (courseName && !courseCodeField.val()) {
+                    // Take first 2 words and get first letter of each
+                    const words = courseName.split(' ').slice(0, 2);
+                    const initials = words.map(word => word.charAt(0).toUpperCase()).join('');
+                    
+                    // Generate random 3-digit number
+                    const randomNum = String(Math.floor(Math.random() * 900) + 100).padStart(3, '0');
+                    
+                    // Create course code: TK-012
+                    const courseCode = `${initials}-${randomNum}`;
+                    courseCodeField.val(courseCode);
+                }
+            });
 
-            // Auto-generate course code from name
-            if (formElements.name && formElements.code) {
-                formElements.name.addEventListener('blur', function() {
-                    if (!formElements.code.value && this.value) {
-                        const words = this.value.split(' ').slice(0, 2);
-                        const code = words.map(word => word.charAt(0).toUpperCase()).join('') + 
-                                   '-' + String(Math.floor(Math.random() * 100) + 1).padStart(3, '0');
-                        formElements.code.value = code;
-                    }
-                });
-            }
-
-            // Module and Lesson Management
-            const modulesContainer = document.getElementById('modules-container');
-            const addModuleBtn = document.getElementById('add-module-btn');
-            const moduleTemplate = document.getElementById('module-template');
-            const lessonTemplate = document.getElementById('lesson-template');
-
-            // Add Module
-            addModuleBtn.addEventListener('click', function() {
+            // Add module button click
+            $('#add-module-btn').click(function() {
                 addModule();
             });
 
+            // Add initial module
+            addModule();
+
             function addModule() {
-                const moduleHtml = moduleTemplate.innerHTML;
-                const moduleDiv = document.createElement('div');
-                moduleDiv.innerHTML = moduleHtml;
-                const moduleItem = moduleDiv.firstElementChild;
+                const template = document.getElementById('module-template');
+                const clone = template.content.cloneNode(true);
                 
-                moduleIndex++;
-                moduleItem.setAttribute('data-module-index', moduleIndex - 1);
+                // Update module index and names
+                const moduleDiv = clone.querySelector('.module-card');
+                moduleDiv.setAttribute('data-module-index', moduleCount);
                 
-                // Update module number and form names
-                updateModuleIndexes(moduleItem, moduleIndex - 1);
+                // Update module number
+                clone.querySelector('.module-number').textContent = moduleCount + 1;
                 
-                modulesContainer.appendChild(moduleItem);
+                // Update form field names
+                updateModuleFieldNames(clone, moduleCount);
                 
                 // Add event listeners
-                addModuleEventListeners(moduleItem);
+                addModuleEventListeners(clone);
                 
-                // Update all module orders
+                // Append to container
+                document.getElementById('modules-container').appendChild(clone);
+                
+                // Add initial lesson
+                addLesson(moduleDiv);
+                
+                moduleCount++;
                 updateModuleOrders();
             }
 
-            function addModuleEventListeners(moduleItem) {
-                // Remove module
-                moduleItem.querySelector('.remove-module').addEventListener('click', function() {
-                    moduleItem.remove();
+            function updateModuleFieldNames(element, moduleIndex) {
+                const inputs = element.querySelectorAll('input, select, textarea');
+                inputs.forEach(input => {
+                    const name = input.getAttribute('name');
+                    if (name) {
+                        const newName = name.replace(/Modules\[\d+\]/, `Modules[${moduleIndex}]`);
+                        input.setAttribute('name', newName);
+                    }
+                });
+            }
+
+            function addModuleEventListeners(clone) {
+                // Remove module button
+                clone.querySelector('.remove-module').addEventListener('click', function() {
+                    const moduleCard = this.closest('.module-card');
+                    moduleCard.remove();
                     updateModuleOrders();
                 });
 
-                // Move module up/down
-                moduleItem.querySelector('.move-up-module').addEventListener('click', function() {
-                    const prev = moduleItem.previousElementSibling;
-                    if (prev) {
-                        modulesContainer.insertBefore(moduleItem, prev);
+                // Move module up
+                clone.querySelector('.move-up-module').addEventListener('click', function() {
+                    const moduleCard = this.closest('.module-card');
+                    const prevModule = moduleCard.previousElementSibling;
+                    if (prevModule) {
+                        moduleCard.parentNode.insertBefore(moduleCard, prevModule);
                         updateModuleOrders();
                     }
                 });
 
-                moduleItem.querySelector('.move-down-module').addEventListener('click', function() {
-                    const next = moduleItem.nextElementSibling;
-                    if (next) {
-                        modulesContainer.insertBefore(next, moduleItem);
+                // Move module down
+                clone.querySelector('.move-down-module').addEventListener('click', function() {
+                    const moduleCard = this.closest('.module-card');
+                    const nextModule = moduleCard.nextElementSibling;
+                    if (nextModule) {
+                        moduleCard.parentNode.insertBefore(nextModule, moduleCard);
                         updateModuleOrders();
                     }
                 });
 
-                // Add lesson
-                moduleItem.querySelector('.add-lesson-btn').addEventListener('click', function() {
-                    addLesson(moduleItem);
+                // Add lesson button
+                clone.querySelector('.add-lesson-btn').addEventListener('click', function() {
+                    const moduleCard = this.closest('.module-card');
+                    addLesson(moduleCard);
                 });
             }
 
-            function addLesson(moduleItem) {
-                const lessonHtml = lessonTemplate.innerHTML;
-                const lessonDiv = document.createElement('div');
-                lessonDiv.innerHTML = lessonHtml;
-                const lessonItem = lessonDiv.firstElementChild;
+            function addLesson(moduleCard) {
+                const moduleIndex = moduleCard.getAttribute('data-module-index');
+                const lessonsContainer = moduleCard.querySelector('.lessons-container');
+                const lessonCount = lessonsContainer.children.length;
                 
-                const lessonsContainer = moduleItem.querySelector('.lessons-container');
-                const moduleIndex = moduleItem.getAttribute('data-module-index');
-                const lessonIndex = lessonsContainer.children.length;
+                const template = document.getElementById('lesson-template');
+                const clone = template.content.cloneNode(true);
                 
-                lessonItem.setAttribute('data-lesson-index', lessonIndex);
+                // Update lesson index and names
+                const lessonDiv = clone.querySelector('.lesson-item');
+                lessonDiv.setAttribute('data-lesson-index', lessonCount);
                 
-                // Update lesson form names and IDs
-                updateLessonIndexes(lessonItem, moduleIndex, lessonIndex);
-                
-                lessonsContainer.appendChild(lessonItem);
-                
-                // Add event listeners
-                addLessonEventListeners(lessonItem, moduleItem);
-                
-                // Update lesson orders in this module
-                updateLessonOrders(moduleItem);
-            }
-
-            function addLessonEventListeners(lessonItem, moduleItem) {
-                const lessonsContainer = moduleItem.querySelector('.lessons-container');
-
-                // Remove lesson
-                lessonItem.querySelector('.remove-lesson').addEventListener('click', function() {
-                    lessonItem.remove();
-                    updateLessonOrders(moduleItem);
-                });
-
-                // Move lesson up/down
-                lessonItem.querySelector('.move-up-lesson').addEventListener('click', function() {
-                    const prev = lessonItem.previousElementSibling;
-                    if (prev) {
-                        lessonsContainer.insertBefore(lessonItem, prev);
-                        updateLessonOrders(moduleItem);
-                    }
-                });
-
-                lessonItem.querySelector('.move-down-lesson').addEventListener('click', function() {
-                    const next = lessonItem.nextElementSibling;
-                    if (next) {
-                        lessonsContainer.insertBefore(next, lessonItem);
-                        updateLessonOrders(moduleItem);
-                    }
-                });
-
-                // Content type change
-                const contentTypeInputs = lessonItem.querySelectorAll('.content-type');
-                const fileInput = lessonItem.querySelector('.content-file-input');
-                
-                contentTypeInputs.forEach(input => {
-                    input.addEventListener('change', function() {
-                        updateFileInputAccept(lessonItem, this.value);
-                    });
-                });
-
-                // File upload
-                fileInput.addEventListener('change', function() {
-                    handleFileUpload(lessonItem, this);
-                });
-            }
-
-            function updateModuleIndexes(moduleItem, index) {
-                // Update module number display
-                moduleItem.querySelector('.module-number').textContent = index + 1;
+                // Update lesson number
+                clone.querySelector('.lesson-number').textContent = lessonCount + 1;
                 
                 // Update form field names
-                const inputs = moduleItem.querySelectorAll('input[name^="Modules["], textarea[name^="Modules["]');
-                inputs.forEach(input => {
-                    const name = input.getAttribute('name');
-                    const newName = name.replace(/Modules\[\d*\]/, `Modules[${index}]`);
-                    input.setAttribute('name', newName);
-                });
-
-                // Update module order value
-                moduleItem.querySelector('.module-order').value = index + 1;
+                updateLessonFieldNames(clone, moduleIndex, lessonCount);
+                
+                // Add event listeners
+                addLessonEventListeners(clone);
+                
+                // Append to lessons container
+                lessonsContainer.appendChild(clone);
+                
+                updateLessonOrders(moduleCard);
             }
 
-            function updateLessonIndexes(lessonItem, moduleIndex, lessonIndex) {
-                // Update lesson number display
-                lessonItem.querySelector('.lesson-number').textContent = lessonIndex + 1;
-                
-                // Update form field names and IDs
-                const inputs = lessonItem.querySelectorAll('input, textarea');
+            function updateLessonFieldNames(element, moduleIndex, lessonIndex) {
+                const inputs = element.querySelectorAll('input, select, textarea');
                 inputs.forEach(input => {
                     const name = input.getAttribute('name');
-                    if (name && name.includes('Modules[].Lessons[]')) {
-                        const newName = name.replace('Modules[].Lessons[]', `Modules[${moduleIndex}].Lessons[${lessonIndex}]`);
+                    if (name) {
+                        const newName = name
+                            .replace(/Modules\[\d+\]/, `Modules[${moduleIndex}]`)
+                            .replace(/Lessons\[\d+\]/, `Lessons[${lessonIndex}]`);
                         input.setAttribute('name', newName);
                     }
+                });
+            }
 
-                    const id = input.getAttribute('id');
-                    if (id && (id.includes('-') && id.endsWith('-'))) {
-                        const newId = id.replace('-', `-${moduleIndex}-${lessonIndex}-`);
-                        input.setAttribute('id', newId);
-                        
-                        // Update corresponding label
-                        const label = lessonItem.querySelector(`label[for="${id}"]`);
-                        if (label) {
-                            label.setAttribute('for', newId);
-                        }
+            function addLessonEventListeners(clone) {
+                // Remove lesson button
+                clone.querySelector('.remove-lesson').addEventListener('click', function() {
+                    const lessonItem = this.closest('.lesson-item');
+                    const moduleCard = lessonItem.closest('.module-card');
+                    lessonItem.remove();
+                    updateLessonOrders(moduleCard);
+                });
+
+                // Move lesson up
+                clone.querySelector('.move-up-lesson').addEventListener('click', function() {
+                    const lessonItem = this.closest('.lesson-item');
+                    const prevLesson = lessonItem.previousElementSibling;
+                    const moduleCard = lessonItem.closest('.module-card');
+                    if (prevLesson) {
+                        lessonItem.parentNode.insertBefore(lessonItem, prevLesson);
+                        updateLessonOrders(moduleCard);
                     }
+                });
 
-                    const radioName = input.getAttribute('name');
-                    if (radioName && radioName.includes('content-type-')) {
-                        const newRadioName = `content-type-${moduleIndex}-${lessonIndex}`;
-                        input.setAttribute('name', newRadioName);
+                // Move lesson down
+                clone.querySelector('.move-down-lesson').addEventListener('click', function() {
+                    const lessonItem = this.closest('.lesson-item');
+                    const nextLesson = lessonItem.nextElementSibling;
+                    const moduleCard = lessonItem.closest('.module-card');
+                    if (nextLesson) {
+                        lessonItem.parentNode.insertBefore(nextLesson, lessonItem);
+                        updateLessonOrders(moduleCard);
                     }
                 });
 
-                // Update lesson order value
-                lessonItem.querySelector('.lesson-order').value = lessonIndex + 1;
-            }
-
-            function updateModuleOrders() {
-                const moduleItems = modulesContainer.querySelectorAll('.module-item');
-                moduleItems.forEach((moduleItem, index) => {
-                    moduleItem.setAttribute('data-module-index', index);
-                    updateModuleIndexes(moduleItem, index);
-                    
-                    // Update all lessons in this module
-                    const lessonItems = moduleItem.querySelectorAll('.lesson-item');
-                    lessonItems.forEach((lessonItem, lessonIndex) => {
-                        updateLessonIndexes(lessonItem, index, lessonIndex);
-                    });
+                // Lesson type change
+                clone.querySelector('.lesson-type').addEventListener('change', function() {
+                    const lessonItem = this.closest('.lesson-item');
+                    const selectedType = this.value;
+                    updateLessonContentFields(lessonItem, selectedType);
+                    updateLessonTypeBadge(lessonItem, selectedType);
                 });
             }
 
-            function updateLessonOrders(moduleItem) {
-                const lessonItems = moduleItem.querySelectorAll('.lesson-item');
-                const moduleIndex = moduleItem.getAttribute('data-module-index');
-                
-                lessonItems.forEach((lessonItem, index) => {
-                    lessonItem.setAttribute('data-lesson-index', index);
-                    updateLessonIndexes(lessonItem, moduleIndex, index);
-                });
-            }
+            function updateLessonContentFields(lessonItem, type) {
+                const contentFields = lessonItem.querySelectorAll('.content-field');
+                contentFields.forEach(field => field.style.display = 'none');
 
-            function updateFileInputAccept(lessonItem, contentType) {
-                const fileInput = lessonItem.querySelector('.content-file-input');
-                const acceptTypes = {
-                    'video': '.mp4,.avi,.mov,.wmv',
-                    'pdf': '.pdf',
-                    'image': '.jpg,.jpeg,.png,.gif,.bmp',
-                    'document': '.doc,.docx,.ppt,.pptx,.txt'
-                };
+                const typeIndicator = lessonItem.querySelector('.type-indicator');
                 
-                fileInput.setAttribute('accept', acceptTypes[contentType] || '');
-            }
-
-            function handleFileUpload(lessonItem, fileInput) {
-                const fileInfo = lessonItem.querySelector('.file-info');
-                const fileName = lessonItem.querySelector('.file-name');
-                const fileSize = lessonItem.querySelector('.file-size');
-                
-                if (fileInput.files && fileInput.files[0]) {
-                    const file = fileInput.files[0];
-                    fileName.textContent = file.name;
-                    fileSize.textContent = `(${formatFileSize(file.size)})`;
-                    fileInfo.style.display = 'block';
-                } else {
-                    fileInfo.style.display = 'none';
+                switch(type) {
+                    case '1': // Video
+                        lessonItem.querySelector('.url-field').style.display = 'block';
+                        typeIndicator.className = 'badge bg-danger type-indicator';
+                        typeIndicator.textContent = 'Video';
+                        break;
+                    case '2': // Reading
+                        lessonItem.querySelector('.html-field').style.display = 'block';
+                        typeIndicator.className = 'badge bg-info type-indicator';
+                        typeIndicator.textContent = 'Đọc hiểu';
+                        break;
+                    case '3': // File
+                        lessonItem.querySelector('.file-field').style.display = 'block';
+                        typeIndicator.className = 'badge bg-warning type-indicator';
+                        typeIndicator.textContent = 'Tệp tin';
+                        break;
+                    case '4': // Link
+                        lessonItem.querySelector('.url-field').style.display = 'block';
+                        typeIndicator.className = 'badge bg-primary type-indicator';
+                        typeIndicator.textContent = 'Liên kết';
+                        break;
+                    case '5': // Quiz
+                        lessonItem.querySelector('.quiz-field').style.display = 'block';
+                        typeIndicator.className = 'badge bg-success type-indicator';
+                        typeIndicator.textContent = 'Bài kiểm tra';
+                        break;
+                    default:
+                        typeIndicator.className = 'badge bg-secondary type-indicator';
+                        typeIndicator.textContent = 'Chọn loại';
                 }
             }
 
-            function formatFileSize(bytes) {
-                if (bytes === 0) return '0 Bytes';
-                const k = 1024;
-                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            function updateLessonTypeBadge(lessonItem, type) {
+                // Already handled in updateLessonContentFields
             }
 
-        
+            function updateModuleOrders() {
+                const moduleCards = document.querySelectorAll('.module-card');
+                moduleCards.forEach((card, index) => {
+                    card.setAttribute('data-module-index', index);
+                    card.querySelector('.module-number').textContent = index + 1;
+                    card.querySelector('.module-order').value = index + 1;
+                    
+                    // Update all field names in this module
+                    const inputs = card.querySelectorAll('input, select, textarea');
+                    inputs.forEach(input => {
+                        const name = input.getAttribute('name');
+                        if (name && name.includes('Modules[')) {
+                            const newName = name.replace(/Modules\[\d+\]/, `Modules[${index}]`);
+                            input.setAttribute('name', newName);
+                        }
+                    });
+                    
+                    updateLessonOrders(card);
+                });
+            }
 
-           
+            function updateLessonOrders(moduleCard) {
+                const moduleIndex = moduleCard.getAttribute('data-module-index');
+                const lessonItems = moduleCard.querySelectorAll('.lesson-item');
+                
+                lessonItems.forEach((item, index) => {
+                    item.setAttribute('data-lesson-index', index);
+                    item.querySelector('.lesson-number').textContent = index + 1;
+                    item.querySelector('.lesson-order').value = index + 1;
+                    
+                    // Update all field names in this lesson
+                    const inputs = item.querySelectorAll('input, select, textarea');
+                    inputs.forEach(input => {
+                        const name = input.getAttribute('name');
+                        if (name && name.includes('Lessons[')) {
+                            const newName = name.replace(/Lessons\[\d+\]/, `Lessons[${index}]`);
+                            input.setAttribute('name', newName);
+                        }
+                    });
+                });
+            }
 
-            // Department selection counter
-            const departmentCheckboxes = document.querySelectorAll('input[name="SelectedDepartmentIds"]');
-            const updateCounter = () => {
-                const selected = document.querySelectorAll('input[name="SelectedDepartmentIds"]:checked').length;
-                console.log(`Selected departments: ${selected}`);
-            };
-            
-            departmentCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', updateCounter);
+            // Form validation
+            $('form').on('submit', function(e) {
+                const modules = document.querySelectorAll('.module-card');
+                if (modules.length === 0) {
+                    e.preventDefault();
+                    alert('Vui lòng thêm ít nhất 1 module cho khóa học.');
+                    return false;
+                }
+
+                // Check each module has at least one lesson
+                let hasError = false;
+                modules.forEach((module, index) => {
+                    const lessons = module.querySelectorAll('.lesson-item');
+                    if (lessons.length === 0) {
+                        hasError = true;
+                        alert(`Module ${index + 1} phải có ít nhất 1 bài học.`);
+                    }
+                });
+
+                if (hasError) {
+                    e.preventDefault();
+                    return false;
+                }
+
+                // Check department selection
+                const selectedDepts = document.querySelectorAll('input[name="SelectedDepartmentIds"]:checked');
+                if (selectedDepts.length === 0) {
+                    e.preventDefault();
+                    alert('Vui lòng chọn ít nhất 1 phòng ban để áp dụng khóa học.');
+                    return false;
+                }
             });
         });
     </script>
