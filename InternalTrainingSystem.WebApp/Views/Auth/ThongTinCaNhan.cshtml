@@ -46,7 +46,7 @@
                             </div>
                             <div class="info-item">
                                 <span class="info-label">Số điện thoại</span>
-                                <span class="info-value">@(Model.PhoneNumber ?? "Chưa cập nhật")</span>
+                                <span class="info-value">@(Model.PhoneNumber ?? "N/A")</span>
                             </div>
                             <div class="info-item">
                                 <span class="info-label">Phòng ban</span>
@@ -57,16 +57,8 @@
                                 <span class="info-value">@Model.Position</span>
                             </div>
                             <div class="info-item">
-                                <span class="info-label">Kinh nghiệm</span>
-                                <span class="info-value">@(Model.YearsOfExperience?.ToString() ?? "Chưa cập nhật") năm</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Ngày gia nhập</span>
-                                <span class="info-value">@(Model.JoinDate?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Lần đăng nhập cuối</span>
-                                <span class="info-value">@(Model.LastLoginDate?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa có thông tin")</span>
+                                <span class="info-label">Vai trò hiện tại</span>
+                                <span class="info-value">@(Model.CurrentRole?.ToString() ?? "N/A")</span>
                             </div>
                         </div>
 
@@ -105,37 +97,6 @@
                     </div>
                 </div>
 
-                <!-- Role History -->
-                <div class="profile-card role-history-card">
-                    <div class="info-section">
-                        <h3 class="section-title">
-                            <i class="fas fa-history"></i>Lịch Sử Vai Trò
-                        </h3>
-                        
-                        <div class="role-timeline">
-                            @foreach (var role in Model.RoleHistory.OrderByDescending(r => r.StartDate))
-                            {
-                                <div class="timeline-item @(role.IsCurrent ? "current" : "ended")">
-                                    <div class="role-name">@role.RoleName</div>
-                                    <div class="role-description">@role.RoleDescription</div>
-                                    <div class="role-meta">
-                                        <span>
-                                            <i class="fas fa-calendar"></i>
-                                            @role.DurationText
-                                        </span>
-                                        <span>
-                                            <i class="fas fa-user-tie"></i>
-                                            Được giao bởi: @role.AssignedBy
-                                        </span>
-                                        <span class="status-badge @(role.IsCurrent ? "status-current" : "status-ended")">
-                                            @role.Status
-                                        </span>
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- Sidebar -->
@@ -160,24 +121,6 @@
                             <a href="#" class="btn btn-outline-success">
                                 <i class="fas fa-chart-line me-2"></i>Báo Cáo Học Tập
                             </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Current Roles -->
-                <div class="profile-card">
-                    <div class="info-section">
-                        <h3 class="section-title">
-                            <i class="fas fa-user-tag"></i>Vai Trò Hiện Tại
-                        </h3>
-                        
-                        <div class="d-flex flex-wrap gap-2">
-                            @foreach (var role in Model.Roles)
-                            {
-                                <span class="badge bg-primary fs-6 p-2">
-                                    <i class="fas fa-shield-alt me-1"></i>@role
-                                </span>
-                            }
                         </div>
                     </div>
                 </div>

@@ -85,27 +85,9 @@
             }
         }
 
-        // Get user profile function
-        function getUserProfile() {
-            fetch('@Url.Action("GetCurrentUser", "Auth")')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Display user profile in modal or redirect to profile page
-                        alert('Thông tin người dùng: ' + JSON.stringify(data.data, null, 2));
-                    } else {
-                        alert('Không thể lấy thông tin người dùng: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Đã xảy ra lỗi khi lấy thông tin người dùng');
-                });
-        }
-
         // Auto logout when session expires
         function checkSessionExpiry() {
-            fetch('@Url.Action("GetCurrentUser", "Auth")')
+            fetch('/api/user/profile')
                 .then(response => response.json())
                 .then(data => {
                     if (!data.success && data.message.includes('hết hạn')) {
