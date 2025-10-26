@@ -15,12 +15,12 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
         private readonly IConfiguration _configuration;
 
         public AuthService(
-            HttpClient httpClient, 
+            IHttpClientFactory httpClientFactory, 
             IHttpContextAccessor httpContextAccessor,
             ILogger<AuthService> logger,
             IConfiguration configuration)
         {
-            _httpClient = httpClient;
+            _httpClient = httpClientFactory.CreateClient("ApiClient");
             _httpContextAccessor = httpContextAccessor;
             _logger = logger;
             _configuration = configuration;
@@ -72,16 +72,10 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
             }
         }
 
-        public async Task<ApiResponseDto> LogoutAsync()
+        public async Task<LogoutResponseDto> LogoutAsync()
         {
             try
             {
-                var token = GetAccessToken();
-                if (!string.IsNullOrEmpty(token))
-                {
-                    _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-                }
-
                 var response = await _httpClient.PostAsync("/api/auth/logout", null);
                 var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -90,17 +84,17 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var logoutResponse = JsonSerializer.Deserialize<ApiResponseDto>(responseContent, new JsonSerializerOptions
+                    var logoutResponse = JsonSerializer.Deserialize<LogoutResponseDto>(responseContent, new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     });
 
-                    return logoutResponse ?? new ApiResponseDto { Success = true, Message = "Đăng xuất thành công" };
+                    return logoutResponse ?? new LogoutResponseDto { Success = true, Message = "Đăng xuất thành công" };
                 }
                 else
                 {
                     // Vẫn trả về thành công vì đã xóa token local
-                    return new ApiResponseDto { Success = true, Message = "Đăng xuất thành công" };
+                    return new LogoutResponseDto { Success = true, Message = "Đăng xuất thành công" };
                 }
             }
             catch (Exception ex)
@@ -108,33 +102,31 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
                 _logger.LogError(ex, "Lỗi khi gọi API đăng xuất");
                 // Vẫn xóa token local
                 ClearTokens();
-                return new ApiResponseDto { Success = true, Message = "Đăng xuất thành công" };
+                return new LogoutResponseDto { Success = true, Message = "Đăng xuất thành công" };
             }
         }
 
-        public async Task<ApiResponseDto> GetProfileAsync()
+        public async Task<UserProfileDto?> GetProfileAsync()
         {
             try
             {
                 var token = GetAccessToken();
                 if (string.IsNullOrEmpty(token))
                 {
-                    return new ApiResponseDto { Success = false, Message = "Không tìm thấy token xác thực" };
+                    return null;
                 }
 
-                _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/auth/profile"));
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/user/profile"));
                 var responseContent = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var profileResponse = JsonSerializer.Deserialize<ApiResponseDto>(responseContent, new JsonSerializerOptions
+                    var profileResponse = JsonSerializer.Deserialize<UserProfileDto>(responseContent, new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     });
 
-                    return profileResponse ?? new ApiResponseDto { Success = false, Message = "Không thể lấy thông tin người dùng" };
+                    return profileResponse;
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
@@ -147,31 +139,29 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
                     }
                     
                     ClearTokens();
-                    return new ApiResponseDto { Success = false, Message = "Phiên đăng nhập đã hết hạn" };
+                    return null;
                 }
                 else
                 {
-                    return new ApiResponseDto { Success = false, Message = "Không thể lấy thông tin người dùng" };
+                    return null;
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi gọi API lấy thông tin người dùng");
-                return new ApiResponseDto { Success = false, Message = "Đã xảy ra lỗi khi lấy thông tin người dùng" };
+                return null;
             }
         }
 
-        public async Task<ApiResponseDto> ChangePasswordAsync(ChangePasswordRequestDto changePasswordRequest)
+        public async Task<ChangePasswordResponseDto> ChangePasswordAsync(ChangePasswordRequestDto changePasswordRequest)
         {
             try
             {
                 var token = GetAccessToken();
                 if (string.IsNullOrEmpty(token))
                 {
-                    return new ApiResponseDto { Success = false, Message = "Không tìm thấy token xác thực" };
+                    return new ChangePasswordResponseDto { Success = false, Message = "Không tìm thấy token xác thực" };
                 }
-
-                _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
                 var json = JsonSerializer.Serialize(changePasswordRequest);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -181,27 +171,27 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var changePasswordResponse = JsonSerializer.Deserialize<ApiResponseDto>(responseContent, new JsonSerializerOptions
+                    var changePasswordResponse = JsonSerializer.Deserialize<ChangePasswordResponseDto>(responseContent, new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     });
 
-                    return changePasswordResponse ?? new ApiResponseDto { Success = true, Message = "Đổi mật khẩu thành công" };
+                    return changePasswordResponse ?? new ChangePasswordResponseDto { Success = true, Message = "Đổi mật khẩu thành công" };
                 }
                 else
                 {
-                    var errorResponse = JsonSerializer.Deserialize<ApiResponseDto>(responseContent, new JsonSerializerOptions
+                    var errorResponse = JsonSerializer.Deserialize<ChangePasswordResponseDto>(responseContent, new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     });
 
-                    return errorResponse ?? new ApiResponseDto { Success = false, Message = "Đổi mật khẩu thất bại" };
+                    return errorResponse ?? new ChangePasswordResponseDto { Success = false, Message = "Đổi mật khẩu thất bại" };
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi gọi API đổi mật khẩu");
-                return new ApiResponseDto { Success = false, Message = "Đã xảy ra lỗi khi đổi mật khẩu" };
+                return new ChangePasswordResponseDto { Success = false, Message = "Đã xảy ra lỗi khi đổi mật khẩu" };
             }
         }
 
@@ -242,7 +232,7 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
             }
         }
 
-        public async Task<ApiResponseDto> ForgotPasswordAsync(ForgotPasswordRequestDto forgotPasswordRequest)
+        public async Task<ForgotPasswordResponseDto> ForgotPasswordAsync(ForgotPasswordRequestDto forgotPasswordRequest)
         {
             try
             {
@@ -254,27 +244,27 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var forgotPasswordResponse = JsonSerializer.Deserialize<ApiResponseDto>(responseContent, new JsonSerializerOptions
+                    var forgotPasswordResponse = JsonSerializer.Deserialize<ForgotPasswordResponseDto>(responseContent, new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     });
 
-                    return forgotPasswordResponse ?? new ApiResponseDto { Success = true, Message = "Đã gửi email đặt lại mật khẩu" };
+                    return forgotPasswordResponse ?? new ForgotPasswordResponseDto { Success = true, Message = "Đã gửi email đặt lại mật khẩu" };
                 }
                 else
                 {
-                    var errorResponse = JsonSerializer.Deserialize<ApiResponseDto>(responseContent, new JsonSerializerOptions
+                    var errorResponse = JsonSerializer.Deserialize<ForgotPasswordResponseDto>(responseContent, new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     });
 
-                    return errorResponse ?? new ApiResponseDto { Success = false, Message = "Không thể gửi email đặt lại mật khẩu" };
+                    return errorResponse ?? new ForgotPasswordResponseDto { Success = false, Message = "Không thể gửi email đặt lại mật khẩu" };
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi gọi API quên mật khẩu");
-                return new ApiResponseDto { Success = false, Message = "Đã xảy ra lỗi khi gửi email đặt lại mật khẩu" };
+                return new ForgotPasswordResponseDto { Success = false, Message = "Đã xảy ra lỗi khi gửi email đặt lại mật khẩu" };
             }
         }
 
@@ -324,6 +314,8 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
             {
                 session.SetString("AccessToken", accessToken);
                 session.SetString("RefreshToken", refreshToken);
+                
+                _logger.LogInformation($"Token saved to session: {accessToken.Substring(0, Math.Min(50, accessToken.Length))}...");
             }
         }
 

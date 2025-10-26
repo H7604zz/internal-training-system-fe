@@ -1,3 +1,4 @@
+using InternalTrainingSystem.WebApp.Handlers;
 using InternalTrainingSystem.WebApp.Helpers;
 using InternalTrainingSystem.WebApp.Middleware;
 using InternalTrainingSystem.WebApp.Services.Implement;
@@ -26,14 +27,17 @@ builder.Services.AddSession(options =>
 // Add HttpContextAccessor
 builder.Services.AddHttpContextAccessor();
 
-// Configure HttpClient for API calls
-builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
+// Register the authentication handler
+builder.Services.AddTransient<AuthenticationHandler>();
+
+// Configure HttpClient factory with base configuration and authentication handler
+builder.Services.AddHttpClient("ApiClient", client =>
 {
-    var baseUrl = builder.Configuration.GetValue<string>("ApiSettings:BaseUrl") 
-                 ?? "https://localhost:7001"; // Default API URL
+    var baseUrl = builder.Configuration.GetValue<string>("ApiSettings:BaseUrl") ?? "https://localhost:7001";
     client.BaseAddress = new Uri(baseUrl);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
-});
+})
+.AddHttpMessageHandler<AuthenticationHandler>();
 
 // Register services
 builder.Services.AddScoped<IAuthService, AuthService>();
