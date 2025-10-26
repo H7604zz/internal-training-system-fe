@@ -105,8 +105,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     return RedirectToAction("Index");
                 }
 
-                ViewBag.Categories = await _categoryService.GetAllCategoriesAsync();
-                ViewBag.Departments = await _departmentService.GetAllDepartmentsAsync();
+                await ReloadFormData();
 
                 return View(course);
             }
@@ -125,8 +124,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    ViewBag.Categories = await _categoryService.GetAllCategoriesAsync();
-                    ViewBag.Departments = await _departmentService.GetAllDepartmentsAsync();
+                    await ReloadFormData();
                     return View(model);
                 }
 
@@ -139,8 +137,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 else
                 {
                     TempData["Error"] = "Không thể cập nhật khóa học. Vui lòng thử lại.";
-                    ViewBag.Categories = await _categoryService.GetAllCategoriesAsync();
-                    ViewBag.Departments = await _departmentService.GetAllDepartmentsAsync();
+                    await ReloadFormData();
                     return View(model);
                 }
             }
@@ -148,8 +145,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             {
                 _logger.LogError(ex, $"Error occurred while updating course {model.CourseId}");
                 TempData["Error"] = "Đã xảy ra lỗi khi cập nhật khóa học.";
-                ViewBag.Categories = await _categoryService.GetAllCategoriesAsync();
-                ViewBag.Departments = await _departmentService.GetAllDepartmentsAsync();
+                await ReloadFormData();
                 return View(model);
             }
         }
@@ -157,20 +153,22 @@ namespace InternalTrainingSystem.WebApp.Controllers
         [HttpGet("tao-moi")]
         public async Task<IActionResult> TaoMoi()
         {
-            ViewBag.Categories = await _categoryService.GetAllCategoriesAsync();
-            ViewBag.Departments = await _departmentService.GetAllDepartmentsAsync();
+            await ReloadFormData();
             return View(new CreateFullCourseDto());
         }
 
-        [HttpPost]
+        [HttpPost("tao-moi")]
         public async Task<IActionResult> TaoMoi(CreateFullCourseDto model)
         {
             try
             {
                 if (!ModelState.IsValid)
                 {
-                    ViewBag.Categories = await _categoryService.GetAllCategoriesAsync();
-                    ViewBag.Departments = await _departmentService.GetAllDepartmentsAsync();
+                    // Log validation errors for debugging including department selection
+                    LogModelValidationErrors(model);
+                    
+                    // Reload dropdown data nhưng giữ lại toàn bộ thông tin form bao gồm selected departments
+                    await ReloadFormData(model);
                     return View(model);
                 }
 
@@ -183,18 +181,84 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 else
                 {
                     TempData["Error"] = result?.Message ?? "Không thể tạo khóa học. Vui lòng thử lại.";
-                    ViewBag.Categories = await _categoryService.GetAllCategoriesAsync();
-                    ViewBag.Departments = await _departmentService.GetAllDepartmentsAsync();
+                    // Reload dropdown data nhưng giữ lại toàn bộ thông tin form bao gồm selected departments
+                    await ReloadFormData(model);
                     return View(model);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while creating new course");
+                _logger.LogError(ex, "Error occurred while creating new course. Model state: {ModelState}, Module count: {ModuleCount}, Department count: {DepartmentCount}", 
+                    string.Join("; ", ModelState.Where(x => x.Value.Errors.Count > 0).Select(x => $"{x.Key}: {string.Join(", ", x.Value.Errors.Select(e => e.ErrorMessage))}")),
+                    model.Modules?.Count ?? 0,
+                    model.SelectedDepartmentIds?.Count ?? 0);
+                
                 TempData["Error"] = "Đã xảy ra lỗi khi thêm khóa học.";
+                // Reload dropdown data nhưng giữ lại toàn bộ thông tin form bao gồm selected departments
+                await ReloadFormData(model);
+                return View(model);
+            }
+        }
+
+        /// <summary>
+        /// Helper method để reload dropdown data cho form
+        /// </summary>
+        private async Task ReloadFormData(CreateFullCourseDto model = null)
+        {
+            try
+            {
                 ViewBag.Categories = await _categoryService.GetAllCategoriesAsync();
                 ViewBag.Departments = await _departmentService.GetAllDepartmentsAsync();
-                return View(model);
+                
+                // Preserve selected departments nếu có
+                if (model?.SelectedDepartmentIds != null && model.SelectedDepartmentIds.Any())
+                {
+                    ViewBag.SelectedDepartmentIds = model.SelectedDepartmentIds;
+                    _logger.LogInformation("Preserved {Count} selected departments: [{DepartmentIds}]", 
+                        model.SelectedDepartmentIds.Count, 
+                        string.Join(", ", model.SelectedDepartmentIds));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error occurred while reloading form data");
+                // Fallback to empty lists if service calls fail
+                ViewBag.Categories = new List<dynamic>();
+                ViewBag.Departments = new List<dynamic>();
+                
+                // Still preserve selected departments even if API calls fail
+                if (model?.SelectedDepartmentIds != null && model.SelectedDepartmentIds.Any())
+                {
+                    ViewBag.SelectedDepartmentIds = model.SelectedDepartmentIds;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Helper method để log validation errors
+        /// </summary>
+        private void LogModelValidationErrors(CreateFullCourseDto model = null)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState
+                    .Where(x => x.Value.Errors.Count > 0)
+                    .Select(x => $"{x.Key}: {string.Join(", ", x.Value.Errors.Select(e => e.ErrorMessage))}")
+                    .ToList();
+
+                var logMessage = "Model validation failed with errors: {ValidationErrors}";
+                if (model != null)
+                {
+                    logMessage += " | Selected departments: [{SelectedDepartments}] | Module count: {ModuleCount}";
+                    _logger.LogWarning(logMessage, 
+                        string.Join("; ", errors),
+                        string.Join(", ", model.SelectedDepartmentIds ?? new List<int>()),
+                        model.Modules?.Count ?? 0);
+                }
+                else
+                {
+                    _logger.LogWarning(logMessage, string.Join("; ", errors));
+                }
             }
         }
 

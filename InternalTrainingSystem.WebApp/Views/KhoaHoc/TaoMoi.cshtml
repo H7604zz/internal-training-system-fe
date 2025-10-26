@@ -125,12 +125,15 @@
                         <div class="departments-selection">
                             @if (ViewBag.Departments != null)
                             {
+                                var selectedDepartmentIds = ViewBag.SelectedDepartmentIds as List<int> ?? Model.SelectedDepartmentIds ?? new List<int>();
+                                
                                 @foreach (var dept in ViewBag.Departments)
                                 {
                                     <div class="form-check department-check">
                                         <input class="form-check-input" type="checkbox"
                                                name="SelectedDepartmentIds" value="@dept.DepartmentId"
-                                               id="dept_@dept.DepartmentId">
+                                               id="dept_@dept.DepartmentId"
+                                               @(selectedDepartmentIds.Contains(dept.DepartmentId) ? "checked" : "")>
                                         <label class="form-check-label" for="dept_@dept.DepartmentId">
                                             <i class="fas fa-building me-2"></i>
                                             @dept.DepartmentName
@@ -396,8 +399,126 @@
                 addModule();
             });
 
-            // Add initial module
-            addModule();
+            // Check if we have existing modules from server (in case of validation errors)
+            const existingModules = @Html.Raw(Json.Serialize(Model.Modules));
+            const selectedDepartments = @Html.Raw(Json.Serialize(ViewBag.SelectedDepartmentIds ?? Model.SelectedDepartmentIds ?? new List<int>()));
+            
+            if (existingModules && existingModules.length > 0) {
+                // Restore existing modules and lessons
+                restoreExistingData(existingModules);
+            } else {
+                // Add initial module if no existing data
+                addModule();
+            }
+
+            // Restore selected departments
+            if (selectedDepartments && selectedDepartments.length > 0) {
+                selectedDepartments.forEach(departmentId => {
+                    const checkbox = $(`#dept_${departmentId}`);
+                    if (checkbox.length > 0) {
+                        checkbox.prop('checked', true);
+                    }
+                });
+                console.log('Restored selected departments:', selectedDepartments);
+            }
+
+            function restoreExistingData(modules) {
+                modules.forEach((moduleData, moduleIndex) => {
+                    const moduleCard = addModuleWithData(moduleData, moduleIndex);
+                    
+                    // Restore lessons for this module
+                    if (moduleData.lessons && moduleData.lessons.length > 0) {
+                        moduleData.lessons.forEach((lessonData, lessonIndex) => {
+                            addLessonWithData(moduleCard, lessonData, moduleIndex, lessonIndex);
+                        });
+                    } else {
+                        // Add at least one empty lesson if no lessons exist
+                        addLesson(moduleCard);
+                    }
+                });
+                
+                updateModuleOrders();
+            }
+
+            function addModuleWithData(moduleData, moduleIndex) {
+                const template = document.getElementById('module-template');
+                const clone = template.content.cloneNode(true);
+                
+                // Update module index and names
+                const moduleDiv = clone.querySelector('.module-card');
+                moduleDiv.setAttribute('data-module-index', moduleIndex);
+                
+                // Update module number
+                clone.querySelector('.module-number').textContent = moduleIndex + 1;
+                
+                // Fill in module data
+                clone.querySelector('input[name*="Title"]').value = moduleData.title || '';
+                clone.querySelector('textarea[name*="Description"]').value = moduleData.description || '';
+                clone.querySelector('input[name*="OrderIndex"]').value = moduleData.orderIndex || moduleIndex + 1;
+                
+                // Update form field names
+                updateModuleFieldNames(clone, moduleIndex);
+                
+                // Add event listeners
+                addModuleEventListeners(clone);
+                
+                // Append to container
+                document.getElementById('modules-container').appendChild(clone);
+                
+                moduleCount = Math.max(moduleCount, moduleIndex + 1);
+                
+                return moduleDiv;
+            }
+
+            function addLessonWithData(moduleCard, lessonData, moduleIndex, lessonIndex) {
+                const lessonsContainer = moduleCard.querySelector('.lessons-container');
+                
+                const template = document.getElementById('lesson-template');
+                const clone = template.content.cloneNode(true);
+                
+                // Update lesson index and names
+                const lessonDiv = clone.querySelector('.lesson-item');
+                lessonDiv.setAttribute('data-lesson-index', lessonIndex);
+                
+                // Update lesson number
+                clone.querySelector('.lesson-number').textContent = lessonIndex + 1;
+                
+                // Fill in lesson data
+                clone.querySelector('input[name*="Title"]').value = lessonData.title || '';
+                clone.querySelector('input[name*="OrderIndex"]').value = lessonData.orderIndex || lessonIndex + 1;
+                clone.querySelector('select[name*="Type"]').value = lessonData.type || '';
+                
+                // Fill content based on lesson type
+                if (lessonData.contentUrl) {
+                    clone.querySelector('input[name*="ContentUrl"]').value = lessonData.contentUrl;
+                }
+                if (lessonData.contentHtml) {
+                    clone.querySelector('textarea[name*="ContentHtml"]').value = lessonData.contentHtml;
+                }
+                if (lessonData.quizTitle) {
+                    clone.querySelector('input[name*="QuizTitle"]').value = lessonData.quizTitle;
+                }
+                if (lessonData.uploadBinary) {
+                    clone.querySelector('input[name*="UploadBinary"]').value = lessonData.uploadBinary;
+                }
+                if (lessonData.isQuizExcel) {
+                    clone.querySelector('input[name*="IsQuizExcel"]').checked = lessonData.isQuizExcel;
+                }
+                
+                // Update form field names
+                updateLessonFieldNames(clone, moduleIndex, lessonIndex);
+                
+                // Add event listeners
+                addLessonEventListeners(clone);
+                
+                // Show appropriate content fields based on lesson type
+                if (lessonData.type) {
+                    updateLessonContentFields(clone.querySelector('.lesson-item'), lessonData.type.toString());
+                }
+                
+                // Append to lessons container
+                lessonsContainer.appendChild(clone);
+            }
 
             function addModule() {
                 const template = document.getElementById('module-template');
