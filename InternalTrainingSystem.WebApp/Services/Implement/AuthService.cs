@@ -76,7 +76,7 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
         {
             try
             {
-                var response = await _httpClient.PostAsync("/api/auth/logout", null);
+                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl("api/auth/logout"), null);
                 var responseContent = await response.Content.ReadAsStringAsync();
 
                 // Xóa token khỏi session dù API có thành công hay không
