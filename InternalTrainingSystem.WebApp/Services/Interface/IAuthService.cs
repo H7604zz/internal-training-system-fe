@@ -7,7 +7,8 @@ namespace InternalTrainingSystem.WebApp.Services.Interface
         Task<LoginResponseDto> LoginAsync(LoginRequestDto loginRequest);
         Task<LogoutResponseDto> LogoutAsync();
         Task<UserProfileDto?> GetProfileAsync();
-        Task<ChangePasswordResponseDto> ChangePasswordAsync(ChangePasswordRequestDto changePasswordRequest);
+        Task<bool> ChangePasswordAsync(ChangePasswordRequestDto changePasswordRequest);
+        Task<string> GetChangePasswordErrorAsync(ChangePasswordRequestDto changePasswordRequest);
         Task<LoginResponseDto> RefreshTokenAsync(string refreshToken);
         Task<ForgotPasswordResponseDto> ForgotPasswordAsync(ForgotPasswordRequestDto forgotPasswordRequest);
         bool IsTokenExpired();

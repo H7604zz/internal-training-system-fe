@@ -1,0 +1,235 @@
+@model InternalTrainingSystem.WebApp.Models.DTOs.ChangePasswordRequestDto
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="changePasswordModalLabel">
+                    <i class="fas fa-shield-alt me-2"></i>Đổi Mật Khẩu
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Password Requirements -->
+                <div class="password-requirements-info bg-light border border-info rounded p-3 mb-3">
+                    <h6><i class="fas fa-info-circle me-2 text-info"></i>Yêu cầu mật khẩu:</h6>
+                    <ul class="mb-0 small text-dark">
+                        <li>Tối thiểu 6 ký tự</li>
+                        <li>Nên kết hợp chữ cái, số và ký tự đặc biệt</li>
+                        <li>Không sử dụng thông tin cá nhân dễ đoán</li>
+                    </ul>
+                </div>
+
+                <!-- Alert for validation errors -->
+                <div id="changePasswordAlert" class="alert alert-danger d-none"></div>
+
+                <!-- Change Password Form -->
+                <form id="changePasswordForm" asp-controller="Auth" asp-action="DoiMatKhau" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <div class="form-floating position-relative">
+                            <input type="password" class="form-control" id="currentPassword" name="CurrentPassword" 
+                                   placeholder="Mật khẩu hiện tại" required>
+                            <label for="currentPassword">Mật khẩu hiện tại *</label>
+                            <button type="button" class="password-toggle position-absolute" 
+                                    style="right: 10px; top: 50%; transform: translateY(-50%); border: none; background: none;"
+                                    onclick="togglePasswordVisibility('currentPassword', this)">
+                                <i class="fas fa-eye-slash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-floating position-relative">
+                            <input type="password" class="form-control" id="newPassword" name="NewPassword" 
+                                   placeholder="Mật khẩu mới" required>
+                            <label for="newPassword">Mật khẩu mới *</label>
+                            <button type="button" class="password-toggle position-absolute" 
+                                    style="right: 10px; top: 50%; transform: translateY(-50%); border: none; background: none;"
+                                    onclick="togglePasswordVisibility('newPassword', this)">
+                                <i class="fas fa-eye-slash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-floating position-relative">
+                            <input type="password" class="form-control" id="confirmPassword" name="ConfirmPassword" 
+                                   placeholder="Xác nhận mật khẩu mới" required>
+                            <label for="confirmPassword">Xác nhận mật khẩu mới *</label>
+                            <button type="button" class="password-toggle position-absolute" 
+                                    style="right: 10px; top: 50%; transform: translateY(-50%); border: none; background: none;"
+                                    onclick="togglePasswordVisibility('confirmPassword', this)">
+                                <i class="fas fa-eye-slash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Hủy
+                </button>
+                <button type="button" class="btn btn-warning" id="changePasswordSubmit">
+                    <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true" id="changePasswordSpinner"></span>
+                    <span id="changePasswordText">
+                        <i class="fas fa-key me-2"></i>Đổi Mật Khẩu
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Toggle password visibility function
+    function togglePasswordVisibility(inputId, button) {
+        const input = document.getElementById(inputId);
+        const icon = button.querySelector('i');
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        }
+    }
+
+    // Change Password Modal functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const changePasswordModal = document.getElementById('changePasswordModal');
+        const changePasswordForm = document.getElementById('changePasswordForm');
+        const changePasswordSubmit = document.getElementById('changePasswordSubmit');
+        const changePasswordAlert = document.getElementById('changePasswordAlert');
+        const changePasswordSpinner = document.getElementById('changePasswordSpinner');
+        const changePasswordText = document.getElementById('changePasswordText');
+
+        // Reset form when modal is closed
+        changePasswordModal.addEventListener('hidden.bs.modal', function() {
+            changePasswordForm.reset();
+            changePasswordAlert.classList.add('d-none');
+            changePasswordSpinner.classList.add('d-none');
+            changePasswordText.innerHTML = '<i class="fas fa-key me-2"></i>Đổi Mật Khẩu';
+            changePasswordSubmit.disabled = false;
+            // Remove validation classes
+            changePasswordForm.classList.remove('was-validated');
+            const inputs = changePasswordForm.querySelectorAll('.form-control');
+            inputs.forEach(input => {
+                input.classList.remove('is-invalid', 'is-valid');
+            });
+        });
+
+        // Password validation
+        const newPasswordInput = document.getElementById('newPassword');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+
+        newPasswordInput.addEventListener('input', function() {
+            validatePasswordMatch();
+        });
+
+        confirmPasswordInput.addEventListener('input', function() {
+            validatePasswordMatch();
+        });
+
+        function validatePasswordMatch() {
+            const newPassword = newPasswordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            
+            if (confirmPassword && newPassword !== confirmPassword) {
+                confirmPasswordInput.setCustomValidity('Mật khẩu xác nhận không khớp');
+                confirmPasswordInput.classList.add('is-invalid');
+            } else {
+                confirmPasswordInput.setCustomValidity('');
+                confirmPasswordInput.classList.remove('is-invalid');
+            }
+        }
+
+        // Submit form via AJAX to Controller
+        changePasswordSubmit.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            if (!changePasswordForm.checkValidity()) {
+                changePasswordForm.classList.add('was-validated');
+                return;
+            }
+
+            // Show loading state
+            changePasswordSpinner.classList.remove('d-none');
+            changePasswordText.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...';
+            changePasswordSubmit.disabled = true;
+            changePasswordAlert.classList.add('d-none');
+
+            // Prepare form data
+            const formData = new FormData(changePasswordForm);
+
+            // Submit to controller via fetch
+            fetch(changePasswordForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Network response was not ok');
+                }
+            })
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    const successAlert = document.createElement('div');
+                    successAlert.className = 'alert alert-success alert-dismissible fade show';
+                    successAlert.innerHTML = `
+                        <i class="fas fa-check-circle me-2"></i>
+                        ${data.message || 'Đổi mật khẩu thành công!'}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    
+                    // Insert after container
+                    const container = document.querySelector('.profile-container') || document.querySelector('.container');
+                    if (container) {
+                        container.parentNode.insertBefore(successAlert, container);
+                    } else {
+                        document.body.insertBefore(successAlert, document.body.firstChild);
+                    }
+                    
+                    // Close modal
+                    bootstrap.Modal.getInstance(changePasswordModal).hide();
+                    
+                    // Auto-hide success alert after 5 seconds
+                    setTimeout(() => {
+                        successAlert.remove();
+                    }, 5000);
+                } else {
+                    // Show error message
+                    changePasswordAlert.innerHTML = `
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        ${data.message || 'Có lỗi xảy ra khi đổi mật khẩu'}
+                    `;
+                    changePasswordAlert.classList.remove('d-none');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                changePasswordAlert.innerHTML = `
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Có lỗi xảy ra khi đổi mật khẩu. Vui lòng thử lại.
+                `;
+                changePasswordAlert.classList.remove('d-none');
+            })
+            .finally(() => {
+                // Reset loading state
+                changePasswordSpinner.classList.add('d-none');
+                changePasswordText.innerHTML = '<i class="fas fa-key me-2"></i>Đổi Mật Khẩu';
+                changePasswordSubmit.disabled = false;
+            });
+        });
+    });
+</script>

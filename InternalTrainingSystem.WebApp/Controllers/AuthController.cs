@@ -160,7 +160,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         /// <summary>
-        /// Xử lý đổi mật khẩu
+        /// Xử lý đổi mật khẩu - Sử dụng AuthService với bool return
         /// </summary>
         [HttpPost]
         public async Task<IActionResult> DoiMatKhau(ChangePasswordRequestDto model)
@@ -169,31 +169,56 @@ namespace InternalTrainingSystem.WebApp.Controllers
             {
                 if (!ModelState.IsValid)
                 {
+                    // Nếu là AJAX request, trả về JSON
+                    if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    {
+                        var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                        return Json(new { success = false, message = string.Join(", ", errors) });
+                    }
+                    
                     return View(model);
                 }
 
-                var result = await _authService.ChangePasswordAsync(model);
+                // Sử dụng AuthService để đổi mật khẩu
+                var isSuccess = await _authService.ChangePasswordAsync(model);
 
-                if (result.Success)
+                if (isSuccess)
                 {
+                    // Nếu là AJAX request, trả về JSON
+                    if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    {
+                        return Json(new { success = true, message = "Đổi mật khẩu thành công" });
+                    }
+                    
                     TempData["Success"] = "Đổi mật khẩu thành công";
-                    return RedirectToAction("DoiMatKhau");
+                    return RedirectToAction("ThongTinCaNhan");
                 }
                 else
                 {
-                    if (result.Errors != null && result.Errors.Any())
+                    // Lấy error message từ API
+                    var errorMessage = await _authService.GetChangePasswordErrorAsync(model);
+                    
+                    // Nếu là AJAX request, trả về JSON với error message trong popup
+                    if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
                     {
-                        foreach (var error in result.Errors)
-                        {
-                            TempData["Error"] = error;
-                        }
+                        return Json(new { success = false, message = errorMessage });
                     }
+                    
+                    TempData["Error"] = errorMessage;
                     return View(model);
                 }
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "Đã xảy ra lỗi trong quá trình đổi mật khẩu. Vui lòng thử lại.";
+                string errorMessage = "Đã xảy ra lỗi trong quá trình đổi mật khẩu. Vui lòng thử lại.";
+                
+                // Nếu là AJAX request, trả về JSON
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = errorMessage });
+                }
+                
+                TempData["Error"] = errorMessage;
                 return View(model);
             }
         }

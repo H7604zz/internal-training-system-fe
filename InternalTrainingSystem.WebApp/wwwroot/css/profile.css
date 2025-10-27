@@ -507,3 +507,256 @@
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+/* Change Password Modal Styles */
+.modal-header.bg-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%) !important;
+    border-bottom: none;
+    color: #212529;
+}
+
+.modal-header.bg-warning .modal-title {
+    font-weight: 600;
+}
+
+.modal-header.bg-warning .btn-close {
+    filter: brightness(0);
+}
+
+#changePasswordModal .modal-body {
+    padding: 2rem;
+}
+
+#changePasswordModal .form-floating {
+    position: relative;
+}
+
+#changePasswordModal .password-toggle {
+    z-index: 10;
+    color: #6c757d;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+#changePasswordModal .password-toggle:hover {
+    color: #495057;
+}
+
+#changePasswordModal .form-control {
+    padding-right: 45px;
+    transition: all 0.3s ease;
+}
+
+#changePasswordModal .form-control:focus {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+}
+
+#changePasswordModal .form-control.is-invalid {
+    border-color: #dc3545;
+    padding-right: 45px;
+}
+
+#changePasswordModal .form-control.is-invalid:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+#changePasswordModal .alert {
+    border-radius: 10px;
+    border: none;
+    font-size: 0.875rem;
+}
+
+#changePasswordModal .alert-info {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    color: #0c5460;
+}
+
+/* Password Requirements - Always visible */
+#changePasswordModal .password-requirements-info {
+    background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%) !important;
+    border: 1px solid #b3e5fc !important;
+    color: #0d47a1;
+    transition: all 0.3s ease;
+}
+
+#changePasswordModal .password-requirements-info:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
+}
+
+#changePasswordModal .password-requirements-info h6 {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: #1976d2;
+}
+
+#changePasswordModal .password-requirements-info ul {
+    margin-bottom: 0;
+    padding-left: 1.2rem;
+}
+
+#changePasswordModal .password-requirements-info li {
+    margin-bottom: 0.25rem;
+    color: #424242;
+    font-weight: 500;
+}
+
+#changePasswordModal .alert-danger {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
+}
+
+#changePasswordModal .modal-footer {
+    border-top: 1px solid #dee2e6;
+    padding: 1.5rem 2rem;
+}
+
+#changePasswordModal .btn {
+    border-radius: 50px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+#changePasswordModal .btn-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+    border: none;
+    color: #212529;
+}
+
+#changePasswordModal .btn-warning:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 193, 7, 0.3);
+    background: linear-gradient(135deg, #ffb300 0%, #ff8f00 100%);
+    color: #212529;
+}
+
+#changePasswordModal .btn-warning:disabled {
+    opacity: 0.7;
+    transform: none;
+    box-shadow: none;
+}
+
+#changePasswordModal .btn-secondary {
+    background: #6c757d;
+    border: none;
+}
+
+#changePasswordModal .btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+}
+
+/* Password Strength Indicator */
+.password-strength {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+}
+
+.password-strength-bar {
+    height: 4px;
+    border-radius: 2px;
+    background: #e9ecef;
+    overflow: hidden;
+    margin-top: 0.25rem;
+}
+
+.password-strength-fill {
+    height: 100%;
+    transition: all 0.3s ease;
+}
+
+.strength-weak .password-strength-fill {
+    width: 33%;
+    background: #dc3545;
+}
+
+.strength-medium .password-strength-fill {
+    width: 66%;
+    background: #ffc107;
+}
+
+.strength-strong .password-strength-fill {
+    width: 100%;
+    background: #28a745;
+}
+
+/* Form validation styles */
+.was-validated .form-control:invalid {
+    border-color: #dc3545;
+}
+
+.was-validated .form-control:valid {
+    border-color: #28a745;
+}
+
+.invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #dc3545;
+}
+
+/* Modal Animation */
+#changePasswordModal.modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+    transform: translate(0, -50px);
+}
+
+#changePasswordModal.modal.show .modal-dialog {
+    transform: none;
+}
+
+/* Loading spinner animation */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Success alert styles for page */
+.alert-success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border: 1px solid #b8dabd;
+    color: #155724;
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+.alert-success .btn-close {
+    filter: brightness(0.8);
+}
+
+/* Responsive adjustments for modal */
+@media (max-width: 768px) {
+    #changePasswordModal .modal-body {
+        padding: 1.5rem;
+    }
+    
+    #changePasswordModal .modal-footer {
+        padding: 1rem 1.5rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    #changePasswordModal .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    #changePasswordModal .modal-body {
+        padding: 1rem;
+    }
+    
+    #changePasswordModal .modal-footer {
+        padding: 1rem;
+    }
+    
+    #changePasswordModal .modal-title {
+        font-size: 1.1rem;
+    }
+}

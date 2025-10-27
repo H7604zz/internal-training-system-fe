@@ -153,45 +153,67 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
             }
         }
 
-        public async Task<ChangePasswordResponseDto> ChangePasswordAsync(ChangePasswordRequestDto changePasswordRequest)
+        public async Task<bool> ChangePasswordAsync(ChangePasswordRequestDto changePasswordRequest)
         {
             try
             {
                 var token = GetAccessToken();
                 if (string.IsNullOrEmpty(token))
                 {
-                    return new ChangePasswordResponseDto { Success = false, Message = "Không tìm thấy token xác thực" };
+                    return false;
                 }
 
                 var json = JsonSerializer.Serialize(changePasswordRequest);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PostAsync("api/auth/change-password", content);
-                var responseContent = await response.Content.ReadAsStringAsync();
-
+                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl("api/auth/change-password"), content);
+                
                 if (response.IsSuccessStatusCode)
                 {
-                    var changePasswordResponse = JsonSerializer.Deserialize<ChangePasswordResponseDto>(responseContent, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
-
-                    return changePasswordResponse ?? new ChangePasswordResponseDto { Success = true, Message = "Đổi mật khẩu thành công" };
+                    return true;
                 }
                 else
                 {
-                    var errorResponse = JsonSerializer.Deserialize<ChangePasswordResponseDto>(responseContent, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
-
-                    return errorResponse ?? new ChangePasswordResponseDto { Success = false, Message = "Đổi mật khẩu thất bại" };
+                    return false;
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi gọi API đổi mật khẩu");
-                return new ChangePasswordResponseDto { Success = false, Message = "Đã xảy ra lỗi khi đổi mật khẩu" };
+                return false;
+            }
+        }
+
+        public async Task<string> GetChangePasswordErrorAsync(ChangePasswordRequestDto changePasswordRequest)
+        {
+            try
+            {
+                var token = GetAccessToken();
+                if (string.IsNullOrEmpty(token))
+                {
+                    return "Không tìm thấy token xác thực";
+                }
+
+                var json = JsonSerializer.Serialize(changePasswordRequest);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl("api/auth/change-password"), content);
+                var message = await response.Content.ReadAsStringAsync();
+
+                // Trim quotes from response if it's a plain string
+                message = message.Trim('"');
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return string.IsNullOrEmpty(message) ? "Đổi mật khẩu thất bại" : message;
+                }
+
+                return string.Empty; // Success case
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi gọi API đổi mật khẩu");
+                return "Đã xảy ra lỗi khi đổi mật khẩu";
             }
         }
 

@@ -134,9 +134,9 @@
                                 <i class="fas fa-info-circle me-2"></i>
                                 Để bảo mật tài khoản, hãy thường xuyên thay đổi mật khẩu.
                             </p>
-                            <a href="@Url.Action("DoiMatKhau")" class="btn btn-warning w-100">
+                            <button type="button" class="btn btn-warning w-100" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
                                 <i class="fas fa-key me-2"></i>Đổi Mật Khẩu
-                            </a>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -144,6 +144,9 @@
         </div>
     </div>
 </div>
+
+<!-- Include Change Password Modal Partial -->
+@await Html.PartialAsync("_DoiMatKhauModal", new InternalTrainingSystem.WebApp.Models.DTOs.ChangePasswordRequestDto())
 
 @section Scripts {
     <script>
@@ -157,22 +160,14 @@
         }
 
         // Smooth scroll to change password section
-        document.querySelector('a[href="#changePasswordSection"]').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('changePasswordSection').scrollIntoView({
-                behavior: 'smooth'
+        const changePasswordLink = document.querySelector('a[href="#changePasswordSection"]');
+        if (changePasswordLink) {
+            changePasswordLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('changePasswordSection').scrollIntoView({
+                    behavior: 'smooth'
+                });
             });
-        });
-
-        // Auto-hide alerts after 5 seconds
-        setTimeout(function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(alert => {
-                if (alert.classList.contains('show')) {
-                    const bsAlert = new bootstrap.Alert(alert);
-                    bsAlert.close();
-                }
-            });
-        }, 5000);
+        }
     </script>
 }
