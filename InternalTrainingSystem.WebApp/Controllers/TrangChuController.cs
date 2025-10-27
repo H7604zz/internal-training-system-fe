@@ -11,22 +11,10 @@ namespace InternalTrainingSystem.WebApp.Controllers
           
         }
 
-
+        [HttpGet]
         public IActionResult Index()
         {
             ViewBag.Message = "Chào mừng đến với Hệ thống Đào tạo Nâng cao Năng lực!";
-            return View();
-        }
-
-        public IActionResult GioiThieu()
-        {
-            ViewBag.Message = "Tìm hiểu về hệ thống đào tạo chuyên nghiệp của chúng tôi";
-            return View();
-        }
-
-        public IActionResult LienHe()
-        {
-            ViewBag.Message = "Liên hệ với chúng tôi để được tư vấn và hỗ trợ";
             return View();
         }
 

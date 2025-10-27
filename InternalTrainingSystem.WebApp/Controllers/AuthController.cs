@@ -25,7 +25,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 {
                     return Redirect(returnUrl);
                 }
-                return RedirectToAction("Index", "TrangChu");
+                return RedirectToAction("", "TrangChu");
             }
 
             ViewBag.ReturnUrl = returnUrl;
@@ -66,7 +66,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                         return Redirect(returnUrl);
                     }
                     
-                    return RedirectToAction("Index", "TrangChu");
+                    return RedirectToAction("", "TrangChu");
                 }
                 else
                 {
