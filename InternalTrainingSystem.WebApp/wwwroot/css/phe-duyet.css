@@ -1,4 +1,4 @@
-/* Course Approval Styles */
+﻿/* Course Approval Styles */
 .approval-container {
     background-color: #f8f9fa;
     min-height: 100vh;
@@ -227,8 +227,29 @@
 
 .action-buttons {
     display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
+    gap: 15px; /* khoảng cách giữa 2 nút */
+    align-items: center;
+}
+
+.action-buttons button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* khoảng cách giữa icon và chữ */
+    padding: 14px 24px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    min-width: 140px; /* để 2 nút có chiều rộng tương tự nhau */
+    height: 56px; /* đảm bảo bằng chiều cao */
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.action-buttons button i {
+    font-size: 18px;
 }
 
 .btn-approve {
