@@ -330,5 +330,29 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
             var refreshResult = await RefreshTokenAsync(refreshToken);
             return refreshResult.Success;
         }
+
+        public async Task<string> UpdateProfileAsync(UpdateProfileDto model)
+        {
+            var jsonContent = new StringContent(
+                JsonSerializer.Serialize(model),
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await _httpClient.PatchAsync(Utilities.GetAbsoluteUrl("api/user/update-profile"), jsonContent);
+
+            var message = await response.Content.ReadAsStringAsync();
+            message = message.Trim('"');
+
+            if (response.IsSuccessStatusCode)
+            {
+                return message;
+            }
+            else
+            {
+                throw new Exception(message);
+            }
+        }
+
+
     }
 }

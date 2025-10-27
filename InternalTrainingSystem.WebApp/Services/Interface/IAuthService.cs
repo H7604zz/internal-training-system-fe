@@ -14,5 +14,6 @@ namespace InternalTrainingSystem.WebApp.Services.Interface
         void ClearTokens();
         string? GetAccessToken();
         string? GetRefreshToken();
+        Task<string> UpdateProfileAsync(UpdateProfileDto model);
     }
 }

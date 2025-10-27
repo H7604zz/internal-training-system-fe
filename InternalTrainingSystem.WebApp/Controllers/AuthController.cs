@@ -240,29 +240,30 @@ namespace InternalTrainingSystem.WebApp.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    // Lấy lại thông tin user để hiển thị form
                     var userProfile = await _authService.GetProfileAsync();
                     if (userProfile != null)
                     {
                         ViewBag.ShowUpdateForm = true;
                         return View("ThongTinCaNhan", userProfile);
                     }
-                    
-                    TempData["Error"] = "Không thể lấy thông tin cá nhân để hiển thị form.";
+
+                    TempData["Error"] = "Không thể lấy thông tin cá nhân để hiển thị.";
                     return RedirectToAction("ThongTinCaNhan");
                 }
 
-                // var result = await _authService.UpdateProfileAsync(model);
-                // Simulate success for testing
-                TempData["Success"] = "Cập nhật thông tin thành công!";
+                // Gọi API update
+                var message = await _authService.UpdateProfileAsync(model);
+
+                TempData["Success"] = message; 
                 return RedirectToAction("ThongTinCaNhan");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                TempData["Error"] = "Đã xảy ra lỗi khi cập nhật thông tin.";
+                TempData["Error"] = ex.Message; 
                 return RedirectToAction("ThongTinCaNhan");
             }
         }
+
 
         /// <summary>
         /// API endpoint để lấy thông tin người dùng hiện tại
