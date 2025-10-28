@@ -305,5 +305,51 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 return Json(new { success = false, message = "Đã xảy ra lỗi khi lấy thông tin người dùng" });
             }
         }
+
+        /// <summary>
+        /// API endpoint gửi OTP cho quên mật khẩu
+        /// </summary>
+        [HttpPost]
+        [Route("api/auth/forgot-password")]
+        public async Task<IActionResult> SendOtp([FromBody] ForgotPasswordRequestDto model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return Json(new { success = false, message = "Email không hợp lệ" });
+                }
+
+                var result = await _authService.ForgotPasswordAsync(model);
+                return Json(new { success = result.Success, message = result.Message });
+            }
+            catch (Exception)
+            {
+                return Json(new { success = false, message = "Đã xảy ra lỗi khi gửi OTP" });
+            }
+        }
+
+        /// <summary>
+        /// API endpoint xác minh OTP và đặt lại mật khẩu
+        /// </summary>
+        [HttpPost]
+        [Route("api/auth/reset-password")]
+        public async Task<IActionResult> ResetPasswordWithOtp([FromBody] ResetPasswordRequestDto model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
+                }
+
+                var result = await _authService.ResetPasswordAsync(model);
+                return Json(new { success = result.Success, message = result.Message });
+            }
+            catch (Exception)
+            {
+                return Json(new { success = false, message = "Đã xảy ra lỗi khi đặt lại mật khẩu" });
+            }
+        }
     }
 }

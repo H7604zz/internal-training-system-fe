@@ -55,39 +55,98 @@
                 <div class="text-center mb-4">
                     <img class="login-logo" src="~/images/logo_company.png" alt="Hệ thống Đào tạo Năng lực">
                 </div>
-                <h1 class="login-title text-center">Quên Mật Khẩu</h1>
-                <p class="login-subtitle text-center">Nhập email để nhận hướng dẫn đặt lại mật khẩu</p>
 
-                @if (TempData["SuccessMessage"] != null)
-                {
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        @TempData["SuccessMessage"]
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                }
+                <!-- Step 1: Email Input -->
+                <div id="step1" class="step-content">
+                    <h1 class="login-title text-center">Quên Mật Khẩu</h1>
+                    <p class="login-subtitle text-center">Nhập email để nhận mã OTP xác minh</p>
 
-                <form asp-controller="Auth" asp-action="QuenMatKhau" method="post" class="needs-validation" novalidate id="forgotPasswordForm">
-                    <div class="mb-4">
-                        <div class="form-floating">
-                            <input asp-for="Email" type="email" class="form-control form-control-lg" id="email" placeholder="Email" required>
-                            <label for="email"><i class="bi bi-envelope-fill me-2"></i>Email</label>
+                    <form id="forgotPasswordForm" class="needs-validation" novalidate>
+                        <div class="mb-4">
+                            <div class="form-floating">
+                                <input asp-for="Email" type="email" class="form-control form-control-lg" id="email" placeholder="Email" required>
+                                <label for="email"><i class="bi bi-envelope-fill me-2"></i>Email</label>
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
-                        <span asp-validation-for="Email" class="text-danger"></span>
-                    </div>
 
-                    <div class="d-grid gap-2 mb-3">
-                        <button class="btn btn-primary btn-login" type="submit" id="submitButton">
-                            <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true" id="submitSpinner"></span>
-                            <span id="submitText">Gửi Hướng Dẫn</span>
-                        </button>
-                    </div>
+                        <div class="d-grid gap-2 mb-3">
+                            <button class="btn btn-primary btn-login" type="submit" id="sendOtpBtn">
+                                <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true" id="sendOtpSpinner"></span>
+                                <span id="sendOtpText">Gửi mã OTP</span>
+                            </button>
+                        </div>
 
+                        <div class="text-center">
+                            <a asp-controller="Auth" asp-action="DangNhap" class="btn btn-link">
+                                <i class="bi bi-arrow-left me-2"></i>Quay lại đăng nhập
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Step 2: OTP Verification -->
+                <div id="step2" class="step-content d-none">
+                    <h1 class="login-title text-center">Nhập Mã OTP</h1>
+                    <p class="login-subtitle text-center">Mã OTP đã được gửi đến email của bạn</p>
+                    <p class="text-center text-muted mb-4">Email: <span id="emailDisplay"></span></p>
+
+                    <form id="verifyOtpForm" class="needs-validation" novalidate>
+                        <div class="mb-4">
+                            <div class="form-floating">
+                                <input type="text" class="form-control form-control-lg text-center" id="otpCode" placeholder="000000" maxlength="6" required pattern="[0-9]{6}">
+                                <label for="otpCode"><i class="bi bi-key-fill me-2"></i>Mã OTP (6 số)</label>
+                            </div>
+                            <div class="invalid-feedback">
+                                Vui lòng nhập mã OTP gồm 6 số
+                            </div>
+                        </div>
+
+                        <div class="text-center mb-3">
+                            <small class="text-muted">
+                                Mã OTP có hiệu lực trong <span id="countdown" class="text-danger fw-bold">5:00</span>
+                            </small>
+                        </div>
+
+                        <div class="d-grid gap-2 mb-3">
+                            <button class="btn btn-primary btn-login" type="submit" id="verifyOtpBtn">
+                                <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true" id="verifyOtpSpinner"></span>
+                                <span id="verifyOtpText">Xác minh OTP</span>
+                            </button>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="button" class="btn btn-link" id="resendOtpBtn">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Gửi lại mã OTP
+                            </button>
+                            <br>
+                            <button type="button" class="btn btn-link" id="backToEmailBtn">
+                                <i class="bi bi-arrow-left me-2"></i>Quay lại nhập email
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Step 3: Success Message -->
+                <div id="step3" class="step-content d-none">
                     <div class="text-center">
-                        <a asp-controller="Auth" asp-action="DangNhap" class="btn btn-link">
-                            <i class="bi bi-arrow-left me-2"></i>Quay lại đăng nhập
-                        </a>
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                        <h1 class="login-title text-center mt-3">Thành Công!</h1>
+                        <p class="login-subtitle text-center">Mật khẩu mới đã được gửi đến email của bạn</p>
+                        
+                        <div class="alert alert-success">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Vui lòng kiểm tra hộp thư và đăng nhập với mật khẩu mới.
+                            <strong>Nhớ đổi mật khẩu sau khi đăng nhập!</strong>
+                        </div>
+
+                        <div class="d-grid gap-2 mb-3">
+                            <a asp-controller="Auth" asp-action="DangNhap" class="btn btn-primary btn-login">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập ngay
+                            </a>
+                        </div>
                     </div>
-                </form>
+                </div>
 
                 <div class="login-footer">
                     <p>© @DateTime.Now.Year - Hệ thống đào tạo nội bộ</p>
@@ -96,24 +155,213 @@
             </div>
         </div>
     </div>
+</body>
+
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    
     <script>
-        // Form validation and submission
+        let currentEmail = '';
+        let countdownTimer;
+
+        // Configure toastr
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "timeOut": "5000"
+        };
+
+        // Step 1: Send OTP
         document.getElementById('forgotPasswordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
             if (!this.checkValidity()) {
-                e.preventDefault();
                 e.stopPropagation();
-            } else {
-                // Show loading state
-                document.getElementById('submitSpinner').classList.remove('d-none');
-                document.getElementById('submitText').textContent = 'Đang gửi...';
-                document.getElementById('submitButton').disabled = true;
+                this.classList.add('was-validated');
+                return;
             }
-            this.classList.add('was-validated');
+
+            const email = document.getElementById('email').value;
+            currentEmail = email;
+            
+            // Show loading state
+            const sendOtpBtn = document.getElementById('sendOtpBtn');
+            const sendOtpSpinner = document.getElementById('sendOtpSpinner');
+            const sendOtpText = document.getElementById('sendOtpText');
+            
+            sendOtpSpinner.classList.remove('d-none');
+            sendOtpText.textContent = 'Đang gửi...';
+            sendOtpBtn.disabled = true;
+
+            // Call API
+            fetch('/api/auth/forgot-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success(data.message);
+                    showStep2();
+                    startCountdown();
+                } else {
+                    toastr.error(data.message);
+                }
+            })
+            .catch(error => {
+                toastr.error('Có lỗi xảy ra khi gửi OTP. Vui lòng thử lại.');
+            })
+            .finally(() => {
+                // Reset button state
+                sendOtpSpinner.classList.add('d-none');
+                sendOtpText.textContent = 'Gửi mã OTP';
+                sendOtpBtn.disabled = false;
+            });
+        });
+
+        // Step 2: Verify OTP and Reset Password
+        document.getElementById('verifyOtpForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!this.checkValidity()) {
+                e.stopPropagation();
+                this.classList.add('was-validated');
+                return;
+            }
+
+            const otpCode = document.getElementById('otpCode').value;
+            
+            // Show loading state
+            const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+            const verifyOtpSpinner = document.getElementById('verifyOtpSpinner');
+            const verifyOtpText = document.getElementById('verifyOtpText');
+            
+            verifyOtpSpinner.classList.remove('d-none');
+            verifyOtpText.textContent = 'Đang xử lý...';
+            verifyOtpBtn.disabled = true;
+
+            // Call reset password API directly
+            fetch('/api/auth/reset-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    email: currentEmail,
+                    otp: otpCode 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success(data.message);
+                    showStep3();
+                    clearInterval(countdownTimer);
+                } else {
+                    toastr.error(data.message);
+                }
+            })
+            .catch(error => {
+                toastr.error('Có lỗi xảy ra khi xác minh OTP. Vui lòng thử lại.');
+            })
+            .finally(() => {
+                // Reset button state
+                verifyOtpSpinner.classList.add('d-none');
+                verifyOtpText.textContent = 'Xác minh OTP';
+                verifyOtpBtn.disabled = false;
+            });
+        });
+
+        // Resend OTP
+        document.getElementById('resendOtpBtn').addEventListener('click', function() {
+            fetch('/api/auth/forgot-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: currentEmail })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success('Mã OTP mới đã được gửi đến email của bạn');
+                    startCountdown();
+                    document.getElementById('otpCode').value = '';
+                } else {
+                    toastr.error(data.message);
+                }
+            })
+            .catch(error => {
+                toastr.error('Có lỗi xảy ra khi gửi lại OTP');
+            });
+        });
+
+        // Back to email step
+        document.getElementById('backToEmailBtn').addEventListener('click', function() {
+            showStep1();
+            clearInterval(countdownTimer);
+        });
+
+        // Show/Hide steps
+        function showStep1() {
+            document.getElementById('step1').classList.remove('d-none');
+            document.getElementById('step2').classList.add('d-none');
+            document.getElementById('step3').classList.add('d-none');
+        }
+
+        function showStep2() {
+            document.getElementById('step1').classList.add('d-none');
+            document.getElementById('step2').classList.remove('d-none');
+            document.getElementById('step3').classList.add('d-none');
+            document.getElementById('emailDisplay').textContent = currentEmail;
+            document.getElementById('otpCode').focus();
+        }
+
+        function showStep3() {
+            document.getElementById('step1').classList.add('d-none');
+            document.getElementById('step2').classList.add('d-none');
+            document.getElementById('step3').classList.remove('d-none');
+        }
+
+        // OTP Input formatting
+        document.getElementById('otpCode').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+            if (value.length > 6) value = value.slice(0, 6);
+            e.target.value = value;
+        });
+
+        // Countdown timer
+        function startCountdown() {
+            let timeLeft = 300; // 5 minutes in seconds
+            const countdownElement = document.getElementById('countdown');
+            
+            countdownTimer = setInterval(function() {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                countdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(countdownTimer);
+                    toastr.warning('Mã OTP đã hết hạn. Vui lòng gửi lại mã mới.');
+                    countdownElement.textContent = 'Hết hạn';
+                }
+                timeLeft--;
+            }, 1000);
+        }
+
+        // Auto-submit when OTP is complete
+        document.getElementById('otpCode').addEventListener('input', function(e) {
+            if (e.target.value.length === 6) {
+                setTimeout(() => {
+                    document.getElementById('verifyOtpForm').dispatchEvent(new Event('submit'));
+                }, 500);
+            }
         });
     </script>
-</body>
-</html>

@@ -11,6 +11,8 @@ namespace InternalTrainingSystem.WebApp.Services.Interface
         Task<string> GetChangePasswordErrorAsync(ChangePasswordRequestDto changePasswordRequest);
         Task<LoginResponseDto> RefreshTokenAsync(string refreshToken);
         Task<ForgotPasswordResponseDto> ForgotPasswordAsync(ForgotPasswordRequestDto forgotPasswordRequest);
+        Task<VerifyOtpResponseDto> VerifyOtpAsync(VerifyOtpRequestDto verifyOtpRequest);
+        Task<ApiResponseDto> ResetPasswordAsync(ResetPasswordRequestDto resetPasswordRequest);
         bool IsTokenExpired();
         void ClearTokens();
         string? GetAccessToken();

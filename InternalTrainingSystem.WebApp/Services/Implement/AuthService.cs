@@ -261,7 +261,7 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
                 var json = JsonSerializer.Serialize(forgotPasswordRequest);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PostAsync("/api/auth/forgot-password", content);
+                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl("api/auth/forgot-password"), content);
                 var responseContent = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
@@ -287,6 +287,78 @@ namespace InternalTrainingSystem.WebApp.Services.Implement
             {
                 _logger.LogError(ex, "Lỗi khi gọi API quên mật khẩu");
                 return new ForgotPasswordResponseDto { Success = false, Message = "Đã xảy ra lỗi khi gửi email đặt lại mật khẩu" };
+            }
+        }
+
+        public async Task<VerifyOtpResponseDto> VerifyOtpAsync(VerifyOtpRequestDto verifyOtpRequest)
+        {
+            try
+            {
+                var json = JsonSerializer.Serialize(verifyOtpRequest);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl("api/auth/verify-otp"), content);
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var verifyOtpResponse = JsonSerializer.Deserialize<VerifyOtpResponseDto>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    return verifyOtpResponse ?? new VerifyOtpResponseDto { Success = true, Message = "Xác minh OTP thành công" };
+                }
+                else
+                {
+                    var errorResponse = JsonSerializer.Deserialize<VerifyOtpResponseDto>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    return errorResponse ?? new VerifyOtpResponseDto { Success = false, Message = "Xác minh OTP thất bại" };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi gọi API xác minh OTP");
+                return new VerifyOtpResponseDto { Success = false, Message = "Đã xảy ra lỗi khi xác minh OTP" };
+            }
+        }
+
+        public async Task<ApiResponseDto> ResetPasswordAsync(ResetPasswordRequestDto resetPasswordRequest)
+        {
+            try
+            {
+                var json = JsonSerializer.Serialize(resetPasswordRequest);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl("api/auth/reset-password"), content);
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var resetPasswordResponse = JsonSerializer.Deserialize<ApiResponseDto>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    return resetPasswordResponse ?? new ApiResponseDto { Success = true, Message = "Đặt lại mật khẩu thành công" };
+                }
+                else
+                {
+                    var errorResponse = JsonSerializer.Deserialize<ApiResponseDto>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    return errorResponse ?? new ApiResponseDto { Success = false, Message = "Đặt lại mật khẩu thất bại" };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi gọi API đặt lại mật khẩu");
+                return new ApiResponseDto { Success = false, Message = "Đã xảy ra lỗi khi đặt lại mật khẩu" };
             }
         }
 

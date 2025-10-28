@@ -89,6 +89,48 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
     }
 
     /// <summary>
+    /// DTO cho request xác minh OTP
+    /// </summary>
+    public class VerifyOtpRequestDto
+    {
+        [Required(ErrorMessage = "Email là bắt buộc")]
+        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+        [Display(Name = "Email")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Mã OTP là bắt buộc")]
+        [StringLength(6, MinimumLength = 6, ErrorMessage = "Mã OTP phải có 6 ký tự")]
+        [Display(Name = "Mã OTP")]
+        public string Otp { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// DTO cho response xác minh OTP
+    /// </summary>
+    public class VerifyOtpResponseDto
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public string? ResetToken { get; set; }
+    }
+
+    /// <summary>
+    /// DTO cho request đặt lại mật khẩu
+    /// </summary>
+    public class ResetPasswordRequestDto
+    {
+        [Required(ErrorMessage = "Email là bắt buộc")]
+        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+        [Display(Name = "Email")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Mã OTP là bắt buộc")]
+        [StringLength(6, MinimumLength = 6, ErrorMessage = "Mã OTP phải có 6 ký tự")]
+        [Display(Name = "Mã OTP")]
+        public string Otp { get; set; } = string.Empty;
+    }
+
+    /// <summary>
     /// DTO cho response đăng xuất
     /// </summary>
     public class LogoutResponseDto
