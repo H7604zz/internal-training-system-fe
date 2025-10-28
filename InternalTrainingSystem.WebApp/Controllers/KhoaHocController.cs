@@ -396,8 +396,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     return RedirectToAction("ChiTiet", new { id });
                 }
 
-                // Thêm thông tin người tạo và lịch sử phê duyệt
-                ViewBag.CreatedBy = course.CreatedBy ?? "Nhân viên đào tạo";
                 ViewBag.ApprovalHistory = await GetApprovalHistory(id);
 
                 return View(course);
