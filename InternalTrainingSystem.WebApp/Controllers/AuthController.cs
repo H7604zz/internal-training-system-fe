@@ -146,20 +146,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         /// <summary>
-        /// Trang đổi mật khẩu
-        /// </summary>
-        public IActionResult DoiMatKhau()
-        {
-            // Kiểm tra đăng nhập
-            if (_authService.IsTokenExpired())
-            {
-                return RedirectToAction("DangNhap");
-            }
-
-            return View();
-        }
-
-        /// <summary>
         /// Xử lý đổi mật khẩu - Sử dụng AuthService với bool return
         /// </summary>
         [HttpPost]
