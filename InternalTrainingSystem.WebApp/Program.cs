@@ -1,8 +1,6 @@
 using InternalTrainingSystem.WebApp.Handlers;
 using InternalTrainingSystem.WebApp.Helpers;
 using InternalTrainingSystem.WebApp.Middleware;
-using InternalTrainingSystem.WebApp.Services.Implement;
-using InternalTrainingSystem.WebApp.Services.Interface;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,16 +36,6 @@ builder.Services.AddHttpClient("ApiClient", client =>
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 })
 .AddHttpMessageHandler<AuthenticationHandler>();
-
-// Register services
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<ICourseService, CourseService>();
-builder.Services.AddScoped<ICourseEnrollmentService, CourseEnrollmentService>();
-builder.Services.AddScoped<INotificationService, NotificationService>();
-builder.Services.AddScoped<IClassService, ClassService>();
-builder.Services.AddScoped<ICategoryService, CategoryService>();
-builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 
 var app = builder.Build();
 

@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using InternalTrainingSystem.WebApp.Services;
 
 namespace InternalTrainingSystem.WebApp.Extensions
 {

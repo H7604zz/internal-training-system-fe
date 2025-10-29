@@ -1,21 +1,25 @@
 ﻿using InternalTrainingSystem.WebApp.Models.DTOs;
 using InternalTrainingSystem.WebApp.Models.ViewModels;
-using InternalTrainingSystem.WebApp.Services.Interface;
 using InternalTrainingSystem.WebApp.Constants;
+using InternalTrainingSystem.WebApp.Helpers;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
+using System.Text;
 
 namespace InternalTrainingSystem.WebApp.Controllers
 {
     [Route("lop-hoc")]
     public class LopHocController : Controller
     {
-        private readonly IClassService _classService;
+        private readonly HttpClient _httpClient;
         private readonly ILogger<LopHocController> _logger;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public LopHocController(IClassService classService, ILogger<LopHocController> logger)
+        public LopHocController(IHttpClientFactory httpClientFactory, ILogger<LopHocController> logger, IHttpContextAccessor httpContextAccessor)
         {
-            _classService = classService;
+            _httpClient = httpClientFactory.CreateClient("ApiClient");
             _logger = logger;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpGet("")]
@@ -26,8 +30,24 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 // Sử dụng page size cố định từ constants cho danh sách lớp học
                 var pageSize = PaginationConstants.ClassPageSize;
                 
-                var allClasses = await _classService.GetClassesAsync();
-               // var allClasses = GetSampleClassData(); // Tạo data mẫu để test view
+                // Gọi API để lấy danh sách lớp học
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/classes"));
+                
+                List<ClassDto> allClasses;
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    allClasses = JsonSerializer.Deserialize<List<ClassDto>>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    }) ?? new List<ClassDto>();
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to get classes from API. Status: {StatusCode}", response.StatusCode);
+                    // Fallback to sample data for testing
+                    allClasses = GetSampleClassData();
+                }
                 
                 var totalItems = allClasses.Count;
                 var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
@@ -57,9 +77,30 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             try
             {
-                // var allClasses = await _classService.GetClassesAsync();
-                var allClasses = GetSampleClassData(); // Sử dụng data mẫu để test
-                var classDetail = allClasses.FirstOrDefault(c => c.ClassId == id);
+                // Gọi API để lấy chi tiết lớp học
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/classes/{id}"));
+                
+                ClassDto? classDetail = null;
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    classDetail = JsonSerializer.Deserialize<ClassDto>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    TempData["Error"] = "Không tìm thấy lớp học.";
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to get class detail from API. Status: {StatusCode}", response.StatusCode);
+                    // Fallback to sample data for testing
+                    var allClasses = GetSampleClassData();
+                    classDetail = allClasses.FirstOrDefault(c => c.ClassId == id);
+                }
 
                 if (classDetail == null)
                 {
@@ -78,14 +119,14 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpGet("tao-lop")]
-        public IActionResult TaoLop()
+        public async Task<IActionResult> TaoLop()
         {
             try
             {
                 var model = new CreateClassViewModel
                 {
-                    Courses = GetSampleCourses(),
-                    Mentors = GetSampleMentors(),
+                    Courses = await GetCoursesAsync(),
+                    Mentors = await GetMentorsAsync(),
                     StartDate = DateTime.Today,
                     EndDate = DateTime.Today.AddMonths(3),
                     Capacity = 20,
@@ -109,8 +150,8 @@ namespace InternalTrainingSystem.WebApp.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    model.Courses = GetSampleCourses();
-                    model.Mentors = GetSampleMentors();
+                    model.Courses = await GetCoursesAsync();
+                    model.Mentors = await GetMentorsAsync();
                     return View(model);
                 }
 
@@ -118,24 +159,95 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 if (model.EndDate <= model.StartDate)
                 {
                     ModelState.AddModelError("EndDate", "Ngày kết thúc phải sau ngày bắt đầu");
-                    model.Courses = GetSampleCourses();
-                    model.Mentors = GetSampleMentors();
+                    model.Courses = await GetCoursesAsync();
+                    model.Mentors = await GetMentorsAsync();
                     return View(model);
                 }
 
-                // TODO: Implement actual class creation logic
-                // await _classService.CreateClassAsync(model);
+                // Call API to create class
+                var json = JsonSerializer.Serialize(model);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                TempData["Success"] = "Tạo lớp học thành công!";
-                return RedirectToAction("Index");
+                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl("api/classes"), content);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    TempData["Success"] = "Tạo lớp học thành công!";
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    var errorMessage = !string.IsNullOrEmpty(errorContent) ? errorContent.Trim('"') : "Không thể tạo lớp học. Vui lòng thử lại.";
+                    TempData["Error"] = errorMessage;
+                    model.Courses = await GetCoursesAsync();
+                    model.Mentors = await GetMentorsAsync();
+                    return View(model);
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while creating class");
                 TempData["Error"] = "Đã xảy ra lỗi khi tạo lớp học.";
-                model.Courses = GetSampleCourses();
-                model.Mentors = GetSampleMentors();
+                model.Courses = await GetCoursesAsync();
+                model.Mentors = await GetMentorsAsync();
                 return View(model);
+            }
+        }
+
+        private async Task<List<CourseDto>> GetCoursesAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/courses"));
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var courses = JsonSerializer.Deserialize<List<CourseDto>>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                    return courses ?? GetSampleCourses();
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to get courses from API. Status: {StatusCode}", response.StatusCode);
+                    return GetSampleCourses();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting courses from API");
+                return GetSampleCourses();
+            }
+        }
+
+        private async Task<List<MentorResponse>> GetMentorsAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/mentors"));
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var mentors = JsonSerializer.Deserialize<List<MentorResponse>>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                    return mentors ?? GetSampleMentors();
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to get mentors from API. Status: {StatusCode}", response.StatusCode);
+                    return GetSampleMentors();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting mentors from API");
+                return GetSampleMentors();
             }
         }
 

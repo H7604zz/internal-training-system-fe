@@ -1,35 +1,29 @@
 using InternalTrainingSystem.WebApp.Models.DTOs;
-using InternalTrainingSystem.WebApp.Services.Interface;
 using InternalTrainingSystem.WebApp.Constants;
 using InternalTrainingSystem.WebApp.Extensions;
+using InternalTrainingSystem.WebApp.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using InternalTrainingSystem.WebApp.Services.Implement;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Text;
+using InternalTrainingSystem.WebApp.Models;
 
 namespace InternalTrainingSystem.WebApp.Controllers
 {
     [Route("khoa-hoc")]
     public class KhoaHocController : Controller
     {
-        private readonly ICourseService _courseService;
-        private readonly IAuthService _authService;
-        private readonly ICategoryService _categoryService;
-        private readonly IDepartmentService _departmentService;
+        private readonly HttpClient _httpClient;
         private readonly ILogger<KhoaHocController> _logger;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public KhoaHocController(
-            ICourseService courseService, 
-            IAuthService authService, 
-            ICategoryService categoryService,
-            IDepartmentService departmentService,
-            ILogger<KhoaHocController> logger)
+            IHttpClientFactory httpClientFactory,
+            ILogger<KhoaHocController> logger,
+            IHttpContextAccessor httpContextAccessor)
         {
-            _courseService = courseService;
-            _authService = authService;
-            _categoryService = categoryService;
-            _departmentService = departmentService;
+            _httpClient = httpClientFactory.CreateClient("ApiClient");
             _logger = logger;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpGet("")]
@@ -41,17 +35,31 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 var pageSize = PaginationConstants.CoursePageSize;
                 
                 // Gọi API với các tham số filter và pagination - backend sẽ xử lý
-                var pagedResult = await _courseService.GetCoursesAsync(
-                    search: searchTerm,
-                    status: status,
-                    page: page,
-                    pageSize: pageSize
-                );
+                var queryParams = $"?page={page}&pageSize={pageSize}";
+                if (!string.IsNullOrEmpty(searchTerm))
+                    queryParams += $"&search={Uri.EscapeDataString(searchTerm)}";
+                if (!string.IsNullOrEmpty(status))
+                    queryParams += $"&status={Uri.EscapeDataString(status)}";
+
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/course{queryParams}"));
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError("Failed to get courses. Status: {StatusCode}", response.StatusCode);
+                    TempData["Error"] = "Đã xảy ra lỗi khi tải danh sách khóa học.";
+                    return View(new List<CourseDto>());
+                }
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var pagedResult = JsonSerializer.Deserialize<PagedResult<CourseDto>>(responseContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
 
                 // Lấy dữ liệu từ PagedResult
-                var courses = pagedResult.Items?.ToList() ?? new List<CourseDto>();
-                var totalItems = pagedResult.TotalCount;
-                var totalPages = pagedResult.TotalPages;
+                var courses = pagedResult?.Items?.ToList() ?? new List<CourseDto>();
+                var totalItems = pagedResult?.TotalCount ?? 0;
+                var totalPages = pagedResult?.TotalPages ?? 1;
 
                 ViewBag.CurrentPage = page;
                 ViewBag.TotalPages = totalPages;
@@ -75,7 +83,26 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             try
             {
-                var course = await _courseService.GetCourseByIdAsync(id);
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/courses/{id}"));
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        TempData["Error"] = "Không tìm thấy khóa học.";
+                    }
+                    else
+                    {
+                        TempData["Error"] = "Đã xảy ra lỗi khi tải chi tiết khóa học.";
+                    }
+                    return RedirectToAction("Index");
+                }
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var course = JsonSerializer.Deserialize<CourseDto>(responseContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
 
                 if (course == null)
                 {
@@ -87,6 +114,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error occurred while loading course details for id {CourseId}", id);
                 TempData["Error"] = "Đã xảy ra lỗi khi tải chi tiết khóa học.";
                 return RedirectToAction("Index");
             }
@@ -97,7 +125,26 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             try
             {
-                var course = await _courseService.GetCourseByIdAsync(id);
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/courses/{id}"));
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        TempData["Error"] = "Không tìm thấy khóa học.";
+                    }
+                    else
+                    {
+                        TempData["Error"] = "Đã xảy ra lỗi khi tải thông tin khóa học.";
+                    }
+                    return RedirectToAction("Index");
+                }
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var course = JsonSerializer.Deserialize<CourseDto>(responseContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
 
                 if (course == null)
                 {
@@ -128,15 +175,20 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     return View(model);
                 }
 
-                var result = await _courseService.UpdateCourseAsync(model);
-                if (result != null)
+                var json = JsonSerializer.Serialize(model);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PutAsync(Utilities.GetAbsoluteUrl($"api/courses/{model.CourseId}"), content);
+                
+                if (response.IsSuccessStatusCode)
                 {
                     TempData["SuccessMessage"] = "Cập nhật khóa học thành công!";
                     return RedirectToAction("ChiTiet", new { id = model.CourseId });
                 }
                 else
                 {
-                    TempData["Error"] = "Không thể cập nhật khóa học. Vui lòng thử lại.";
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    TempData["Error"] = !string.IsNullOrEmpty(errorContent) ? errorContent.Trim('"') : "Không thể cập nhật khóa học. Vui lòng thử lại.";
                     await ReloadFormData();
                     return View(model);
                 }
@@ -172,15 +224,21 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     return View(model);
                 }
 
-                var result = await _courseService.CreateFullCourseAsync(model);
-                if (result != null && result.Success)
+                var json = JsonSerializer.Serialize(model);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl("api/courses"), content);
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
                 {
                     TempData["Success"] = "Thêm khóa học mới thành công! Khóa học đã được gửi để chờ phê duyệt.";
                     return RedirectToAction("Index");
                 }
                 else
                 {
-                    TempData["Error"] = result?.Message ?? "Không thể tạo khóa học. Vui lòng thử lại.";
+                    var errorMessage = !string.IsNullOrEmpty(responseContent) ? responseContent.Trim('"') : "Không thể tạo khóa học. Vui lòng thử lại.";
+                    TempData["Error"] = errorMessage;
                     // Reload dropdown data nhưng giữ lại toàn bộ thông tin form bao gồm selected departments
                     await ReloadFormData(model);
                     return View(model);
@@ -207,8 +265,37 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             try
             {
-                ViewBag.Categories = await _categoryService.GetAllCategoriesAsync();
-                ViewBag.Departments = await _departmentService.GetAllDepartmentsAsync();
+                // Load categories
+                var categoriesResponse = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/categories"));
+                if (categoriesResponse.IsSuccessStatusCode)
+                {
+                    var categoriesContent = await categoriesResponse.Content.ReadAsStringAsync();
+                    var categories = JsonSerializer.Deserialize<List<CategoryDto>>(categoriesContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                    ViewBag.Categories = categories ?? new List<CategoryDto>();
+                }
+                else
+                {
+                    ViewBag.Categories = new List<CategoryDto>();
+                }
+
+                // Load departments
+                var departmentsResponse = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/departments"));
+                if (departmentsResponse.IsSuccessStatusCode)
+                {
+                    var departmentsContent = await departmentsResponse.Content.ReadAsStringAsync();
+                    var departments = JsonSerializer.Deserialize<List<dynamic>>(departmentsContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                    ViewBag.Departments = departments ?? new List<dynamic>();
+                }
+                else
+                {
+                    ViewBag.Departments = new List<dynamic>();
+                }
                 
                 // Preserve selected departments nếu có
                 if (model?.SelectedDepartmentIds != null && model.SelectedDepartmentIds.Any())
@@ -277,12 +364,30 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     return Json(new { success = false, message = "Vui lòng chọn ít nhất một phòng ban!" });
                 }
 
-                // Simulate getting eligible employees from selected departments
-                var departments = await _departmentService.GetAllDepartmentsAsync();
-                var selectedDepartments = departments.Where(d => selectedDepartmentIds.Contains(d.DepartmentId)).ToList();
+                // Get departments from API
+                var departmentsResponse = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/departments"));
+                if (!departmentsResponse.IsSuccessStatusCode)
+                {
+                    return Json(new { success = false, message = "Không thể lấy thông tin phòng ban!" });
+                }
+
+                var departmentsContent = await departmentsResponse.Content.ReadAsStringAsync();
+                var departments = JsonSerializer.Deserialize<List<dynamic>>(departmentsContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                var selectedDepartments = departments?.Where(d => 
+                {
+                    if (d is JsonElement element && element.TryGetProperty("DepartmentId", out var idProp))
+                    {
+                        return selectedDepartmentIds.Contains(idProp.GetInt32());
+                    }
+                    return false;
+                }).ToList() ?? new List<dynamic>();
 
                 // Simulate employee count (in real application, this would come from employee service)
-                var totalEmployees = selectedDepartments.Sum(d => GetEmployeeCountByDepartment(d.DepartmentId));
+                var totalEmployees = selectedDepartmentIds.Sum(id => GetEmployeeCountByDepartment(id));
 
                 // Simulate sending notifications
                 await Task.Delay(1000); // Simulate processing time
@@ -296,11 +401,19 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     success = true,
                     message = "Gửi thông báo thành công!",
                     sentCount = totalEmployees,
-                    departments = selectedDepartments.Select(d => d.DepartmentName).ToArray()
+                    departments = selectedDepartments.Select(d => 
+                    {
+                        if (d is JsonElement element && element.TryGetProperty("DepartmentName", out var nameProp))
+                        {
+                            return nameProp.GetString();
+                        }
+                        return "Unknown";
+                    }).ToArray()
                 });
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error occurred while sending notification");
                 return Json(new { success = false, message = "Đã xảy ra lỗi khi gửi thông báo. Vui lòng thử lại!" });
             }
         }
@@ -310,7 +423,20 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             try
             {
-                var course = await _courseService.GetCourseByIdAsync(id);
+                // Get course details
+                var courseResponse = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/courses/{id}"));
+                if (!courseResponse.IsSuccessStatusCode)
+                {
+                    TempData["Error"] = "Không tìm thấy khóa học.";
+                    return RedirectToAction("Index");
+                }
+
+                var courseContent = await courseResponse.Content.ReadAsStringAsync();
+                var course = JsonSerializer.Deserialize<CourseDto>(courseContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
                 if (course == null)
                 {
                     TempData["Error"] = "Không tìm thấy khóa học.";
@@ -320,9 +446,35 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 // Sử dụng page size cố định từ constants
                 var pageSize = PaginationConstants.CoursePageSize;
 
-                // Gọi API để lấy danh sách nhân viên đủ điều kiện với filters
-                var eligibleStaffResult = await _courseService.GetEligibleStaffAsync(id, page, pageSize, employeeId, status);
-                var staff = eligibleStaffResult.Items?.ToList() ?? new List<EligibleStaffDto>();
+                // Build query parameters for eligible staff
+                var queryParams = $"?page={page}&pageSize={pageSize}";
+                if (!string.IsNullOrEmpty(employeeId))
+                    queryParams += $"&employeeId={Uri.EscapeDataString(employeeId)}";
+                if (!string.IsNullOrEmpty(status))
+                    queryParams += $"&status={Uri.EscapeDataString(status)}";
+
+                // Get eligible staff
+                var staffResponse = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/courses/{id}/eligible-staff{queryParams}"));
+                
+                PagedResult<EligibleStaffDto> eligibleStaffResult;
+                List<EligibleStaffDto> staff;
+
+                if (staffResponse.IsSuccessStatusCode)
+                {
+                    var staffContent = await staffResponse.Content.ReadAsStringAsync();
+                    eligibleStaffResult = JsonSerializer.Deserialize<PagedResult<EligibleStaffDto>>(staffContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    }) ?? new PagedResult<EligibleStaffDto>();
+                    
+                    staff = eligibleStaffResult.Items?.ToList() ?? new List<EligibleStaffDto>();
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to get eligible staff for course {CourseId}. Status: {StatusCode}", id, staffResponse.StatusCode);
+                    eligibleStaffResult = new PagedResult<EligibleStaffDto>();
+                    staff = new List<EligibleStaffDto>();
+                }
 
                 ViewBag.Course = course;
                 ViewBag.CourseId = id;
@@ -382,7 +534,26 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             try
             {
-                var course = await _courseService.GetCourseByIdAsync(id);
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/courses/{id}"));
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        TempData["Error"] = "Không tìm thấy khóa học cần phê duyệt.";
+                    }
+                    else
+                    {
+                        TempData["Error"] = "Đã xảy ra lỗi khi tải thông tin khóa học để phê duyệt.";
+                    }
+                    return RedirectToAction("Index");
+                }
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var course = JsonSerializer.Deserialize<CourseDto>(responseContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
 
                 if (course == null)
                 {
@@ -423,8 +594,30 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     });
                 }
 
-                var result = await _courseService.ApproveCourseAsync(request);
-                return Json(result);
+                var json = JsonSerializer.Serialize(request);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl($"api/courses/{request.CourseId}/approve"), content);
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = JsonSerializer.Deserialize<CourseApprovalResponse>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                    return Json(result);
+                }
+                else
+                {
+                    var errorMessage = !string.IsNullOrEmpty(responseContent) ? responseContent.Trim('"') : "Đã xảy ra lỗi khi phê duyệt khóa học.";
+                    return Json(new CourseApprovalResponse
+                    {
+                        Success = false,
+                        Message = errorMessage,
+                        ErrorCode = ErrorCode.InternalError
+                    });
+                }
             }
             catch (Exception ex)
             {
@@ -463,8 +656,30 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     });
                 }
 
-                var result = await _courseService.RejectCourseAsync(request);
-                return Json(result);
+                var json = JsonSerializer.Serialize(request);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl($"api/courses/{request.CourseId}/reject"), content);
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = JsonSerializer.Deserialize<CourseApprovalResponse>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                    return Json(result);
+                }
+                else
+                {
+                    var errorMessage = !string.IsNullOrEmpty(responseContent) ? responseContent.Trim('"') : "Đã xảy ra lỗi khi từ chối khóa học.";
+                    return Json(new CourseApprovalResponse
+                    {
+                        Success = false,
+                        Message = errorMessage,
+                        ErrorCode = ErrorCode.InternalError
+                    });
+                }
             }
             catch (Exception ex)
             {
@@ -484,7 +699,19 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             try
             {
-                var course = await _courseService.GetCourseByIdAsync(courseId);
+                // Get course details first
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/courses/{courseId}"));
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new List<ApprovalHistoryDto>();
+                }
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var course = JsonSerializer.Deserialize<CourseDto>(responseContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
                 if (course == null) return new List<ApprovalHistoryDto>();
 
                 var history = new List<ApprovalHistoryDto>
@@ -578,7 +805,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 var pageSize = PaginationConstants.EmployeeCoursePageSize;
                 
                 // Kiểm tra đăng nhập
-                if (_authService.IsTokenExpired())
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
                 {
                     return RedirectToAction("DangNhap", "Auth");
                 }
@@ -592,7 +819,22 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 }
 
                 // Lấy danh sách khóa học từ API
-                var allCourses = await _courseService.GetEmployeeCoursesAsync(employeeId);
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/employees/{employeeId}/courses"));
+                
+                List<EmployeeCourseDto> allCourses;
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    allCourses = JsonSerializer.Deserialize<List<EmployeeCourseDto>>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    }) ?? new List<EmployeeCourseDto>();
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to get employee courses for {EmployeeId}. Status: {StatusCode}", employeeId, response.StatusCode);
+                    allCourses = new List<EmployeeCourseDto>();
+                }
 
                 // Lọc theo trạng thái
                 var filteredCourses = status switch
@@ -642,7 +884,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             try
             {
-                if (_authService.IsTokenExpired())
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
                 {
                     return Json(new { success = false, message = "Phiên đăng nhập đã hết hạn" });
                 }
@@ -653,9 +895,20 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     return Json(new { success = false, message = "Không tìm thấy thông tin nhân viên" });
                 }
 
-                var result = await _courseService.RespondToCourseAsync(courseId, employeeId, responseType, note);
+                var requestBody = new
+                {
+                    EmployeeId = employeeId,
+                    CourseId = courseId,
+                    ResponseType = responseType,
+                    Note = note
+                };
 
-                if (result)
+                var json = JsonSerializer.Serialize(requestBody);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl($"api/courses/{courseId}/respond"), content);
+
+                if (response.IsSuccessStatusCode)
                 {
                     var message = responseType.ToLower() switch
                     {
@@ -668,7 +921,9 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 }
                 else
                 {
-                    return Json(new { success = false, message = "Không thể cập nhật phản hồi. Vui lòng thử lại." });
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    var errorMessage = !string.IsNullOrEmpty(errorContent) ? errorContent.Trim('"') : "Không thể cập nhật phản hồi. Vui lòng thử lại.";
+                    return Json(new { success = false, message = errorMessage });
                 }
             }
             catch (Exception ex)
@@ -706,7 +961,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 }
 
                 // Kiểm tra authentication
-                if (_authService.IsTokenExpired())
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
                 {
                     return Json(new { success = false, message = "Phiên đăng nhập đã hết hạn" });
                 }
