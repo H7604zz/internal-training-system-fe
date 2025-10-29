@@ -91,3 +91,94 @@
     background-color: #6c757d;
     color: white;
 }
+
+/* Lesson Content Section Styles */
+.lesson-content-section {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    margin-top: 15px;
+}
+
+.content-group {
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.content-group-title {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #f1f3f4;
+    padding-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.content-group .form-label {
+    font-weight: 500;
+    color: #6c757d;
+    margin-bottom: 8px;
+}
+
+.content-group .form-control {
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.content-group .form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.content-group .form-text {
+    font-size: 0.875rem;
+    margin-top: 5px;
+    color: #6c757d;
+}
+
+/* File upload specific styles */
+.content-group input[type="file"] {
+    padding: 8px;
+    border: 2px dashed #dee2e6;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.content-group input[type="file"]:hover {
+    border-color: #80bdff;
+    background-color: #e7f3ff;
+}
+
+.content-group input[type="file"]:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Content group icons */
+.content-group-title .fa-file-alt,
+.content-group-title .fa-video,
+.content-group-title .fa-question-circle {
+    font-size: 1.1em;
+    margin-right: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .lesson-content-section {
+        padding: 15px;
+    }
+    
+    .content-group {
+        padding: 12px;
+    }
+    
+    .content-group-title {
+        font-size: 1rem;
+    }
+}

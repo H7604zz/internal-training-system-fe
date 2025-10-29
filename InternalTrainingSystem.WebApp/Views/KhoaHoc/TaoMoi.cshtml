@@ -161,9 +161,6 @@
                                 <i class="fas fa-plus me-2"></i>Thêm Module
                             </button>
                         </div>
-
-                        <!-- Hidden file input for lesson files -->
-                        <input type="file" id="lesson-file-input" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.mp4,.mp3" style="display: none;">
                     </div>
                 </div>
 
@@ -219,7 +216,19 @@
                             </div>
                             <div class="help-item">
                                 <i class="fas fa-lightbulb"></i>
-                                <span>"Trực tuyến" cho khóa học online, "Bắt buộc" cho khóa học bắt buộc</span>
+                                <span>Mỗi bài học có thể chứa: Tài liệu, Video, và Quiz</span>
+                            </div>
+                            <div class="help-item">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>Tài liệu hỗ trợ: PDF, Word, PowerPoint, Excel, Text và OpenOffice</span>
+                            </div>
+                            <div class="help-item">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>Video hỗ trợ URL từ YouTube, Vimeo và các nền tảng khác</span>
+                            </div>
+                            <div class="help-item">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>Quiz Excel phải có định dạng chuẩn (tải template mẫu)</span>
                             </div>
                         </div>
                     </div>
@@ -315,55 +324,68 @@
             </div>
         </div>
 
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label class="form-label required">Loại Bài Học</label>
-                <select name="Modules[0].Lessons[0].Type" class="form-select lesson-type" required>
-                    <option value="">Chọn loại bài học</option>
-                    <option value="1">Video</option>
-                    <option value="2">Đọc hiểu</option>
-                    <option value="3">Tệp tin</option>
-                    <option value="4">Liên kết</option>
-                    <option value="5">Bài kiểm tra</option>
-                </select>
-            </div>
-            <div class="col-md-6">
-                <div class="lesson-type-badge">
-                    <span class="badge bg-secondary type-indicator">Chọn loại</span>
+        <!-- Lesson Content Section -->
+        <div class="lesson-content-section">
+            <h6 class="mb-3"><i class="fas fa-file-alt me-2"></i>Nội Dung Bài Học</h6>
+            
+            <!-- Document Upload -->
+            <div class="content-group mb-4">
+                <h6 class="content-group-title">
+                    <i class="fas fa-file-alt me-2 text-primary"></i>Tài Liệu
+                </h6>
+                <div class="row">
+                    <div class="col-md-12">
+                        <label class="form-label">Tải lên tệp tài liệu</label>
+                        <input type="file" name="LessonDocumentFiles" class="form-control" 
+                               accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.rtf,.odt,.ods,.odp" 
+                               placeholder="Chọn file tài liệu...">
+                        <small class="form-text text-muted">
+                            Hỗ trợ: PDF, Word (doc, docx), PowerPoint (ppt, pptx), Excel (xls, xlsx), Text (txt, rtf), OpenOffice (odt, ods, odp). 
+                            Kích thước tối đa: 50MB
+                        </small>
+                        <input type="hidden" name="Modules[0].Lessons[0].HasDocument" value="false" class="lesson-has-document">
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Content fields (shown/hidden based on lesson type) -->
-        <div class="lesson-content-fields">
-            <!-- URL field for Video/Link types -->
-            <div class="content-field url-field" style="display: none;">
-                <label class="form-label">URL</label>
-                <input type="url" name="Modules[0].Lessons[0].ContentUrl" class="form-control" placeholder="Nhập URL">
-            </div>
-
-            <!-- File upload field for File type -->
-            <div class="content-field file-field" style="display: none;">
-                <label class="form-label">Tệp tin</label>
-                <input type="file" name="LessonFiles" class="form-control" accept=".pdf,.doc,.docx,.ppt,.pptx,.mp4,.mp3">
-                <input type="hidden" name="Modules[0].Lessons[0].UploadBinary" value="true">
-            </div>
-
-            <!-- HTML content field for Reading type -->
-            <div class="content-field html-field" style="display: none;">
-                <label class="form-label">Nội dung</label>
-                <textarea name="Modules[0].Lessons[0].ContentHtml" class="form-control" rows="4" placeholder="Nhập nội dung bài học..."></textarea>
-            </div>
-
-            <!-- Quiz fields for Quiz type -->
-            <div class="content-field quiz-field" style="display: none;">
-                <div class="mb-3">
-                    <label class="form-label">Tiêu đề Quiz</label>
-                    <input type="text" name="Modules[0].Lessons[0].QuizTitle" class="form-control" placeholder="Nhập tiêu đề quiz">
+            <!-- Video Content -->
+            <div class="content-group mb-4">
+                <h6 class="content-group-title">
+                    <i class="fas fa-video me-2 text-primary"></i>Video
+                </h6>
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label class="form-label">URL Video</label>
+                        <input type="url" name="Modules[0].Lessons[0].VideoUrl" class="form-control video-url" 
+                               placeholder="Nhập URL video (YouTube, Vimeo, ...)">
+                        <small class="form-text text-muted">Hỗ trợ YouTube, Vimeo và các nền tảng video khác</small>
+                    </div>
                 </div>
-                <div class="form-check">
-                    <input type="checkbox" name="Modules[0].Lessons[0].IsQuizExcel" class="form-check-input">
-                    <label class="form-check-label">Quiz từ file Excel</label>
+                <div class="row">
+                    <div class="col-md-12">
+                        <label class="form-label">Mô tả Video</label>
+                        <textarea name="Modules[0].Lessons[0].VideoDescription" class="form-control" rows="3" 
+                                  placeholder="Nhập mô tả cho video này..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quiz Excel Import -->
+            <div class="content-group mb-4">
+                <h6 class="content-group-title">
+                    <i class="fas fa-question-circle me-2 text-success"></i>Bài Kiểm Tra
+                </h6>
+                <div class="row">
+                    <div class="col-md-12">
+                        <label class="form-label">File Excel Quiz</label>
+                        <input type="file" name="LessonQuizFiles" class="form-control" accept=".xlsx,.xls" 
+                               placeholder="Chọn file Excel chứa câu hỏi quiz...">
+                        <small class="form-text text-muted">
+                            File Excel phải có định dạng chuẩn: Cột A (Câu hỏi), Cột B-E (Đáp án), Cột F (Đáp án đúng). 
+                            <a href="#" class="text-primary">Tải template mẫu</a>
+                        </small>
+                        <input type="hidden" name="Modules[0].Lessons[0].HasQuiz" value="false" class="lesson-has-quiz">
+                    </div>
                 </div>
             </div>
         </div>
@@ -486,23 +508,19 @@
                 // Fill in lesson data
                 clone.querySelector('input[name*="Title"]').value = lessonData.title || '';
                 clone.querySelector('input[name*="OrderIndex"]').value = lessonData.orderIndex || lessonIndex + 1;
-                clone.querySelector('select[name*="Type"]').value = lessonData.type || '';
                 
-                // Fill content based on lesson type
-                if (lessonData.contentUrl) {
-                    clone.querySelector('input[name*="ContentUrl"]').value = lessonData.contentUrl;
+                // Fill content data
+                if (lessonData.videoUrl) {
+                    clone.querySelector('input[name*="VideoUrl"]').value = lessonData.videoUrl;
                 }
-                if (lessonData.contentHtml) {
-                    clone.querySelector('textarea[name*="ContentHtml"]').value = lessonData.contentHtml;
+                if (lessonData.videoDescription) {
+                    clone.querySelector('textarea[name*="VideoDescription"]').value = lessonData.videoDescription;
                 }
-                if (lessonData.quizTitle) {
-                    clone.querySelector('input[name*="QuizTitle"]').value = lessonData.quizTitle;
+                if (lessonData.hasDocument) {
+                    clone.querySelector('input[name*="HasDocument"]').value = lessonData.hasDocument;
                 }
-                if (lessonData.uploadBinary) {
-                    clone.querySelector('input[name*="UploadBinary"]').value = lessonData.uploadBinary;
-                }
-                if (lessonData.isQuizExcel) {
-                    clone.querySelector('input[name*="IsQuizExcel"]').checked = lessonData.isQuizExcel;
+                if (lessonData.hasQuiz) {
+                    clone.querySelector('input[name*="HasQuiz"]').value = lessonData.hasQuiz;
                 }
                 
                 // Update form field names
@@ -510,11 +528,6 @@
                 
                 // Add event listeners
                 addLessonEventListeners(clone);
-                
-                // Show appropriate content fields based on lesson type
-                if (lessonData.type) {
-                    updateLessonContentFields(clone.querySelector('.lesson-item'), lessonData.type.toString());
-                }
                 
                 // Append to lessons container
                 lessonsContainer.appendChild(clone);
@@ -664,55 +677,31 @@
                     }
                 });
 
-                // Lesson type change
-                clone.querySelector('.lesson-type').addEventListener('change', function() {
-                    const lessonItem = this.closest('.lesson-item');
-                    const selectedType = this.value;
-                    updateLessonContentFields(lessonItem, selectedType);
-                    updateLessonTypeBadge(lessonItem, selectedType);
-                });
-            }
+                // File upload handlers
+                const documentFile = clone.querySelector('input[name*="LessonDocumentFiles"]');
+                const quizFile = clone.querySelector('input[name*="LessonQuizFiles"]');
+                const videoUrl = clone.querySelector('input[name*="VideoUrl"]');
 
-            function updateLessonContentFields(lessonItem, type) {
-                const contentFields = lessonItem.querySelectorAll('.content-field');
-                contentFields.forEach(field => field.style.display = 'none');
-
-                const typeIndicator = lessonItem.querySelector('.type-indicator');
-                
-                switch(type) {
-                    case '1': // Video
-                        lessonItem.querySelector('.url-field').style.display = 'block';
-                        typeIndicator.className = 'badge bg-danger type-indicator';
-                        typeIndicator.textContent = 'Video';
-                        break;
-                    case '2': // Reading
-                        lessonItem.querySelector('.html-field').style.display = 'block';
-                        typeIndicator.className = 'badge bg-info type-indicator';
-                        typeIndicator.textContent = 'Đọc hiểu';
-                        break;
-                    case '3': // File
-                        lessonItem.querySelector('.file-field').style.display = 'block';
-                        typeIndicator.className = 'badge bg-warning type-indicator';
-                        typeIndicator.textContent = 'Tệp tin';
-                        break;
-                    case '4': // Link
-                        lessonItem.querySelector('.url-field').style.display = 'block';
-                        typeIndicator.className = 'badge bg-primary type-indicator';
-                        typeIndicator.textContent = 'Liên kết';
-                        break;
-                    case '5': // Quiz
-                        lessonItem.querySelector('.quiz-field').style.display = 'block';
-                        typeIndicator.className = 'badge bg-success type-indicator';
-                        typeIndicator.textContent = 'Bài kiểm tra';
-                        break;
-                    default:
-                        typeIndicator.className = 'badge bg-secondary type-indicator';
-                        typeIndicator.textContent = 'Chọn loại';
+                if (documentFile) {
+                    documentFile.addEventListener('change', function() {
+                        const hasDocumentInput = this.closest('.lesson-item').querySelector('.lesson-has-document');
+                        hasDocumentInput.value = this.files.length > 0 ? 'true' : 'false';
+                    });
                 }
-            }
 
-            function updateLessonTypeBadge(lessonItem, type) {
-                // Already handled in updateLessonContentFields
+                if (quizFile) {
+                    quizFile.addEventListener('change', function() {
+                        const hasQuizInput = this.closest('.lesson-item').querySelector('.lesson-has-quiz');
+                        hasQuizInput.value = this.files.length > 0 ? 'true' : 'false';
+                    });
+                }
+
+                if (videoUrl) {
+                    videoUrl.addEventListener('blur', function() {
+                        // You can add URL validation here if needed
+                        console.log('Video URL updated:', this.value);
+                    });
+                }
             }
 
             function updateModuleOrders() {
