@@ -83,7 +83,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             try
             {
-                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/courses/{id}"));
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/course/{id}/detail"));
                 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -125,7 +125,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             try
             {
-                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/courses/{id}"));
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/course/{id}"));
                 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -178,7 +178,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 var json = JsonSerializer.Serialize(model);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PutAsync(Utilities.GetAbsoluteUrl($"api/courses/{model.CourseId}"), content);
+                var response = await _httpClient.PutAsync(Utilities.GetAbsoluteUrl($"api/course/{model.CourseId}"), content);
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -227,7 +227,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 var json = JsonSerializer.Serialize(model);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl("api/courses"), content);
+                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl("api/course"), content);
                 var responseContent = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
@@ -424,7 +424,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             try
             {
                 // Get course details
-                var courseResponse = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/courses/{id}"));
+                var courseResponse = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/course/{id}"));
                 if (!courseResponse.IsSuccessStatusCode)
                 {
                     TempData["Error"] = "Không tìm thấy khóa học.";
@@ -454,7 +454,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     queryParams += $"&status={Uri.EscapeDataString(status)}";
 
                 // Get eligible staff
-                var staffResponse = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/courses/{id}/eligible-staff{queryParams}"));
+                var staffResponse = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/course/{id}/eligible-staff{queryParams}"));
                 
                 PagedResult<EligibleStaffDto> eligibleStaffResult;
                 List<EligibleStaffDto> staff;
@@ -534,7 +534,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             try
             {
-                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/courses/{id}"));
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/course/{id}/detail"));
                 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -597,7 +597,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 var json = JsonSerializer.Serialize(request);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl($"api/courses/{request.CourseId}/approve"), content);
+                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl($"api/course/{request.CourseId}/approve"), content);
                 var responseContent = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
@@ -659,7 +659,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 var json = JsonSerializer.Serialize(request);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl($"api/courses/{request.CourseId}/reject"), content);
+                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl($"api/course/{request.CourseId}/reject"), content);
                 var responseContent = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
@@ -700,7 +700,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             try
             {
                 // Get course details first
-                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/courses/{courseId}"));
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/course/{courseId}"));
                 if (!response.IsSuccessStatusCode)
                 {
                     return new List<ApprovalHistoryDto>();
@@ -906,7 +906,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 var json = JsonSerializer.Serialize(requestBody);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl($"api/courses/{courseId}/respond"), content);
+                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl($"api/course/{courseId}/respond"), content);
 
                 if (response.IsSuccessStatusCode)
                 {
