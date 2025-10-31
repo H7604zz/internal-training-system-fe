@@ -1,0 +1,393 @@
+/* Department Management Styles */
+
+/* Common Page Styles */
+.department-container,
+.department-detail-container,
+.department-create-container,
+.department-edit-container {
+    padding: 20px 0;
+}
+
+.page-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e3e6f0;
+}
+
+.page-title {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.page-subtitle {
+    color: #6c757d;
+    margin-bottom: 0;
+    font-size: 1rem;
+}
+
+/* Filter Section */
+.filter-section {
+    margin-bottom: 25px;
+}
+
+.filter-section .card {
+    border: 1px solid #e3e6f0;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+}
+
+/* Results Section */
+.results-section .card {
+    border: 1px solid #e3e6f0;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+}
+
+.table th {
+    background-color: #f8f9fc;
+    border-color: #e3e6f0;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.table td {
+    vertical-align: middle;
+    border-color: #e3e6f0;
+}
+
+.department-info h6 {
+    color: #2c3e50;
+    margin-bottom: 2px;
+}
+
+.description-text {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+/* Department Detail Styles */
+.department-info-card .info-item {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.department-info-card .info-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.department-info-card .info-item label {
+    font-weight: 600;
+    color: #495057;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.department-info-card .description {
+    color: #6c757d;
+    margin-bottom: 0;
+    line-height: 1.5;
+}
+
+/* Statistics */
+.stat-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fc;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.stat-item:last-child {
+    margin-bottom: 0;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.stat-content h4 {
+    margin: 0;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.stat-content span {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+/* Employee Cards */
+.employee-card {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fc;
+    border-radius: 8px;
+    border: 1px solid #e3e6f0;
+    height: 100%;
+}
+
+.employee-avatar {
+    margin-right: 15px;
+}
+
+.avatar-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.employee-info {
+    flex: 1;
+}
+
+.employee-name {
+    color: #2c3e50;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.employee-position {
+    color: #007bff;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.employee-email {
+    color: #6c757d;
+    margin-bottom: 5px;
+    font-size: 0.85rem;
+}
+
+.employee-join-date {
+    color: #6c757d;
+    font-size: 0.8rem;
+}
+
+/* Course Cards */
+.course-card {
+    background: #fff;
+    border: 1px solid #e3e6f0;
+    border-radius: 8px;
+    padding: 15px;
+    height: 100%;
+    transition: all 0.3s ease;
+}
+
+.course-card:hover {
+    box-shadow: 0 0.25rem 1rem rgba(58, 59, 69, 0.15);
+    transform: translateY(-2px);
+}
+
+.course-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.course-level .badge {
+    font-size: 0.75rem;
+}
+
+.level-beginner {
+    background-color: #28a745 !important;
+}
+
+.level-intermediate {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+.level-advanced {
+    background-color: #dc3545 !important;
+}
+
+.course-code {
+    font-size: 0.8rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.course-title {
+    color: #2c3e50;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.course-title a {
+    color: inherit;
+    transition: color 0.3s ease;
+}
+
+.course-title a:hover {
+    color: #007bff;
+}
+
+.course-description {
+    color: #6c757d;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-bottom: 15px;
+}
+
+.course-footer {
+    margin-top: auto;
+}
+
+/* Form Styles */
+.form-group-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.field-required {
+    color: #dc3545;
+    margin-left: 5px;
+    font-weight: bold;
+}
+
+.form-control-lg {
+    padding: 12px 16px;
+    font-size: 1.1rem;
+}
+
+.form-actions {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #e3e6f0;
+}
+
+.field-changed {
+    border-color: #ffc107 !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25) !important;
+}
+
+/* Help Section */
+.help-list {
+    list-style: none;
+    padding: 0;
+}
+
+.help-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    padding: 8px;
+    background: #f8f9fc;
+    border-radius: 5px;
+}
+
+.help-item i {
+    margin-right: 10px;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.help-item span {
+    color: #495057;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* Button Styles */
+.btn-group .btn {
+    border-radius: 4px !important;
+    margin-right: 2px;
+}
+
+.btn-group .btn:last-child {
+    margin-right: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .page-header .col-md-4 {
+        margin-top: 15px;
+        text-align: left !important;
+    }
+    
+    .employee-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .employee-avatar {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .course-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .course-code {
+        margin-top: 5px;
+    }
+    
+    .form-actions .btn {
+        margin-bottom: 10px;
+    }
+}
+
+/* Custom Badges */
+.badge {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+}
+
+/* Loading States */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Animation */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Print Styles */
+@media print {
+    .page-header .btn,
+    .form-actions,
+    .help-list {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+    }
+}

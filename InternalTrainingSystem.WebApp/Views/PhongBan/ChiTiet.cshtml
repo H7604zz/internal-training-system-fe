@@ -1,0 +1,200 @@
+@model InternalTrainingSystem.WebApp.Models.DTOs.DepartmentDetailDto
+@using InternalTrainingSystem.WebApp.Models.DTOs
+@{
+    ViewData["Title"] = "Chi Tiết Phòng Ban - " + Model.DepartmentName;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/department.css" asp-append-version="true" />
+}
+
+<div class="department-detail-container">
+    <div class="container-fluid">
+        <!-- Header Section -->
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="@Url.Action("Index")">
+                                    <i class="fas fa-building me-1"></i>Phòng Ban
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item active">Chi Tiết</li>
+                        </ol>
+                    </nav>
+                    <h1 class="page-title">
+                        <i class="fas fa-info-circle me-3"></i>@Model.DepartmentName
+                    </h1>
+                    <p class="page-subtitle">Thông tin chi tiết phòng ban và danh sách nhân viên, khóa học</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="@Url.Action("ChinhSua", new { id = Model.DepartmentId })" class="btn btn-warning me-2">
+                        <i class="fas fa-edit me-2"></i>Chỉnh Sửa
+                    </a>
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Quay Lại
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Department Info Card -->
+            <div class="col-lg-4 mb-4">
+                <div class="card department-info-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-building me-2"></i>Thông Tin Phòng Ban
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-item">
+                            <label>ID Phòng Ban:</label>
+                            <span class="badge bg-primary">#@Model.DepartmentId</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <label>Tên Phòng Ban:</label>
+                            <span class="fw-bold">@Model.DepartmentName</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <label>Mô Tả:</label>
+                            <p class="description">
+                                @(string.IsNullOrEmpty(Model.Description) ? "Chưa có mô tả" : Model.Description)
+                            </p>
+                        </div>
+                        
+                        
+                    </div>
+                </div>
+
+               
+            </div>
+
+            <!-- Employees and Courses Section -->
+            <div class="col-lg-8 mb-4">
+                <!-- Employees Section -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-users me-2"></i>Danh Sách Nhân Viên
+                            </h5>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.Employees != null && Model.Employees.Any())
+                        {
+                            <div class="row">
+                                @foreach (var employee in Model.Employees)
+                                {
+                                    <div class="col-md-6 mb-3">
+                                        <div class="employee-card">
+                                            <div class="employee-avatar">
+                                                @if (!string.IsNullOrEmpty(employee.Avatar))
+                                                {
+                                                    <img src="@employee.Avatar" alt="@employee.FullName" class="avatar-img">
+                                                }
+                                                else
+                                                {
+                                                    <div class="avatar-placeholder">
+                                                        <i class="fas fa-user"></i>
+                                                    </div>
+                                                }
+                                            </div>
+                                            <div class="employee-info">
+                                                <h6 class="employee-name">@employee.FullName</h6>
+                                                <p class="employee-position">@employee.Position</p>
+                                                <p class="employee-email">
+                                                    <i class="fas fa-envelope me-1"></i>@employee.Email
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-4">
+                                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                <h6>Chưa có nhân viên nào</h6>
+                                <p class="text-muted">Phòng ban này hiện chưa có nhân viên</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Courses Section -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-book me-2"></i>Danh Sách Khóa Học
+                            </h5>
+                    
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.Courses != null && Model.Courses.Any())
+                        {
+                            <div class="row">
+                                @foreach (var course in Model.Courses)
+                                {
+                                    <div class="col-md-6 mb-3">
+                                        <div class="course-card">
+                                            <div class="course-header">
+                                                <div class="course-level">
+                                                    <span class="badge level-@course.Level.ToLower()">@course.Level</span>
+                                                </div>
+                                                <div class="course-code">@course.Code</div>
+                                            </div>
+                                            <div class="course-content">
+                                                <h6 class="course-title">
+                                                    <a href="@Url.Action("ChiTiet", "KhoaHoc", new { id = course.CourseId })" 
+                                                       class="text-decoration-none">
+                                                        @course.CourseName
+                                                    </a>
+                                                </h6>
+                                                <p class="course-description">
+                                                    @(string.IsNullOrEmpty(course.Description) ? "Chưa có mô tả" : 
+                                                      (course.Description.Length > 80 ? course.Description.Substring(0, 80) + "..." : course.Description))
+                                                </p>
+                                            </div>
+                                            <div class="course-footer">
+                                                <a href="@Url.Action("ChiTiet", "KhoaHoc", new { id = course.CourseId })" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye me-1"></i>Xem Chi Tiết
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-4">
+                                <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                                <h6>Chưa có khóa học nào</h6>
+                                <p class="text-muted">Phòng ban này hiện chưa có khóa học nào được áp dụng</p>
+                                <a href="@Url.Action("TaoMoi", "KhoaHoc")" class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>Tạo Khóa Học Mới
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Add any specific JavaScript for detail page here
+    </script>
+}

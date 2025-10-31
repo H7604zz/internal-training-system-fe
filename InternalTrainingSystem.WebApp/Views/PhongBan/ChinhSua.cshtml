@@ -1,0 +1,246 @@
+@model UpdateDepartmentDto
+@using InternalTrainingSystem.WebApp.Models.DTOs
+@{
+    ViewData["Title"] = "Chỉnh Sửa Phòng Ban";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/department.css" asp-append-version="true" />
+}
+
+<div class="department-edit-container">
+    <div class="container-fluid">
+        <!-- Header Section -->
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="@Url.Action("Index")">
+                                    <i class="fas fa-building me-1"></i>Phòng Ban
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="@Url.Action("ChiTiet", new { id = Model.DepartmentId })">Chi Tiết</a>
+                            </li>
+                            <li class="breadcrumb-item active">Chỉnh Sửa</li>
+                        </ol>
+                    </nav>
+                    <h1 class="page-title">
+                        <i class="fas fa-edit me-3"></i>Chỉnh Sửa Phòng Ban
+                    </h1>
+                    <p class="page-subtitle">Cập nhật thông tin phòng ban ID: #@Model.DepartmentId</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="@Url.Action("ChiTiet", new { id = Model.DepartmentId })" class="btn btn-outline-info me-2">
+                        <i class="fas fa-eye me-2"></i>Xem Chi Tiết
+                    </a>
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Quay Lại
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-building me-2"></i>Cập Nhật Thông Tin
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="ChinhSua" method="post" novalidate>
+                            @Html.AntiForgeryToken()
+                            <input asp-for="DepartmentId" type="hidden" />
+                            
+                            @if (!ViewData.ModelState.IsValid)
+                            {
+                                <div class="alert alert-danger">
+                                    <h6><i class="fas fa-exclamation-circle me-2"></i>Có lỗi xảy ra:</h6>
+                                    <div asp-validation-summary="All" class="mb-0"></div>
+                                </div>
+                            }
+
+                            <div class="row">
+                                <div class="col-12 mb-4">
+                                    <div class="form-group-header">
+                                        <label asp-for="DepartmentName" class="form-label required">
+                                            <i class="fas fa-building me-1"></i>Tên Phòng Ban
+                                        </label>
+                                        <span class="field-required">*</span>
+                                    </div>
+                                    <input asp-for="DepartmentName" class="form-control form-control-lg" 
+                                           placeholder="Nhập tên phòng ban">
+                                    <span asp-validation-for="DepartmentName" class="text-danger"></span>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Tên phòng ban nên rõ ràng và dễ hiểu, không quá 100 ký tự
+                                    </div>
+                                </div>
+
+                                <div class="col-12 mb-4">
+                                    <div class="form-group-header">
+                                        <label asp-for="Description" class="form-label">
+                                            <i class="fas fa-align-left me-1"></i>Mô Tả Phòng Ban
+                                        </label>
+                                    </div>
+                                    <textarea asp-for="Description" class="form-control" rows="5" 
+                                              placeholder="Nhập mô tả chi tiết về chức năng, nhiệm vụ của phòng ban..."></textarea>
+                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Mô tả giúp làm rõ chức năng và nhiệm vụ của phòng ban (tối đa 500 ký tự)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="form-actions">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <button type="submit" class="btn btn-warning btn-lg w-100">
+                                            <i class="fas fa-save me-2"></i>Cập Nhật
+                                        </button>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <a href="@Url.Action("ChiTiet", new { id = Model.DepartmentId })" class="btn btn-info btn-lg w-100">
+                                            <i class="fas fa-eye me-2"></i>Xem Chi Tiết
+                                        </a>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <a href="@Url.Action("Index")" class="btn btn-secondary btn-lg w-100">
+                                            <i class="fas fa-times me-2"></i>Hủy Bỏ
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Change History Card (Placeholder) -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-history me-2"></i>Lưu Ý Khi Chỉnh Sửa
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-info-circle me-2"></i>Thông Tin Quan Trọng
+                            </h6>
+                            <ul class="mb-0">
+                                <li>Việc thay đổi tên phòng ban sẽ ảnh hưởng đến tất cả báo cáo và thống kê liên quan</li>
+                                <li>Nhân viên thuộc phòng ban này sẽ vẫn giữ nguyên sau khi cập nhật</li>
+                                <li>Các khóa học được phân công cho phòng ban sẽ không bị ảnh hưởng</li>
+                                <li>Hệ thống sẽ ghi lại lịch sử thay đổi để kiểm tra sau này</li>
+                            </ul>
+                        </div>
+
+                        <div class="help-list mt-3">
+                            <div class="help-item">
+                                <i class="fas fa-lightbulb text-warning"></i>
+                                <span>Kiểm tra kỹ thông tin trước khi lưu để tránh nhầm lẫn</span>
+                            </div>
+                            <div class="help-item">
+                                <i class="fas fa-lightbulb text-warning"></i>
+                                <span>Có thể xem chi tiết phòng ban để xác nhận thông tin hiện tại</span>
+                            </div>
+                            <div class="help-item">
+                                <i class="fas fa-lightbulb text-warning"></i>
+                                <span>Liên hệ quản trị viên nếu cần hỗ trợ thêm</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Store original values
+            const originalName = $('#DepartmentName').val();
+            const originalDescription = $('#Description').val();
+
+            // Character counter for department name
+            $('#DepartmentName').on('input', function() {
+                const maxLength = 100;
+                const currentLength = $(this).val().length;
+                const remaining = maxLength - currentLength;
+                
+                $('.char-counter').remove();
+                if (remaining < 20) {
+                    $(this).next('.text-danger').after(`<small class="text-muted char-counter">Còn lại: ${remaining} ký tự</small>`);
+                }
+            });
+
+            // Character counter for description
+            $('#Description').on('input', function() {
+                const maxLength = 500;
+                const currentLength = $(this).val().length;
+                const remaining = maxLength - currentLength;
+                
+                $('.desc-counter').remove();
+                if (currentLength > 0) {
+                    $(this).after(`<small class="text-muted desc-counter">${currentLength}/${maxLength} ký tự</small>`);
+                }
+                
+                if (remaining < 50 && remaining >= 0) {
+                    $('.desc-counter').addClass('text-warning');
+                } else if (remaining < 0) {
+                    $('.desc-counter').addClass('text-danger');
+                }
+            });
+
+            // Check for changes before submit
+            $('form').on('submit', function(e) {
+                const currentName = $('#DepartmentName').val().trim();
+                const currentDescription = $('#Description').val().trim();
+                
+                if (currentName === originalName && currentDescription === originalDescription) {
+                    e.preventDefault();
+                    alert('Không có thay đổi nào được thực hiện!');
+                    return false;
+                }
+
+                if (currentName.length < 3) {
+                    e.preventDefault();
+                    $('#DepartmentName').addClass('is-invalid');
+                    if ($('#DepartmentName').next('.invalid-feedback').length === 0) {
+                        $('#DepartmentName').after('<div class="invalid-feedback">Tên phòng ban phải có ít nhất 3 ký tự</div>');
+                    }
+                    return false;
+                }
+
+                // Confirm changes
+                const confirmMessage = `Bạn có chắc chắn muốn cập nhật thông tin phòng ban?\n\nTên mới: ${currentName}`;
+                return confirm(confirmMessage);
+            });
+
+            // Remove validation class on input
+            $('.form-control').on('input', function() {
+                $(this).removeClass('is-invalid');
+                $(this).next('.invalid-feedback').remove();
+            });
+
+            // Highlight changed fields
+            $('#DepartmentName, #Description').on('input', function() {
+                const originalValue = this.id === 'DepartmentName' ? originalName : originalDescription;
+                const currentValue = $(this).val().trim();
+                
+                if (currentValue !== originalValue) {
+                    $(this).addClass('field-changed');
+                } else {
+                    $(this).removeClass('field-changed');
+                }
+            });
+        });
+    </script>
+}

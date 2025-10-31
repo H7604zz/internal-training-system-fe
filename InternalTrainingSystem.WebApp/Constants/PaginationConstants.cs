@@ -34,5 +34,10 @@ namespace InternalTrainingSystem.WebApp.Constants
         /// Số lượng bài quiz hiển thị trên mỗi trang
         /// </summary>
         public const int QuizPageSize = 8;
+
+        /// <summary>
+        /// Số lượng phòng ban hiển thị trên mỗi trang
+        /// </summary>
+        public const int DepartmentPageSize = 10;
     }
 }
