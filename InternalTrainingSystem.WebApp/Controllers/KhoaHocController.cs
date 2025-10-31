@@ -419,12 +419,12 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpGet("danh-sach-nhan-vien/{id}")]
-        public async Task<IActionResult> DanhSachNhanVien(int id, string employeeId = "", string status = "", int page = 1)
+        public async Task<IActionResult> DanhSachNhanVien(int id, string search, string status, int page = 1)
         {
             try
             {
                 // Get course details
-                var courseResponse = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/course/{id}"));
+                var courseResponse = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/course/{id}/detail"));
                 if (!courseResponse.IsSuccessStatusCode)
                 {
                     TempData["Error"] = "Không tìm thấy khóa học.";
@@ -448,12 +448,12 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
                 // Build query parameters for eligible staff
                 var queryParams = $"?page={page}&pageSize={pageSize}";
-                if (!string.IsNullOrEmpty(employeeId))
-                    queryParams += $"&employeeId={Uri.EscapeDataString(employeeId)}";
+                if (!string.IsNullOrEmpty(search))
+                    queryParams += $"&search={Uri.EscapeDataString(search)}";
                 if (!string.IsNullOrEmpty(status))
                     queryParams += $"&status={Uri.EscapeDataString(status)}";
 
-                // Get eligible staff
+                // lấy danh sách nhân viên đủ điều kiện
                 var staffResponse = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/course/{id}/eligible-staff{queryParams}"));
                 
                 PagedResult<EligibleStaffDto> eligibleStaffResult;
@@ -478,7 +478,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
                 ViewBag.Course = course;
                 ViewBag.CourseId = id;
-                ViewBag.EmployeeId = employeeId;
+                ViewBag.Search = search;
                 ViewBag.Status = status;
                 
                 // Statistics từ dữ liệu đã được filter từ API
@@ -501,6 +501,36 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 _logger.LogError(ex, $"Error occurred while getting employee list for course {id}");
                 TempData["Error"] = "Đã xảy ra lỗi khi tải danh sách nhân viên.";
                 return RedirectToAction("Index");
+            }
+        }
+
+        [HttpPost("gui-thong-bao-nhan-vien/{courseId}")]
+        public async Task GuiThongBaoNhanVien(int courseId)
+        {
+            try
+            {
+                if (courseId <= 0)
+                {
+                    return;
+                }
+
+                // Gọi API để gửi mail thông báo cho nhân viên đủ điều kiện
+                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl($"api/notification/{courseId}/notify-eligible-users"), null);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    TempData["Success"] = "Đã gửi thông báo thành công cho tất cả nhân viên đủ điều kiện!";
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    var errorMessage = !string.IsNullOrEmpty(errorContent) ? errorContent.Trim('"') : "Không thể gửi thông báo. Vui lòng thử lại.";
+                    TempData["Error"] = errorMessage;
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Đã xảy ra lỗi khi gửi thông báo. Vui lòng thử lại!";
             }
         }
 

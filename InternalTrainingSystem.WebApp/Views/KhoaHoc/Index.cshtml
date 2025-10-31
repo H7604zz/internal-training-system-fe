@@ -138,11 +138,12 @@
                                             </a>
                                             @if (course.Status.IsApproved())
                                             {
-                                                <a href="@Url.Action("DanhSachNhanVien", new { id = course.CourseId })" 
-                                                   class="btn btn-sm btn-outline-success me-1" 
-                                                   title="Danh sách nhân viên">
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-outline-success me-1" 
+                                                        title="Danh sách nhân viên"
+                                                        onclick="goToEmployeeListAndSendNotification(@course.CourseId)">
                                                     <i class="fas fa-users"></i>
-                                                </a>
+                                                </button>
                                             }
                                             @if (course.Status.IsPending())
                                             {
@@ -192,3 +193,36 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        async function goToEmployeeListAndSendNotification(courseId) {
+            try {
+                // Hiển thị loading
+                const button = event.target.closest('button');
+                const originalHtml = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                button.disabled = true;
+
+                // Gửi thông báo trước
+                const notificationUrl = '@Url.Action("GuiThongBaoNhanVien", "KhoaHoc", new { courseId = "__COURSEID__" })'.replace('__COURSEID__', courseId);
+                const response = await fetch(notificationUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                // Sau đó chuyển đến trang danh sách nhân viên
+                const employeeListUrl = '@Url.Action("DanhSachNhanVien", "KhoaHoc", new { id = "__COURSEID__" })'.replace('__COURSEID__', courseId);
+                window.location.href = employeeListUrl;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                // Vẫn chuyển trang dù có lỗi
+                const employeeListUrl = '@Url.Action("DanhSachNhanVien", "KhoaHoc", new { id = "__COURSEID__" })'.replace('__COURSEID__', courseId);
+                window.location.href = employeeListUrl;
+            }
+        }
+    </script>
+}

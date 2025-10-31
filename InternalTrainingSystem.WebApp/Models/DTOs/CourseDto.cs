@@ -17,7 +17,7 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public bool IsMandatory { get; set; }
         public DateTime CreatedDate { get; set; }
         public string? Status { get; set; } = CourseStatus.Pending; // Course approval status: Pending, Approved, Rejected, Draft
-        public List<DepartmentDto> Departments { get; set; } = new();
+        public List<DepartmnentViewDto> Departments { get; set; } = new();
         public string? CreatedBy { get; set; } = string.Empty;
         public DateTime? UpdatedDate { get; set; }
         public string? UpdatedBy { get; set; } = string.Empty;
