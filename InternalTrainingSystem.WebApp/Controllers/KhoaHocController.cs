@@ -409,12 +409,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 ViewBag.Search = search;
                 ViewBag.Status = status;
                 
-                // Statistics từ dữ liệu đã được filter từ API
-                ViewBag.TotalEmployees = eligibleStaffResult.TotalCount; // Tổng từ API
-                ViewBag.EnrolledCount = staff.Count(r => r.Status.IsEnrolled());
-                ViewBag.NotEnrolledCount = staff.Count(r => r.Status.IsNotEnrolled());
-                
-                // Phân trang - sử dụng tương tự như Index action
                 ViewBag.CurrentPage = page;
                 ViewBag.TotalPages = eligibleStaffResult.TotalPages;
                 ViewBag.PageSize = pageSize;
@@ -422,6 +416,8 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 ViewBag.HasPreviousPage = eligibleStaffResult.HasPreviousPage;
                 ViewBag.HasNextPage = eligibleStaffResult.HasNextPage;
 
+                // Get current user role for button visibility
+                ViewBag.UserRole = await UserProfileHelper.GetCurrentUserRoleAsync(_httpClient, _httpContextAccessor);
                 return View(staff);
             }
             catch (Exception ex)
@@ -462,30 +458,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
         }
 
-        [HttpPost("reinvite-employee")]
-        public async Task<IActionResult> ReinviteEmployee([FromBody] ReinviteEmployeeRequest request)
-        {
-            try
-            {
-                if (request.CourseId <= 0 || request.EmployeeId <= 0)
-                {
-                    return Json(new { success = false, message = "Thông tin không hợp lệ." });
-                }
-
-                // Simulate processing time
-                await Task.Delay(1000);
-
-                // Here you would implement actual reinvite logic:
-                // - Update employee status to "Pending" 
-                // - Send new notification email
-                // - Log the reinvite action
-                return Json(new { success = true, message = "Đã gửi lại lời mời thành công!" });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Đã xảy ra lỗi khi gửi lời mời. Vui lòng thử lại!" });
-            }
-        }
 
         [HttpGet("phe-duyet/{id}")]
         public async Task<IActionResult> PheDuyet(int id)
@@ -874,84 +846,47 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
         }
 
-
-
-        /// <summary>
-        /// API endpoint cho quyết định của quản lý trực tiếp
-        /// </summary>
-        [HttpPost("manager-decision")]
-        public async Task<IActionResult> ManagerDecision([FromBody] ManagerDecisionRequest request)
+        [HttpPost("finalize-enrollments")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> FinalizeEnrollments(int courseId)
         {
             try
             {
-                // Validate request
-                if (request == null)
+                if (courseId <= 0)
                 {
-                    return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
-                }
-
-                if (request.EmployeeId <= 0 || request.CourseId <= 0)
-                {
-                    return Json(new { success = false, message = "ID nhân viên hoặc khóa học không hợp lệ" });
-                }
-
-                if (string.IsNullOrEmpty(request.DecisionType) || 
-                    (request.DecisionType != "Accept" && request.DecisionType != "Reject"))
-                {
-                    return Json(new { success = false, message = "Loại quyết định không hợp lệ" });
+                    TempData["Error"] = "Dữ liệu không hợp lệ";
+                    return RedirectToAction("DanhSachNhanVien", new { id = courseId });
                 }
 
                 // Kiểm tra authentication
                 if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
                 {
-                    return Json(new { success = false, message = "Phiên đăng nhập đã hết hạn" });
+                    TempData["Error"] = "Phiên đăng nhập đã hết hạn";
+                    return RedirectToAction("DangNhap", "Auth");
                 }
 
-                // TODO: Implement actual API call when manager decision endpoint is available
-                // var result = await _courseService.SaveManagerDecisionAsync(request);
+                // Call API to finalize enrollments
+                var response = await _httpClient.PostAsync(
+                    Utilities.GetAbsoluteUrl($"api/course/{courseId}/finalize-enrollments"), 
+                    null);
 
-                // Simulate API call success for now
-                await Task.Delay(500); // Simulate processing time
-
-                var decisionText = request.DecisionType == "Accept" ? "chấp nhận" : "từ chối cuối cùng";
-                var message = $"Đã {decisionText} quyết định cho nhân viên thành công!";
-
-                return Json(new { 
-                    success = true, 
-                    message = message,
-                    data = new {
-                        employeeId = request.EmployeeId,
-                        courseId = request.CourseId,
-                        decision = request.DecisionType,
-                        note = request.ManagerNote,
-                        timestamp = DateTime.Now
-                    }
-                });
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadAsStringAsync();
+                    TempData["Success"] = result.Trim('"'); // Remove quotes from string response
+                }
+                else
+                {
+                    var errorMessage = await response.Content.ReadAsStringAsync();
+                    TempData["Error"] = errorMessage.Trim('"');
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error in ManagerDecision");
-                
-                return Json(new { 
-                    success = false, 
-                    message = "Có lỗi xảy ra khi xử lý quyết định. Vui lòng thử lại sau!" 
-                });
+                TempData["Error"] = "Có lỗi xảy ra khi chốt danh sách. Vui lòng thử lại sau!";
             }
+
+            return RedirectToAction("DanhSachNhanVien", new { id = courseId });
         }
-    }
-
-    // Request models for API endpoints
-    public class ReinviteEmployeeRequest
-    {
-        public int CourseId { get; set; }
-        public int EmployeeId { get; set; }
-    }
-
-    public class ManagerDecisionRequest
-    {
-        public int EmployeeId { get; set; }
-        public int CourseId { get; set; }
-        public string DecisionType { get; set; } = ""; // "Accept" hoặc "Reject"
-        public string ManagerNote { get; set; } = "";
     }
 }
