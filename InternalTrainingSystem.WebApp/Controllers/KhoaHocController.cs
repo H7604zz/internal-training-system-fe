@@ -346,75 +346,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
         }
 
-        [HttpPost("gui-thong-bao")]
-        public async Task<IActionResult> GuiThongBao([FromForm] string courseName, [FromForm] string description, [FromForm] List<int> selectedDepartmentIds)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(courseName))
-                {
-                    return Json(new { success = false, message = "Tên khóa học không được để trống!" });
-                }
-
-                if (selectedDepartmentIds == null || !selectedDepartmentIds.Any())
-                {
-                    return Json(new { success = false, message = "Vui lòng chọn ít nhất một phòng ban!" });
-                }
-
-                // Get departments from API
-                var departmentsResponse = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/departments"));
-                if (!departmentsResponse.IsSuccessStatusCode)
-                {
-                    return Json(new { success = false, message = "Không thể lấy thông tin phòng ban!" });
-                }
-
-                var departmentsContent = await departmentsResponse.Content.ReadAsStringAsync();
-                var departments = JsonSerializer.Deserialize<List<dynamic>>(departmentsContent, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-
-                var selectedDepartments = departments?.Where(d => 
-                {
-                    if (d is JsonElement element && element.TryGetProperty("DepartmentId", out var idProp))
-                    {
-                        return selectedDepartmentIds.Contains(idProp.GetInt32());
-                    }
-                    return false;
-                }).ToList() ?? new List<dynamic>();
-
-                // Simulate employee count (in real application, this would come from employee service)
-                var totalEmployees = selectedDepartmentIds.Sum(id => GetEmployeeCountByDepartment(id));
-
-                // Simulate sending notifications
-                await Task.Delay(1000); // Simulate processing time
-
-                // Here you would implement actual notification logic:
-                // - Get eligible employees from selected departments
-                // - Create notification records
-                // - Send emails/push notifications
-                // - Save notification history
-                return Json(new {
-                    success = true,
-                    message = "Gửi thông báo thành công!",
-                    sentCount = totalEmployees,
-                    departments = selectedDepartments.Select(d => 
-                    {
-                        if (d is JsonElement element && element.TryGetProperty("DepartmentName", out var nameProp))
-                        {
-                            return nameProp.GetString();
-                        }
-                        return "Unknown";
-                    }).ToArray()
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while sending notification");
-                return Json(new { success = false, message = "Đã xảy ra lỗi khi gửi thông báo. Vui lòng thử lại!" });
-            }
-        }
-
         [HttpGet("danh-sach-nhan-vien/{id}")]
         public async Task<IActionResult> DanhSachNhanVien(int id, string search, string status, int page = 1)
         {
@@ -801,24 +732,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
         }
 
-        private int GetEmployeeCountByDepartment(int departmentId)
-        {
-            // Simulate employee count per department
-            var employeeCounts = new Dictionary<int, int>
-            {
-                { 1, 15 }, // IT Department
-                { 2, 20 }, // Software Development
-                { 3, 12 }, // Data Analytics
-                { 4, 8 },  // QA Testing
-                { 5, 10 }, // Technical Support
-                { 6, 6 }   // Mobile Development
-            };
-
-            return employeeCounts.ContainsKey(departmentId) ? employeeCounts[departmentId] : 0;
-        }
-
-
-    
+        
 
         /// <summary>
         /// Danh sách khóa học của nhân viên
