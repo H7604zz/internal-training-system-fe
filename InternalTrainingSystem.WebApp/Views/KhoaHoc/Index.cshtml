@@ -33,37 +33,43 @@
         <!-- Filter Section -->
         <div class="filter-section">
             <h5 class="filter-title">
-                <i class="fas fa-filter me-2"></i>Bộ Lọc & Tìm Kiếm
+                <i class="fas fa-filter me-2"></i>Lọc Theo Trạng Thái
             </h5>
-            <form method="get" class="filter-form">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Tìm kiếm khóa học</label>
-                        <input type="text" class="form-control" name="searchTerm" 
-                               value="@ViewBag.SearchTerm" placeholder="Nhập tên khóa học...">
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">Trạng thái</label>
-                        <select class="form-select" name="status">
-                            <option value="">Tất cả trạng thái</option>
-                            <option value="@CourseStatus.Pending" selected="@(ViewBag.Status ==  CourseStatus.Pending)">Chờ phê duyệt</option>
-                            <option value="@CourseStatus.Approved" selected="@(ViewBag.Status == CourseStatus.Approved)">Đã phê duyệt</option>
-                            <option value="@CourseStatus.Rejected" selected="@(ViewBag.Status == CourseStatus.Rejected)">Bị từ chối</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">&nbsp;</label>
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn filter-btn flex-fill">
-                                <i class="fas fa-search me-2"></i>Lọc
-                            </button>
-                            <a href="@Url.Action("Index")" class="btn reset-btn flex-fill">
-                                <i class="fas fa-undo me-2"></i>Reset
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </form>
+            
+            <!-- Status Tabs -->
+            <ul class="nav nav-tabs status-tabs" id="statusTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link @(string.IsNullOrEmpty(ViewBag.Status) ? "active" : "")" 
+                       href="@Url.Action("Index", new { status = "", page = 1 })" 
+                       role="tab">
+                        <i class="fas fa-list me-2"></i>Tất cả
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link @(ViewBag.Status == CourseStatus.Pending ? "active" : "")" 
+                       href="@Url.Action("Index", new { status = CourseStatus.Pending, page = 1 })" 
+                       role="tab">
+                        <i class="fas fa-clock me-2"></i>Chờ phê duyệt
+                        
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link @(ViewBag.Status == CourseStatus.Approved ? "active" : "")" 
+                       href="@Url.Action("Index", new { status = CourseStatus.Approved, page = 1 })" 
+                       role="tab">
+                        <i class="fas fa-check-circle me-2"></i>Đã phê duyệt
+                        
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link @(ViewBag.Status == CourseStatus.Rejected ? "active" : "")" 
+                       href="@Url.Action("Index", new { status = CourseStatus.Rejected, page = 1 })" 
+                       role="tab">
+                        <i class="fas fa-times-circle me-2"></i>Bị từ chối
+                        
+                    </a>
+                </li>
+            </ul>
         </div>
 
         <!-- Course Table -->
@@ -186,7 +192,6 @@
                 "KhoaHoc",
                 new Dictionary<string, object>
                 {
-                    ["searchTerm"] = ViewBag.SearchTerm ?? "",
                     ["status"] = ViewBag.Status ?? ""
                 }
             ) { AriaLabel = "Phân trang khóa học", TotalItems = ViewBag.TotalItems })

@@ -27,7 +27,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpGet("")]
-        public async Task<IActionResult> Index(string searchTerm, string status, int page = 1)
+        public async Task<IActionResult> Index(string status, int page = 1)
         {
             try
             {
@@ -36,8 +36,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 
                 // Gọi API với các tham số filter và pagination - backend sẽ xử lý
                 var queryParams = $"?page={page}&pageSize={pageSize}";
-                if (!string.IsNullOrEmpty(searchTerm))
-                    queryParams += $"&search={Uri.EscapeDataString(searchTerm)}";
                 if (!string.IsNullOrEmpty(status))
                     queryParams += $"&status={Uri.EscapeDataString(status)}";
 
@@ -65,7 +63,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 ViewBag.TotalPages = totalPages;
                 ViewBag.PageSize = pageSize;
                 ViewBag.TotalItems = totalItems; // Tổng số bản ghi từ DB (đã được filter)
-                ViewBag.SearchTerm = searchTerm;
                 ViewBag.Status = status;
 
                 return View(courses);
