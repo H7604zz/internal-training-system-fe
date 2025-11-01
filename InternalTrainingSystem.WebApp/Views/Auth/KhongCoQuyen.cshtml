@@ -1,0 +1,214 @@
+@{
+    ViewData["Title"] = "Không có quyền truy cập";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <style>
+        .access-denied-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0 -15px;
+        }
+
+        .access-denied-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            padding: 60px 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            margin: 20px;
+        }
+
+        .access-denied-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+        }
+
+        .access-denied-icon i {
+            font-size: 48px;
+            color: white;
+        }
+
+        .access-denied-title {
+            color: #2c3e50;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            letter-spacing: -0.5px;
+        }
+
+        .access-denied-message {
+            color: #7f8c8d;
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .access-denied-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-secondary-custom {
+            background: transparent;
+            border: 2px solid #bdc3c7;
+            color: #7f8c8d;
+            padding: 10px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary-custom:hover {
+            border-color: #667eea;
+            color: #667eea;
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+
+        .error-code {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 30px 0;
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .error-code-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .error-code-text {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .access-denied-card {
+                padding: 40px 20px;
+                margin: 10px;
+            }
+            
+            .access-denied-title {
+                font-size: 24px;
+            }
+            
+            .access-denied-message {
+                font-size: 16px;
+            }
+            
+            .access-denied-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+}
+
+<div class="access-denied-container">
+    <div class="access-denied-card">
+        <div class="access-denied-icon">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+        
+        <h1 class="access-denied-title">Không có quyền truy cập</h1>
+        
+        <p class="access-denied-message">
+            Xin lỗi, bạn không có quyền truy cập vào trang này. 
+            Vui lòng liên hệ quản trị viên nếu bạn cho rằng đây là lỗi hệ thống.
+        </p>
+
+        <div class="error-code">
+            <div class="error-code-title">Mã lỗi: 403</div>
+            <div class="error-code-text">Forbidden - Truy cập bị từ chối</div>
+        </div>
+
+        <div class="access-denied-actions">
+            <a href="@Url.Action("Index", "TrangChu")" class="btn-primary-custom">
+                <i class="fas fa-home me-2"></i>Về trang chủ
+            </a>
+            <a href="javascript:history.back()" class="btn-secondary-custom">
+                <i class="fas fa-arrow-left me-2"></i>Quay lại
+            </a>
+        </div>
+
+        <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #ecf0f1;">
+            <p style="color: #bdc3c7; font-size: 14px; margin: 0;">
+                Nếu bạn cần trợ giúp, vui lòng liên hệ bộ phận hỗ trợ
+            </p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto redirect after 30 seconds if user doesn't take any action
+        setTimeout(function() {
+            if (confirm('Bạn có muốn quay về trang chủ không?')) {
+                window.location.href = '@Url.Action("Index", "TrangChu")';
+            }
+        }, 30000);
+
+        // Add some interactive effects
+        document.addEventListener('DOMContentLoaded', function() {
+            const card = document.querySelector('.access-denied-card');
+            const icon = document.querySelector('.access-denied-icon');
+            
+            // Add entrance animation
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'all 0.6s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 100);
+
+            // Add hover effect to icon
+            icon.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.1) rotate(10deg)';
+            });
+            
+            icon.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1) rotate(0deg)';
+            });
+        });
+    </script>
+}
