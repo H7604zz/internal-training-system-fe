@@ -5,59 +5,67 @@ using InternalTrainingSystem.WebApp.Extensions;
 namespace InternalTrainingSystem.WebApp.Models.DTOs
 {
     /// <summary>
-    /// DTO cho khóa học của nhân viên
+    /// DTO cho khóa học của nhân viên (match với API CourseListItemDto)
     /// </summary>
     public class EmployeeCourseDto
     {
+        // Properties từ API CourseListItemDto
+        public int Id { get; set; }
         public int CourseId { get; set; }
-        public string CourseCode { get; set; } = string.Empty;
         public string CourseName { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public string Duration { get; set; } = string.Empty;
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-        public string TrainerName { get; set; } = string.Empty;
-        public string DepartmentName { get; set; } = string.Empty;
+        public string? Code { get; set; }
+        public string? Description { get; set; }
+        public int Duration { get; set; }
+        public string Level { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+        public string CategoryName { get; set; } = string.Empty;
+        public bool IsActive { get; set; }
+        public bool IsOnline { get; set; }
+        public bool IsMandatory { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public string? Status { get; set; } = string.Empty; // Enrollment status: NotEnrolled, Enrolled, InProgress, Completed, Dropped
+        public List<DepartmnentViewDto> Departments { get; set; } = new();
+        public string? CreatedBy { get; set; } = string.Empty;
+        public DateTime? UpdatedDate { get; set; }
+        public string? UpdatedBy { get; set; } = string.Empty;
+
+        // Computed properties cho view
+        /// <summary>
+        /// Course code display (alias cho Code)
+        /// </summary>
+        public string CourseCode => Code ?? "N/A";
         
         /// <summary>
-        /// Cấp độ khóa học: Beginner, Intermediate, Advanced
+        /// Duration display với đơn vị
         /// </summary>
-        public string Level { get; set; } = CourseConstants.Levels.Beginner;
+        public string DurationDisplay => $"{Duration} giờ";
         
         /// <summary>
-        /// Trạng thái phản hồi: Pending, Accepted, Declined
+        /// Department names joined
         /// </summary>
-        public string ResponseType { get; set; } = "Pending";
+        public string DepartmentName => string.Join(", ", Departments?.Select(d => d.DepartmentName) ?? new List<string>());
         
         /// <summary>
-        /// Ngày phản hồi
+        /// Trainer name (alias cho CreatedBy)
         /// </summary>
+        public string TrainerName => CreatedBy ?? "N/A";
+        
+        /// <summary>
+        /// Response type (alias cho Status)
+        /// </summary>
+        public string ResponseType => Status ?? "NotEnrolled";
+        
+        /// <summary>
+        /// Invited date (alias cho CreatedDate)
+        /// </summary>
+        public DateTime InvitedDate => CreatedDate;
+        
+        // Mock data properties (có thể bổ sung sau)
+        //public DateTime StartDate { get; set; } = DateTime.Now.AddDays(30);
+        //public DateTime EndDate { get; set; } = DateTime.Now.AddDays(60);
         public DateTime? ResponseDate { get; set; }
-        
-        /// <summary>
-        /// Ghi chú từ nhân viên
-        /// </summary>
         public string? Note { get; set; }
-        
-        /// <summary>
-        /// Ngày được mời tham gia
-        /// </summary>
-        public DateTime InvitedDate { get; set; }
-        
-        /// <summary>
-        /// Số lượng học viên tối đa
-        /// </summary>
-        public int MaxParticipants { get; set; }
-        
-        /// <summary>
-        /// Số lượng học viên hiện tại
-        /// </summary>
-        public int CurrentParticipants { get; set; }
-        
-        /// <summary>
-        /// Trạng thái khóa học: Open, InProgress, Completed, Cancelled
-        /// </summary>
-        public string Status { get; set; } = "Open";
+        public string CourseStatus { get; set; } = "Open";
         
         /// <summary>
         /// Hiển thị thời gian phản hồi formatted
@@ -67,46 +75,53 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         /// <summary>
         /// Hiển thị thời gian bắt đầu formatted
         /// </summary>
-        public string StartDateDisplay => StartDate.ToString("dd/MM/yyyy");
+        //public string StartDateDisplay => StartDate.ToString("dd/MM/yyyy");
         
         /// <summary>
         /// Hiển thị thời gian kết thúc formatted
         /// </summary>
-        public string EndDateDisplay => EndDate.ToString("dd/MM/yyyy");
-        
-        /// <summary>
-        /// Hiển thị thời gian được mời formatted
-        /// </summary>
-        public string InvitedDateDisplay => InvitedDate.ToString("dd/MM/yyyy HH:mm");
+        //public string EndDateDisplay => EndDate.ToString("dd/MM/yyyy");
         
         /// <summary>
         /// Tính số ngày còn lại để phản hồi (nếu còn pending)
         /// </summary>
-        public int DaysLeftToRespond => ResponseType == "Pending" ? Math.Max(0, (StartDate - DateTime.Now).Days) : 0;
+        //public int DaysLeftToRespond => ResponseType == "NotEnrolled" ? Math.Max(0, (StartDate - DateTime.Now).Days) : 0;
         
         /// <summary>
         /// Kiểm tra có phải đang chờ phản hồi không
         /// </summary>
-        public bool IsPending => ResponseType == "Pending";
+        public bool IsPending => ResponseType == "NotEnrolled";
         
         /// <summary>
         /// Kiểm tra đã tham gia hay chưa
         /// </summary>
-        public bool IsAccepted => ResponseType == "Accepted";
+        public bool IsAccepted => ResponseType == "Enrolled";
         
         /// <summary>
         /// Kiểm tra đã từ chối hay chưa
         /// </summary>
-        public bool IsDeclined => ResponseType == "Declined";
+        public bool IsDeclined => ResponseType == "Dropped";
+        
+        /// <summary>
+        /// Kiểm tra đang trong quá trình học hay không
+        /// </summary>
+        public bool IsInProgress => ResponseType == "InProgress";
+        
+        /// <summary>
+        /// Kiểm tra đã hoàn thành hay chưa
+        /// </summary>
+        public bool IsCompleted => ResponseType == "Completed";
         
         /// <summary>
         /// Hiển thị badge class cho trạng thái
         /// </summary>
         public string StatusBadgeClass => ResponseType.ToLower() switch
         {
-            "accepted" => "badge-success",
-            "declined" => "badge-danger",
-            "pending" => "badge-warning",
+            "enrolled" => "badge-success",
+            "inprogress" => "badge-info",
+            "completed" => "badge-primary",
+            "dropped" => "badge-danger",
+            "notenrolled" => "badge-warning",
             _ => "badge-secondary"
         };
         
@@ -115,9 +130,11 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         /// </summary>
         public string StatusIcon => ResponseType.ToLower() switch
         {
-            "accepted" => "fa-check-circle",
-            "declined" => "fa-times-circle",
-            "pending" => "fa-clock",
+            "enrolled" => "fa-check-circle",
+            "inprogress" => "fa-play-circle",
+            "completed" => "fa-trophy",
+            "dropped" => "fa-times-circle",
+            "notenrolled" => "fa-clock",
             _ => "fa-question-circle"
         };
         
@@ -126,16 +143,18 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         /// </summary>
         public string StatusText => ResponseType.ToLower() switch
         {
-            "accepted" => "Đã tham gia",
-            "declined" => "Đã từ chối",
-            "pending" => "Chờ phản hồi",
-            _ => "Không xác định"
+            "enrolled" => "Đã tham gia",
+            "inprogress" => "Đang học",
+            "completed" => "Đã hoàn thành",
+            "dropped" => "Đã từ chối",
+            "notenrolled" => "Chờ phản hồi",
+            _ => "N/A"
         };
         
         /// <summary>
         /// Hiển thị badge class cho trạng thái khóa học
         /// </summary>
-        public string CourseStatusBadgeClass => Status.ToLower() switch
+        public string CourseStatusBadgeClass => CourseStatus.ToLower() switch
         {
             "open" => "badge-primary",
             "inprogress" => "badge-warning",
@@ -147,13 +166,13 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         /// <summary>
         /// Hiển thị text cho trạng thái khóa học
         /// </summary>
-        public string CourseStatusText => Status.ToLower() switch
+        public string CourseStatusText => CourseStatus.ToLower() switch
         {
             "open" => "Đang mở",
             "inprogress" => "Đang diễn ra",
             "completed" => "Đã hoàn thành",
             "cancelled" => "Đã hủy",
-            _ => "Không xác định"
+            _ => "N/A"
         };
         
         /// <summary>
@@ -165,7 +184,6 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         /// Hiển thị badge class cho cấp độ
         /// </summary>
         public string LevelBadgeClass => Level.GetLevelBadgeClass();
-       
     }
 
     /// <summary>
@@ -177,7 +195,7 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public int CourseId { get; set; }
         
         [Required]
-        public string ResponseType { get; set; } = string.Empty; // Accepted, Declined
+        public string ResponseType { get; set; } = string.Empty; // NotEnrolled, Enrolled, InProgress, Completed, Dropped
         
         public string? Note { get; set; }
     }

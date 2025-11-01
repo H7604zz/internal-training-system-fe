@@ -1,3 +1,4 @@
+@using InternalTrainingSystem.WebApp.Constants
 @model List<InternalTrainingSystem.WebApp.Models.DTOs.EmployeeCourseDto>
 @{
     ViewData["Title"] = "Khóa Học Của Tôi";
@@ -18,26 +19,6 @@
                             <i class="fas fa-graduation-cap me-3"></i>Khóa Học Của Tôi
                         </h1>
                         <p class="page-subtitle">Quản lý và theo dõi các khóa học bạn được mời tham gia</p>
-
-                        <!-- Statistics -->
-                        <div class="stats-row">
-                            <div class="stat-item">
-                                <div class="stat-number">@ViewBag.TotalCourses</div>
-                                <div class="stat-label">Tổng khóa học</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-number">@ViewBag.AcceptedCount</div>
-                                <div class="stat-label">Đã tham gia</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-number">@ViewBag.PendingCount</div>
-                                <div class="stat-label">Chờ phản hồi</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-number">@ViewBag.DeclinedCount</div>
-                                <div class="stat-label">Đã từ chối</div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -49,19 +30,19 @@
                 <div class="filter-tabs">
                     <a href="@Url.Action("DanhSachKhoaHocCuaToi", "KhoaHoc", new { status = "all", page = 1 })" 
                        class="filter-tab @(ViewBag.CurrentStatus == "all" ? "active" : "")">
-                        <i class="fas fa-list me-2"></i>Tất cả (@ViewBag.TotalCourses)
+                        <i class="fas fa-list me-2"></i>Tất cả 
                     </a>
-                    <a href="@Url.Action("DanhSachKhoaHocCuaToi", "KhoaHoc", new { status = "pending", page = 1 })" 
-                       class="filter-tab @(ViewBag.CurrentStatus == "pending" ? "active" : "")">
-                        <i class="fas fa-clock me-2"></i>Chờ phản hồi (@ViewBag.PendingCount)
+                    <a href="@Url.Action("DanhSachKhoaHocCuaToi", "KhoaHoc", new { status = EnrollmentConstants.Status.NotEnrolled, page = 1 })" 
+                       class="filter-tab @(ViewBag.CurrentStatus == EnrollmentConstants.Status.NotEnrolled ? "active" : "")">
+                        <i class="fas fa-clock me-2"></i>Chờ phản hồi
                     </a>
-                    <a href="@Url.Action("DanhSachKhoaHocCuaToi", "KhoaHoc", new { status = "accepted", page = 1 })" 
-                       class="filter-tab @(ViewBag.CurrentStatus == "accepted" ? "active" : "")">
-                        <i class="fas fa-check-circle me-2"></i>Đã tham gia (@ViewBag.AcceptedCount)
+                    <a href="@Url.Action("DanhSachKhoaHocCuaToi", "KhoaHoc", new { status = EnrollmentConstants.Status.Enrolled, page = 1 })" 
+                       class="filter-tab @(ViewBag.CurrentStatus == EnrollmentConstants.Status.Enrolled ? "active" : "")">
+                        <i class="fas fa-check-circle me-2"></i>Đã tham gia
                     </a>
-                    <a href="@Url.Action("DanhSachKhoaHocCuaToi", "KhoaHoc", new { status = "declined", page = 1 })" 
-                       class="filter-tab @(ViewBag.CurrentStatus == "declined" ? "active" : "")">
-                        <i class="fas fa-times-circle me-2"></i>Đã từ chối (@ViewBag.DeclinedCount)
+                    <a href="@Url.Action("DanhSachKhoaHocCuaToi", "KhoaHoc", new { status = EnrollmentConstants.Status.Completed, page = 1 })"
+                       class="filter-tab @(ViewBag.CurrentStatus == EnrollmentConstants.Status.Completed ? "active" : "")">
+                        <i class="fas fa-check-circle me-2"></i>Đã hoàn thành
                     </a>
                 </div>
             </div>
@@ -85,7 +66,7 @@
                                                 <i class="fas fa-tag me-1"></i>@course.CourseCode
                                             </span>
                                             <span class="course-duration">
-                                                <i class="fas fa-clock me-1"></i>@course.Duration
+                                                <i class="fas fa-clock me-1"></i>@course.DurationDisplay
                                             </span>
                                         </div>
                                     </div>
@@ -107,10 +88,10 @@
                                     <p class="course-description">@course.Description</p>
                                     
                                     <div class="course-details">
-                                        <div class="detail-row">
-                                            <i class="fas fa-calendar-alt me-2"></i>
-                                            <strong>Thời gian: </strong> @course.StartDateDisplay đến @course.EndDateDisplay
-                                        </div>
+                                        @* <div class="detail-row"> *@
+                                        @*     <i class="fas fa-calendar-alt me-2"></i> *@
+                                        @*     <strong>Thời gian: </strong> @course.StartDateDisplay đến @course.EndDateDisplay *@
+                                        @* </div> *@
                                         <div class="detail-row">
                                             <i class="fas fa-user-tie me-2"></i>
                                             <strong>Giảng viên: </strong> @course.TrainerName
@@ -119,14 +100,6 @@
                                             <i class="fas fa-building me-2"></i>
                                             <strong>Phòng ban: </strong> @course.DepartmentName
                                         </div>
-                                        <div class="detail-row">
-                                            <i class="fas fa-users me-2"></i>
-                                            <strong>Học viên: </strong> @course.CurrentParticipants/@course.MaxParticipants
-                                        </div>
-                                        <div class="detail-row">
-                                            <i class="fas fa-paper-plane me-2"></i>
-                                            <strong>Ngày mời: </strong> @course.InvitedDateDisplay
-                                        </div>
                                         @if (course.ResponseDate.HasValue)
                                         {
                                             <div class="detail-row">
@@ -134,13 +107,13 @@
                                                 <strong>Ngày phản hồi: </strong> @course.ResponseDateDisplay
                                             </div>
                                         }
-                                        @if (course.IsPending && course.DaysLeftToRespond > 0)
-                                        {
-                                            <div class="detail-row text-warning">
-                                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                                <strong>Còn @course.DaysLeftToRespond ngày để phản hồi</strong>
-                                            </div>
-                                        }
+                                        @* @if (course.IsPending && course.DaysLeftToRespond > 0) *@
+                                        @* { *@
+                                        @*     <div class="detail-row text-warning"> *@
+                                        @*         <i class="fas fa-exclamation-triangle me-2"></i> *@
+                                        @*         <strong>Còn @course.DaysLeftToRespond ngày để phản hồi</strong> *@
+                                        @*     </div> *@
+                                        @* } *@
                                     </div>
 
                                     @if (!string.IsNullOrEmpty(course.Note))
@@ -156,10 +129,10 @@
                                 @if (course.IsPending)
                                 {
                                     <div class="course-actions">
-                                        <button type="button" class="btn btn-success" onclick="showResponseModal(@course.CourseId, 'Accepted', '@course.CourseName')">
+                                        <button type="button" class="btn btn-success" onclick="showResponseModal(@course.CourseId, 'Enrolled', '@course.CourseName')">
                                             <i class="fas fa-check me-1"></i>Tham gia
                                         </button>
-                                        <button type="button" class="btn btn-danger" onclick="showResponseModal(@course.CourseId, 'Declined', '@course.CourseName')">
+                                        <button type="button" class="btn btn-danger" onclick="showResponseModal(@course.CourseId, 'Dropped', '@course.CourseName')">
                                             <i class="fas fa-times me-1"></i>Từ chối
                                         </button>
                                     </div>
@@ -167,7 +140,7 @@
                                 else if (course.IsAccepted && course.Status == "Open")
                                 {
                                     <div class="course-actions">
-                                        <button type="button" class="btn btn-outline-warning" onclick="showResponseModal(@course.CourseId, 'Declined', '@course.CourseName')">
+                                        <button type="button" class="btn btn-outline-warning" onclick="showResponseModal(@course.CourseId, 'Dropped', '@course.CourseName')">
                                             <i class="fas fa-times me-1"></i>Hủy tham gia
                                         </button>
                                     </div>
@@ -204,9 +177,6 @@
                         else
                         {
                             <p>Không có khóa học nào ở trạng thái này.</p>
-                            <a href="@Url.Action("DanhSachKhoaHocCuaToi", "KhoaHoc", new { status = "all" })" class="btn btn-primary">
-                                <i class="fas fa-list me-1"></i>Xem tất cả khóa học
-                            </a>
                         }
                     </div>
                 }
@@ -268,12 +238,12 @@
             document.getElementById('courseName').textContent = courseName;
             document.getElementById('note').value = '';
             
-            const responseText = responseType === 'Accepted' ? 'Tham gia khóa học' : 'Từ chối tham gia';
+            const responseText = responseType === 'Enrolled' ? 'Tham gia khóa học' : 'Từ chối tham gia';
             document.getElementById('responseText').textContent = responseText;
             
             const confirmBtn = document.getElementById('confirmBtn');
-            confirmBtn.className = responseType === 'Accepted' ? 'btn btn-success' : 'btn btn-danger';
-            confirmBtn.innerHTML = responseType === 'Accepted' ? '<i class="fas fa-check me-1"></i>Xác nhận tham gia' : '<i class="fas fa-times me-1"></i>Xác nhận từ chối';
+            confirmBtn.className = responseType === 'Enrolled' ? 'btn btn-success' : 'btn btn-danger';
+            confirmBtn.innerHTML = responseType === 'Enrolled' ? '<i class="fas fa-check me-1"></i>Xác nhận tham gia' : '<i class="fas fa-times me-1"></i>Xác nhận từ chối';
             
             const modal = new bootstrap.Modal(document.getElementById('responseModal'));
             modal.show();

@@ -2,6 +2,7 @@ using InternalTrainingSystem.WebApp.Models.DTOs;
 using InternalTrainingSystem.WebApp.Constants;
 using InternalTrainingSystem.WebApp.Extensions;
 using InternalTrainingSystem.WebApp.Helpers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using System.Text;
@@ -710,76 +711,51 @@ namespace InternalTrainingSystem.WebApp.Controllers
         /// Danh sách khóa học của nhân viên
         /// </summary>
         [HttpGet("danh-sach-khoa-hoc-cua-toi")]
+        [Authorize(Roles = UserRoles.Staff)]
         public async Task<IActionResult> DanhSachKhoaHocCuaToi(string status = "all", int page = 1)
         {
             try
             {
+                var id = HttpContext.Session.GetString("Id");
                 // Sử dụng page size cố định từ constants cho khóa học của nhân viên
                 var pageSize = PaginationConstants.EmployeeCoursePageSize;
-                
-                // Kiểm tra đăng nhập
-                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
-                {
-                    return RedirectToAction("DangNhap", "Auth");
-                }
 
-                // Lấy thông tin nhân viên từ session
-                var employeeId = HttpContext.Session.GetString("EmployeeId") ?? "He173343"; // fallback for testing
-                if (string.IsNullOrEmpty(employeeId))
-                {
-                    TempData["Error"] = "Không tìm thấy thông tin nhân viên.";
-                    return RedirectToAction("Index", "TrangChu");
-                }
+                // Gọi API với tham số phân trang và filter
+                var queryParams = $"?userId={id}&page={page}&pageSize={pageSize}";
+                if (!string.IsNullOrEmpty(status) && status != "all")
+                    queryParams += $"&status={Uri.EscapeDataString(status)}";
 
-                // Lấy danh sách khóa học từ API
-                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/employees/{employeeId}/courses"));
-                
-                List<EmployeeCourseDto> allCourses;
+                // Lấy danh sách khóa học từ API - API sẽ tự lấy userId từ JWT token
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/user/courses{queryParams}"));
+
+                PagedResult<EmployeeCourseDto> pagedResult;
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
-                    allCourses = JsonSerializer.Deserialize<List<EmployeeCourseDto>>(responseContent, new JsonSerializerOptions
+                    pagedResult = JsonSerializer.Deserialize<PagedResult<EmployeeCourseDto>>(responseContent, new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
-                    }) ?? new List<EmployeeCourseDto>();
+                    }) ?? new PagedResult<EmployeeCourseDto>();
                 }
                 else
                 {
-                    _logger.LogWarning("Failed to get employee courses for {EmployeeId}. Status: {StatusCode}", employeeId, response.StatusCode);
-                    allCourses = new List<EmployeeCourseDto>();
+                    pagedResult = new PagedResult<EmployeeCourseDto>();
                 }
 
-                // Lọc theo trạng thái
-                var filteredCourses = status switch
-                {
-                    var s when s.Equals(EmployeeResponseType.Accepted, StringComparison.OrdinalIgnoreCase) => allCourses.Where(c => c.ResponseType == EmployeeResponseType.Accepted).ToList(),
-                    var s when s.Equals(EmployeeResponseType.Declined, StringComparison.OrdinalIgnoreCase) => allCourses.Where(c => c.ResponseType == EmployeeResponseType.Declined).ToList(),
-                    var s when s.Equals(EmployeeResponseType.Pending, StringComparison.OrdinalIgnoreCase) => allCourses.Where(c => c.ResponseType == EmployeeResponseType.Pending).ToList(),
-                    _ => allCourses
-                };
+                // Lấy danh sách courses từ pagedResult
+                var courses = pagedResult.Items?.ToList() ?? new List<EmployeeCourseDto>();
 
-                // Phân trang
-                var totalItems = filteredCourses.Count;
-                var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
-                var pagedCourses = filteredCourses
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToList();
-
-                // Thống kê
-                ViewBag.TotalCourses = allCourses.Count;
-                ViewBag.AcceptedCount = allCourses.Count(c => c.ResponseType == "Accepted");
-                ViewBag.DeclinedCount = allCourses.Count(c => c.ResponseType == "Declined");
-                ViewBag.PendingCount = allCourses.Count(c => c.ResponseType == "Pending");
-
-                // Phân trang
+                // Thống kê số lượng theo trạng thái
+                var totalCourses = pagedResult.TotalCount;
+               
+                // ViewBag cho phân trang và filter
                 ViewBag.CurrentPage = page;
-                ViewBag.TotalPages = totalPages;
+                ViewBag.TotalPages = pagedResult.TotalPages;
                 ViewBag.PageSize = pageSize;
-                ViewBag.TotalItems = totalItems;
+                ViewBag.TotalItems = totalCourses;
                 ViewBag.CurrentStatus = status;
 
-                return View(pagedCourses);
+                return View(courses);
             }
             catch (Exception ex)
             {
@@ -793,6 +769,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         /// Phản hồi tham gia khóa học
         /// </summary>
         [HttpPost("phan-hoi-khoa-hoc")]
+        [Authorize(Roles = UserRoles.Staff)]
         public async Task<IActionResult> PhanHoiKhoaHoc(int courseId, string responseType, string? note = null)
         {
             try
@@ -802,15 +779,9 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     return Json(new { success = false, message = "Phiên đăng nhập đã hết hạn" });
                 }
 
-                var employeeId = HttpContext.Session.GetString("EmployeeId");
-                if (string.IsNullOrEmpty(employeeId))
-                {
-                    return Json(new { success = false, message = "Không tìm thấy thông tin nhân viên" });
-                }
-
                 var requestBody = new
                 {
-                    EmployeeId = employeeId,
+                    //EmployeeId = employeeId,
                     CourseId = courseId,
                     ResponseType = responseType,
                     Note = note
@@ -841,7 +812,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error occurred while responding to course {courseId} for employee {HttpContext.Session.GetString("EmployeeId")}");
                 return Json(new { success = false, message = "Đã xảy ra lỗi khi cập nhật phản hồi" });
             }
         }
