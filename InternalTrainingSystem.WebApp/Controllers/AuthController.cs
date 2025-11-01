@@ -19,8 +19,9 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         /// <summary>
-        /// Trang đăng nhập - URL sẽ là /Auth/dang-nhap
+        /// Trang đăng nhập - URL sẽ là /dang-nhap
         /// </summary>
+        [HttpGet("/dang-nhap")]
         public IActionResult DangNhap(string? returnUrl = null)
         {
             // Kiểm tra nếu user đã đăng nhập
@@ -40,7 +41,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         /// <summary>
         /// Xử lý đăng nhập
         /// </summary>
-        [HttpPost]
+        [HttpPost("/dang-nhap")]
         public async Task<IActionResult> DangNhap(LoginRequestDto model, string? returnUrl = null)
         {
             try
@@ -58,12 +59,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     // Lưu thông tin user vào session nếu cần
                     if (result.User != null)
                     {
-                        HttpContext.Session.SetString("UserFullName", result.User.FullName);
-                        HttpContext.Session.SetString("UserEmail", result.User.Email);
-                        if (!string.IsNullOrEmpty(result.User.EmployeeId))
-                        {
-                            HttpContext.Session.SetString("EmployeeId", result.User.EmployeeId);
-                        }
+                        Extensions.SessionExtensions.SetUserInfo(HttpContext.Session, result.User.FullName, result.User.Email, result.User.Id);
                     }
 
                     if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
@@ -89,8 +85,9 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         /// <summary>
-        /// Trang quên mật khẩu - URL sẽ là /Auth/quen-mat-khau
+        /// Trang quên mật khẩu - URL sẽ là /quen-mat-khau
         /// </summary>
+        [HttpGet("/quen-mat-khau")]
         public IActionResult QuenMatKhau()
         {
             return View();
@@ -99,7 +96,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         /// <summary>
         /// Xử lý quên mật khẩu
         /// </summary>
-        [HttpPost]
+        [HttpPost("/quen-mat-khau")]
         public async Task<IActionResult> QuenMatKhau(ForgotPasswordRequestDto model)
         {
             try
@@ -132,6 +129,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         /// <summary>
         /// Đăng xuất
         /// </summary>
+        [HttpGet("/dang-xuat")]
         public async Task<IActionResult> DangXuat()
         {
             try
@@ -148,6 +146,15 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 HttpContext.Session.Clear();
                 return RedirectToAction("DangNhap");
             }
+        }
+
+        /// <summary>
+        /// Trang thông báo không có quyền truy cập
+        /// </summary>
+        [HttpGet("/khong-co-quyen")]
+        public IActionResult KhongCoQuyen()
+        {
+            return View();
         }
 
         /// <summary>
@@ -415,7 +422,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
                 // Xóa token khỏi session dù API có thành công hay không
                 TokenHelpers.ClearTokens(_httpContextAccessor);
-
+                Extensions.SessionExtensions.ClearUserInfo(HttpContext.Session);
                 if (response.IsSuccessStatusCode)
                 {
                     var logoutResponse = JsonSerializer.Deserialize<LogoutResponseDto>(responseContent, new JsonSerializerOptions

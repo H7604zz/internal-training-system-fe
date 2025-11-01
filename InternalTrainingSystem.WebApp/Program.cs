@@ -25,6 +25,20 @@ builder.Services.AddSession(options =>
 // Add HttpContextAccessor
 builder.Services.AddHttpContextAccessor();
 
+// Configure Authentication
+builder.Services.AddAuthentication("CustomCookie")
+    .AddCookie("CustomCookie", options =>
+    {
+        options.LoginPath = "/dang-nhap";
+        options.LogoutPath = "/dang-xuat";
+        options.AccessDeniedPath = "/khong-co-quyen";
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+        options.SlidingExpiration = true;
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+    });
+
 // Register the authentication handler
 builder.Services.AddTransient<AuthenticationHandler>();
 
@@ -54,6 +68,9 @@ app.UseStaticFiles();
 app.UseSession();
 
 app.UseRouting();
+
+// Add authentication and authorization
+app.UseAuthentication();
 
 // Use custom authentication middleware
 app.UseMiddleware<AuthenticationMiddleware>();
