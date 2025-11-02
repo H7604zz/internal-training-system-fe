@@ -1,3 +1,5 @@
+using InternalTrainingSystem.WebApp.Constants;
+
 namespace InternalTrainingSystem.WebApp.Models.DTOs
 {
     public class ClassDto
@@ -8,17 +10,12 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string CourseName { get; set; } = string.Empty;
         public string MentorId { get; set; } = string.Empty;
         public string MentorName { get; set; } = string.Empty;
-        public List<ClassStudentDto> Students { get; set; } = new();
+        public int MaxStudents { get; set; } = 30; // Số lượng sinh viên tối đa
         public DateTime CreatedDate { get; set; }
         public bool IsActive { get; set; }
-        public int MaxStudents { get; set; } = 30; // Số lượng sinh viên tối đa
-        public string CreatedBy { get; set; } = string.Empty; // Người tạo lớp
-        
-        // Computed properties
-        public int CurrentStudentCount => Students?.Count ?? 0;
-        public string Status => IsActive ? "Hoạt động" : "Không hoạt động";
-        public string StudentCountDisplay => $"{CurrentStudentCount}/{MaxStudents}";
+        public string Status { get; set; }  = ClassConstants.Status.Scheduled;
     }
+
 
     public class ClassStudentDto
     {

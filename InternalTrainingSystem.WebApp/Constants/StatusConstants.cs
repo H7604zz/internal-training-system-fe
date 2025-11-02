@@ -184,4 +184,19 @@ namespace InternalTrainingSystem.WebApp.Constants
         public const string Unauthorized = "UNAUTHORIZED";
         public const string Forbidden = "FORBIDDEN";
     }
+
+    /// <summary>
+    /// Constants for Error Codes
+    /// </summary>
+    public static class ClassConstants
+    {
+        public static class Status
+        {
+            public const string Created = "Created";
+            public const string Completed = "Completed";
+            public const string Cancelled = "Cancelled";
+            public const string Scheduled = "Scheduled";
+        }
+    }
+
 }

@@ -32,10 +32,9 @@
                             <thead class="bg-primary text-white">
                                 <tr>
                                     <th class="text-center" style="width: 5%;">#ID</th>
-                                    <th style="width: 25%;">Tên Lớp</th>
-                                    <th style="width: 23%;">Khóa Học</th>
+                                    <th style="width: 30%;">Tên Lớp</th>
+                                    <th style="width: 28%;">Khóa Học</th>
                                     <th style="width: 15%;">Mentor</th>
-                                    <th class="text-center" style="width: 10%;">Sỹ Số</th>
                                     <th class="text-center" style="width: 12%;">Trạng Thái</th>
                                     <th class="text-center" style="width: 9%;">Thao Tác</th>
                                 </tr>
@@ -56,9 +55,6 @@
                                             <td title="@classItem.MentorName" class="text-truncate-hover">
                                                 <i class="fas fa-user-tie me-1 text-secondary"></i>
                                                 @classItem.MentorName
-                                            </td>
-                                            <td class="text-center">
-                                                <span class="badge bg-info">@classItem.StudentCountDisplay</span>
                                             </td>
                                             <td class="text-center">
                                                 @if (classItem.IsActive)
