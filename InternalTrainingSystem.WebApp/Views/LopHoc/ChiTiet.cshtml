@@ -1,4 +1,5 @@
-@model InternalTrainingSystem.WebApp.Models.DTOs.ClassDto
+@model InternalTrainingSystem.WebApp.Models.DTOs.ClassDetailDto
+
 @{
     ViewData["Title"] = "Chi Tiết Lớp Học - " + Model.ClassName;
 }
@@ -9,19 +10,6 @@
 }
 
 <div class="container-fluid">
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a href="@Url.Action("Index")" class="text-decoration-none">
-                    <i class="fas fa-users me-1"></i>Danh Sách Lớp Học
-                </a>
-            </li>
-            <li class="breadcrumb-item active" aria-current="page">
-                Chi Tiết Lớp Học
-            </li>
-        </ol>
-    </nav>
 
     <!-- Header -->
     <div class="row mb-4">
@@ -83,48 +71,25 @@
             <div class="card detail-card h-100">
                 <div class="detail-header">
                     <h5 class="mb-0">
-                        <i class="fas fa-calendar me-2"></i>Thông Tin Thời Gian & Trạng Thái
+                        <i class="fas fa-info me-2"></i>Thông Tin Lớp Học
                     </h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-borderless">
                         <tr>
-                            <td class="info-label">Ngày Tạo:</td>
-                            <td class="info-value">
-                                <i class="fas fa-calendar-alt me-2 text-muted"></i>
-                                @Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="info-label">Tạo Bởi:</td>
-                            <td class="info-value">
-                                <i class="fas fa-user-cog me-2 text-secondary"></i>
-                                @Model.CreatedBy
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="info-label">Sỹ Số:</td>
+                            <td class="info-label">Số Lượng Nhân Viên:</td>
                             <td class="info-value">
                                 <span class="badge student-count-badge fs-6">
-                                    @Model.StudentCountDisplay sinh viên
+                                    @Model.Employees.Count nhân viên
                                 </span>
                             </td>
                         </tr>
                         <tr>
                             <td class="info-label">Trạng Thái:</td>
                             <td class="info-value">
-                                @if (Model.IsActive)
-                                {
-                                    <span class="badge status-active fs-6">
-                                        <i class="fas fa-check-circle me-1"></i>Hoạt động
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="badge status-inactive fs-6">
-                                        <i class="fas fa-pause-circle me-1"></i>Không hoạt động
-                                    </span>
-                                }
+                                <span class="badge status-active fs-6">
+                                    <i class="fas fa-check-circle me-1"></i>Hoạt động
+                                </span>
                             </td>
                         </tr>
                     </table>
@@ -140,15 +105,12 @@
                 <div class="detail-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">
-                            <i class="fas fa-users me-2"></i>Danh Sách Sinh Viên
+                            <i class="fas fa-users me-2"></i>Danh Sách Nhân Viên
                         </h5>
-                        <span class="badge bg-light text-dark">
-                            <strong>@Model.CurrentStudentCount</strong> sinh viên
-                        </span>
                     </div>
                 </div>
                 <div class="card-body p-0">
-                    @if (Model.Students != null && Model.Students.Any())
+                    @if (Model.Employees != null && Model.Employees.Any())
                     {
                         <div class="table-responsive">
                             <table class="table student-table table-hover mb-0">
@@ -161,29 +123,26 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @for (int i = 0; i < Model.Students.Count; i++)
+                                    @for (int i = 0; i < Model.Employees.Count; i++)
                                     {
-                                        var student = Model.Students[i];
+                                        var staff = Model.Employees[i];
                                         <tr>
                                             <td class="text-center fw-bold">@(i + 1)</td>
                                             <td>
-                                                <span class="badge bg-secondary text-white">@student.StudentId</span>
+                                                <span>@staff.EmployeeId</span>
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <div class="student-avatar">
-                                                        <i class="fas fa-user"></i>
-                                                    </div>
                                                     <div>
-                                                        <div class="fw-semibold">@student.StudentName</div>
+                                                        <div class="fw-semibold">@staff.FullName</div>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <i class="fas fa-envelope me-2 text-muted"></i>
-                                                    <a href="mailto:@student.StudentEmail" 
-                                                       class="email-link">@student.StudentEmail</a>
+                                                    <a href="mailto:@staff.Email"
+                                                       class="email-link">@staff.Email</a>
                                                 </div>
                                             </td>
                                         </tr>
@@ -196,31 +155,9 @@
                     {
                         <div class="empty-state">
                             <i class="fas fa-user-slash fa-3x"></i>
-                            <h5>Chưa có sinh viên nào</h5>
-                            <p>Lớp học này hiện tại chưa có sinh viên nào được ghi danh.</p>
+                            <h5>Chưa có nhân viên nào</h5>
+                            <p>Lớp học này hiện tại chưa có nhân viên nào được ghi danh.</p>
                         </div>
-                    }
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Action Buttons -->
-    <div class="row action-buttons">
-        <div class="col-12">
-            <div class="d-flex justify-content-between">
-                <a href="@Url.Action("Index")" class="btn action-btn action-btn-list">
-                    <i class="fas fa-list me-2"></i>Danh Sách Lớp Học
-                </a>
-                <div>
-                    @if (Model.IsActive)
-                    {
-                        <button class="btn action-btn action-btn-edit me-2" onclick="alert('Chức năng sẽ được phát triển')">
-                            <i class="fas fa-edit me-2"></i>Chỉnh Sửa
-                        </button>
-                        <button class="btn action-btn action-btn-add" onclick="alert('Chức năng sẽ được phát triển')">
-                            <i class="fas fa-user-plus me-2"></i>Thêm Sinh Viên
-                        </button>
                     }
                 </div>
             </div>

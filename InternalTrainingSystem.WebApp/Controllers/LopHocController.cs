@@ -74,35 +74,34 @@ namespace InternalTrainingSystem.WebApp.Controllers
             try
             {
                 // Gọi API để lấy chi tiết lớp học
-                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/classes/{id}"));
-                
-                ClassDto? classDetail = null;
-                if (response.IsSuccessStatusCode)
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/class/{id}"));
+                if (!response.IsSuccessStatusCode)
                 {
-                    var responseContent = await response.Content.ReadAsStringAsync();
-                    classDetail = JsonSerializer.Deserialize<ClassDto>(responseContent, new JsonSerializerOptions
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                     {
-                        PropertyNameCaseInsensitive = true
-                    });
-                }
-                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    TempData["Error"] = "Không tìm thấy lớp học.";
+                        TempData["Error"] = "Không tìm thấy lớp học.";
+                    }
+                    else
+                    {
+                        TempData["Error"] = "Đã xảy ra lỗi khi tải chi tiết khóa học.";
+                    }
                     return RedirectToAction("Index");
                 }
-                else
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var classDetail = JsonSerializer.Deserialize<ClassDetailDto>(responseContent, new JsonSerializerOptions
                 {
-                    var allClasses = new List<ClassDto>();
-                    classDetail = allClasses.FirstOrDefault(c => c.ClassId == id);
-                }
+                    PropertyNameCaseInsensitive = true
+                });
 
                 if (classDetail == null)
                 {
-                    TempData["Error"] = "Không tìm thấy lớp học.";
+                    TempData["Error"] = "Không tìm thấy khóa học.";
                     return RedirectToAction("Index");
                 }
 
                 return View(classDetail);
+
             }
             catch (Exception ex)
             {

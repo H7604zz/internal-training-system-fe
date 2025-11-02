@@ -16,12 +16,20 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string Status { get; set; }  = ClassConstants.Status.Scheduled;
     }
 
-
-    public class ClassStudentDto
+    public class ClassDetailDto
     {
-        public string StudentId { get; set; } = string.Empty;
-        public string StudentName { get; set; } = string.Empty;
-        public string StudentEmail { get; set; } = string.Empty;
+        public int ClassId { get; set; }
+        public string ClassName { get; set; } = string.Empty;
+        public string CourseName { get; set; } = string.Empty;
+        public string MentorName { get; set; } = string.Empty;
+        public List<ClassEmployeeDto> Employees { get; set; } = new();
+    }
+
+    public class ClassEmployeeDto
+    {
+        public string EmployeeId { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
     }
 
     public class CreateClassesDto
