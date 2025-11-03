@@ -242,5 +242,51 @@ else
             document.body.appendChild(form);
             form.submit();
         }
+        
+        function openCreateClassModal() {
+            // Debug information
+            console.log('Button clicked - trying to open modal');
+            const isFinalized = @Json.Serialize(ViewBag.IsFinalized);
+            console.log('ViewBag.IsFinalized:', isFinalized);
+            
+            // Check if finalization is done
+            if (isFinalized !== true) {
+                alert('Vui lòng chốt danh sách nhân viên trước khi tạo lớp học!');
+                return;
+            }
+            
+            // Check if modal exists before trying to open it
+            const modalElement = document.getElementById('createClassModal');
+            console.log('Modal element found:', modalElement !== null);
+            
+            if (!modalElement) {
+                console.error('Create class modal not found');
+                alert('Lỗi: Không tìm thấy modal tạo lớp học. Vui lòng thử lại sau.');
+                return;
+            }
+            
+            // Update modal data if needed
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        }
+        
+        // Handle create class form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const createClassForm = document.getElementById('createClassForm');
+            if (createClassForm) {
+                createClassForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Show loading state
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang tạo lớp...';
+                    submitBtn.disabled = true;
+                    
+                    // Submit form
+                    this.submit();
+                });
+            }
+        });
     </script>
 }
