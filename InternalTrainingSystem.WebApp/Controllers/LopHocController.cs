@@ -1,4 +1,4 @@
-using InternalTrainingSystem.WebApp.Models.DTOs;
+﻿using InternalTrainingSystem.WebApp.Models.DTOs;
 using InternalTrainingSystem.WebApp.Models.ViewModels;
 using InternalTrainingSystem.WebApp.Constants;
 using InternalTrainingSystem.WebApp.Helpers;
