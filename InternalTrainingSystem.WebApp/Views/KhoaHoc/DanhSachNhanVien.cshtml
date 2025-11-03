@@ -45,23 +45,22 @@
                 <!-- Finalize Button - Only visible for DirectManager -->
                 @if (ViewBag.UserRole?.ToString() == UserRoles.DirectManager)
                 {
-                    <div id="finalizeButtonContainer">
-                        @if (ViewBag.IsFinalized != true)
-                        {
-                            <button type="button" class="btn btn-success btn-finalize" onclick="finalizeEnrollments()">
-                                <i class="fas fa-check-circle me-1"></i>Chốt Danh Sách
-                            </button>
-                        }
-
-                        <!-- Create Class Button - Only show if enrollments are finalized -->
-                        @if (ViewBag.IsFinalized == true)
-                        {
-                            <button type="button" class="btn btn-primary" onclick="openCreateClassModal()">
-                                <i class="fas fa-plus me-1"></i>Tạo Lớp Học
-                            </button>
-                        }
-                    </div>
+                    
                 }
+                <div id="finalizeButtonContainer">
+                    @if (ViewBag.IsFinalized != true)
+                    {
+                        <button type="button" class="btn btn-success btn-finalize" onclick="finalizeEnrollments()">
+                            <i class="fas fa-check-circle me-1"></i>Chốt Danh Sách
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-primary" onclick="openCreateClassModal()" title="Tạo lớp học và gửi thông báo đến nhân viên">
+                            <i class="fas fa-plus-circle me-1"></i>Tạo Lớp Học
+                        </button>
+                    }
+                </div>
             </div>
 
             <form method="get" class="search-form">
@@ -195,24 +194,19 @@
     </div>
 </div>
 
-<!-- Include Create Class Modal -->
-<!-- Debug: ViewBag.IsFinalized = @ViewBag.IsFinalized -->
-@if (ViewBag.IsFinalized == true)
-{
-    <!-- Modal sẽ được include ở đây -->
+@{
+    // Sử dụng TotalEnrolledCount từ ViewBag (đã được tính chính xác từ API)
+    var enrolledCount = ViewBag.TotalEnrolledCount != null ? (int)ViewBag.TotalEnrolledCount : 0;
+    
     var createClassModel = new InternalTrainingSystem.WebApp.Models.DTOs.CreateClassViewModel
     {
-        CourseId = (int)ViewBag.CourseId,
+        CourseId = ViewBag.CourseId != null ? (int)ViewBag.CourseId : 0,
         CourseName = course?.CourseName ?? "",
-        TotalEmployees = ViewBag.FinalizedEmployeeCount ?? 0
+        TotalEmployees = enrolledCount
     };
+}
 
-    await Html.PartialAsync("_CreateClassModal", createClassModel);
-}
-else
-{
-    <!-- Modal KHÔNG được include vì ViewBag.IsFinalized = @ViewBag.IsFinalized -->
-}
+@await Html.PartialAsync("_CreateClassModal", createClassModel)
 
 @section Scripts {
     @Html.AntiForgeryToken()

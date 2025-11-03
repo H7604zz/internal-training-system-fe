@@ -419,6 +419,59 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
                 // Get current user role for button visibility
                 ViewBag.UserRole = await UserProfileHelper.GetCurrentUserRoleAsync(_httpClient, _httpContextAccessor);
+                
+                // Check if enrollments are finalized
+                bool isFinalized = false;
+                try
+                {
+                    // Try to check if there's a finalization status API
+                    var finalizationResponse = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/course/{id}/finalization-status"));
+                    if (finalizationResponse.IsSuccessStatusCode)
+                    {
+                        var finalizationContent = await finalizationResponse.Content.ReadAsStringAsync();
+                        isFinalized = JsonSerializer.Deserialize<bool>(finalizationContent, new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        });
+                    }
+                    else
+                    {
+                        // Fallback: check if there are any enrolled students (indicates finalization has occurred)
+                        isFinalized = staff.Any(s => s.Status == "Enrolled" || s.Status == "InProgress" || s.Status == "Completed");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to check finalization status for course {CourseId}", id);
+                    // Fallback: check if there are any enrolled students
+                    isFinalized = staff.Any(s => s.Status == "Enrolled" || s.Status == "InProgress" || s.Status == "Completed");
+                }
+                ViewBag.IsFinalized = isFinalized;
+                
+                // Get total count of enrolled employees using the confirmed-staff/count API
+                try
+                {
+                    var confirmedCountResponse = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/course/{id}/confirmed-staff/count"));
+                    
+                    if (confirmedCountResponse.IsSuccessStatusCode)
+                    {
+                        var confirmedCountContent = await confirmedCountResponse.Content.ReadAsStringAsync();
+                        ViewBag.TotalEnrolledCount = JsonSerializer.Deserialize<int>(confirmedCountContent, new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        });
+                    }
+                    else
+                    {
+                        ViewBag.TotalEnrolledCount = 0;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to get confirmed staff count for course {CourseId}", id);
+                    ViewBag.TotalEnrolledCount = 0;
+                }
+                
                 return View(staff);
             }
             catch (Exception ex)
