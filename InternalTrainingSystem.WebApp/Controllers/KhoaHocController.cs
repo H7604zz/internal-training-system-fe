@@ -446,12 +446,12 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 {
                     TempData["Success"] = "Đã gửi thông báo thành công cho tất cả nhân viên đủ điều kiện!";
                 }
-                else
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    var errorMessage = !string.IsNullOrEmpty(errorContent) ? errorContent.Trim('"') : "Không thể gửi thông báo. Vui lòng thử lại.";
-                    TempData["Error"] = errorMessage;
-                }
+                //else
+                //{
+                //    var errorContent = await response.Content.ReadAsStringAsync();
+                //    var errorMessage = !string.IsNullOrEmpty(errorContent) ? errorContent.Trim('"') : "Không thể gửi thông báo. Vui lòng thử lại.";
+                //    TempData["Error"] = errorMessage;
+                //}
             }
             catch (Exception ex)
             {
