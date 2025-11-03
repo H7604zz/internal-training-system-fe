@@ -1,4 +1,4 @@
-﻿using InternalTrainingSystem.WebApp.Models.DTOs;
+using InternalTrainingSystem.WebApp.Models.DTOs;
 using InternalTrainingSystem.WebApp.Models.ViewModels;
 using InternalTrainingSystem.WebApp.Constants;
 using InternalTrainingSystem.WebApp.Helpers;
@@ -111,169 +111,64 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
         }
 
-        [HttpGet("tao-lop")]
-        public async Task<IActionResult> TaoLop()
-        {
-            try
-            {
-                var model = new CreateClassViewModel
-                {
-                    Courses = await GetCoursesAsync(),
-                    Mentors = await GetMentorsAsync(),
-                    StartDate = DateTime.Today,
-                    EndDate = DateTime.Today.AddMonths(3),
-                    Capacity = 20,
-                    Schedule = new List<ClassScheduleItem>()
-                };
-
-                return View(model);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while loading create class page");
-                TempData["Error"] = "Đã xảy ra lỗi khi tải trang tạo lớp học.";
-                return RedirectToAction("Index");
-            }
-        }
-
-        [HttpPost("tao-lop")]
-        public async Task<IActionResult> TaoLop(CreateClassViewModel model)
+        [HttpPost("create-class")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateClass(CreateClassViewModel model)
         {
             try
             {
                 if (!ModelState.IsValid)
                 {
-                    model.Courses = await GetCoursesAsync();
-                    model.Mentors = await GetMentorsAsync();
-                    return View(model);
+                    TempData["Error"] = "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.";
+                    return RedirectToAction("Index", "KhoaHoc");
                 }
 
-                // Validate dates
-                if (model.EndDate <= model.StartDate)
+                if (model.CourseId <= 0)
                 {
-                    ModelState.AddModelError("EndDate", "Ngày kết thúc phải sau ngày bắt đầu");
-                    model.Courses = await GetCoursesAsync();
-                    model.Mentors = await GetMentorsAsync();
-                    return View(model);
+                    TempData["Error"] = "Dữ liệu khóa học không hợp lệ";
+                    return RedirectToAction("Index", "KhoaHoc");
                 }
 
-                // Call API to create class
-                var json = JsonSerializer.Serialize(model);
+                // Check authentication
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
+                {
+                    TempData["Error"] = "Phiên đăng nhập đã hết hạn";
+                    return RedirectToAction("DangNhap", "Auth");
+                }
+
+                // Tạo request theo đúng format của API
+                var createClassRequest = new 
+                {
+                    CourseId = model.CourseId,
+                    NumberOfClasses = model.NumberOfClasses > 0 ? model.NumberOfClasses : 1
+                };
+
+                var json = JsonSerializer.Serialize(createClassRequest);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl("api/classes"), content);
-                
+                // Call the API to create classes
+                var response = await _httpClient.PostAsync(
+                    Utilities.GetAbsoluteUrl($"api/class"),
+                    content);
+
                 if (response.IsSuccessStatusCode)
                 {
-                    TempData["Success"] = "Tạo lớp học thành công!";
-                    return RedirectToAction("Index");
+                    TempData["Success"] = $"Tạo lớp học thành công!";
                 }
                 else
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
                     var errorMessage = !string.IsNullOrEmpty(errorContent) ? errorContent.Trim('"') : "Không thể tạo lớp học. Vui lòng thử lại.";
                     TempData["Error"] = errorMessage;
-                    model.Courses = await GetCoursesAsync();
-                    model.Mentors = await GetMentorsAsync();
-                    return View(model);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while creating class");
-                TempData["Error"] = "Đã xảy ra lỗi khi tạo lớp học.";
-                model.Courses = await GetCoursesAsync();
-                model.Mentors = await GetMentorsAsync();
-                return View(model);
+                _logger.LogError(ex, "Error occurred while creating class for course {CourseId}", model.CourseId);
+                TempData["Error"] = "Có lỗi xảy ra khi tạo lớp học. Vui lòng thử lại sau!";
             }
-        }
 
-        private async Task<List<CourseDto>> GetCoursesAsync()
-        {
-            try
-            {
-                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/courses"));
-                
-                if (response.IsSuccessStatusCode)
-                {
-                    var responseContent = await response.Content.ReadAsStringAsync();
-                    var courses = JsonSerializer.Deserialize<List<CourseDto>>(responseContent, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
-                    return courses ?? GetSampleCourses();
-                }
-                else
-                {
-                    _logger.LogWarning("Failed to get courses from API. Status: {StatusCode}", response.StatusCode);
-                    return GetSampleCourses();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while getting courses from API");
-                return GetSampleCourses();
-            }
+            return RedirectToAction("DanhSachNhanVien", "KhoaHoc", new { id = model.CourseId });
         }
-
-        private async Task<List<MentorResponse>> GetMentorsAsync()
-        {
-            try
-            {
-                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/mentors"));
-                
-                if (response.IsSuccessStatusCode)
-                {
-                    var responseContent = await response.Content.ReadAsStringAsync();
-                    var mentors = JsonSerializer.Deserialize<List<MentorResponse>>(responseContent, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
-                    return mentors ?? GetSampleMentors();
-                }
-                else
-                {
-                    _logger.LogWarning("Failed to get mentors from API. Status: {StatusCode}", response.StatusCode);
-                    return GetSampleMentors();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while getting mentors from API");
-                return GetSampleMentors();
-            }
-        }
-
-        private List<CourseDto> GetSampleCourses()
-        {
-            return new List<CourseDto>
-            {
-                new CourseDto { CourseId = 101, CourseName = "Lập Trình C# Cơ Bản", Level = "Beginner" },
-                new CourseDto { CourseId = 102, CourseName = "ASP.NET Core Web API Development", Level = "Intermediate" },
-                new CourseDto { CourseId = 103, CourseName = "React JS Frontend Development", Level = "Intermediate" },
-                new CourseDto { CourseId = 104, CourseName = "SQL Server Database Administration", Level = "Beginner" },
-                new CourseDto { CourseId = 105, CourseName = "Angular Framework Development", Level = "Advanced" },
-                new CourseDto { CourseId = 106, CourseName = "Python Django Web Development", Level = "Intermediate" },
-                new CourseDto { CourseId = 107, CourseName = "Java Spring Boot Development", Level = "Advanced" },
-                new CourseDto { CourseId = 108, CourseName = "DevOps & Continuous Integration/Deployment", Level = "Advanced" }
-            };
-        }
-
-        private List<MentorResponse> GetSampleMentors()
-        {
-            return new List<MentorResponse>
-            {
-                new MentorResponse { Id = "M001", FullName = "Nguyễn Văn Nam", Email = "nam.nguyen@fpt.edu.vn" },
-                new MentorResponse { Id = "M002", FullName = "Trần Văn Hùng", Email = "hung.tran@fpt.edu.vn" },
-                new MentorResponse { Id = "M003", FullName = "Lê Thị Hương", Email = "huong.le@fpt.edu.vn" },
-                new MentorResponse { Id = "M004", FullName = "Phạm Văn Đức", Email = "duc.pham@fpt.edu.vn" },
-                new MentorResponse { Id = "M005", FullName = "Võ Văn Tài", Email = "tai.vo@fpt.edu.vn" },
-                new MentorResponse { Id = "M006", FullName = "Bùi Văn Nghĩa", Email = "nghia.bui@fpt.edu.vn" },
-                new MentorResponse { Id = "M007", FullName = "Ngô Thị Phương", Email = "phuong.ngo@fpt.edu.vn" },
-                new MentorResponse { Id = "M008", FullName = "Hà Văn Quý", Email = "quy.ha@fpt.edu.vn" }
-            };
-        }
-
-       
     }
 }
