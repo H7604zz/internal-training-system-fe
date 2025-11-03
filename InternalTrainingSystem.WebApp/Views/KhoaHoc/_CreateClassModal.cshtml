@@ -1,0 +1,138 @@
+@model InternalTrainingSystem.WebApp.Models.DTOs.CreateClassViewModel
+
+<!-- Create Class Modal -->
+<div class="modal fade" id="createClassModal" tabindex="-1" aria-labelledby="createClassModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="createClassModalLabel">
+                    <i class="fas fa-plus-circle me-2"></i>Tạo Lớp Học Mới
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="createClassForm" asp-action="CreateClass" asp-controller="LopHoc" method="post">
+                <div class="modal-body">
+                    <!-- Course Information (Read-only) -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="card border-info">
+                                <div class="card-body bg-info">
+                                    <h6><i class="fas fa-graduation-cap me-2"></i>Thông Tin Khóa Học</h6>
+                                    <p class="mb-1"><strong>Tên khóa học:</strong> <span id="courseNameDisplay">@Model.CourseName</span></p>
+                                    <p class="mb-0"><strong>Số nhân viên đã chốt:</strong> <span id="totalEmployeesDisplay">@Model.TotalEmployees</span> nhân viên</p>
+                                </div>
+                            </div>
+                            <input type="hidden" asp-for="CourseId" />
+                        </div>
+                    </div>
+
+                    <!-- Number of Classes -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label for="numberOfClasses" class="form-label required">Số Lượng Lớp Muốn Tạo</label>
+                                <input type="number" id="numberOfClasses" name="NumberOfClasses" asp-for="NumberOfClasses" class="form-control" min="1" max="10" value="1" />
+                                <div class="form-text">Hệ thống sẽ tự động phân chia nhân viên vào các lớp</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Class Division Preview -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="card border-info">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-calculator me-2"></i>Phân Chia Lớp Học
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="classDivisionPreview">
+                                        <!-- This will be populated by JavaScript -->
+                                        <div class="text-center text-muted">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            Nhập số lượng lớp để xem phân chia
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label asp-for="Description" class="form-label">Mô Tả</label>
+                                <textarea asp-for="Description" class="form-control" rows="3" placeholder="Mô tả chi tiết về lớp học..."></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Hủy
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-2"></i>Tạo Lớp Học
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const numberOfClassesInput = document.querySelector('#numberOfClasses');
+    const previewDiv = document.querySelector('#classDivisionPreview');
+    
+    function updateClassDivision() {
+        const totalEmployeesText = document.querySelector('#totalEmployeesDisplay').textContent;
+        const totalEmployees = parseInt(totalEmployeesText) || 0;
+        const numberOfClasses = parseInt(numberOfClassesInput.value) || 1;
+        
+        if (totalEmployees === 0 || numberOfClasses === 0) {
+            previewDiv.innerHTML = `
+                <div class="text-center text-muted">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Nhập số lượng lớp để xem phân chia
+                </div>
+            `;
+            return;
+        }
+        
+        const employeesPerClass = Math.floor(totalEmployees / numberOfClasses);
+        const remainingEmployees = totalEmployees % numberOfClasses;
+        
+        let html = `
+            <div class="row">
+        `;
+        
+        for (let i = 1; i <= numberOfClasses; i++) {
+            const classSize = employeesPerClass + (i <= remainingEmployees ? 1 : 0);
+            html += `
+                <div class="col-md-6 mb-2">
+                    <div class="card border-primary">
+                        <div class="card-body py-2">
+                            <h6 class="card-title mb-1">Lớp ${i}</h6>
+                            <p class="card-text mb-0">
+                                <i class="fas fa-users me-1"></i>${classSize} nhân viên
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        html += '</div>';
+        previewDiv.innerHTML = html;
+    }
+    
+    numberOfClassesInput.addEventListener('input', updateClassDivision);
+    
+    // Initial update
+    updateClassDivision();
+});
+</script>
