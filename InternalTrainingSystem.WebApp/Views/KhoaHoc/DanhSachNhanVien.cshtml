@@ -177,11 +177,30 @@
                     { "status", ViewBag.Status ?? "" }
                 }
             };
-            
+
             @await Html.PartialAsync("_Pagination", paginationModel)
         }
     </div>
 </div>
+
+<!-- Include Create Class Modal -->
+<!-- Debug: ViewBag.IsFinalized = @ViewBag.IsFinalized -->
+@if (ViewBag.IsFinalized == true)
+{
+    <!-- Modal sẽ được include ở đây -->
+    var createClassModel = new InternalTrainingSystem.WebApp.Models.DTOs.CreateClassViewModel
+    {
+        CourseId = (int)ViewBag.CourseId,
+        CourseName = course?.CourseName ?? "",
+        TotalEmployees = ViewBag.FinalizedEmployeeCount ?? 0
+    };
+
+    await Html.PartialAsync("_CreateClassModal", createClassModel);
+}
+else
+{
+    <!-- Modal KHÔNG được include vì ViewBag.IsFinalized = @ViewBag.IsFinalized -->
+}
 
 @section Scripts {
     @Html.AntiForgeryToken()

@@ -27,13 +27,13 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         /// <summary>
         /// Hiển thị badge class cho trạng thái
         /// </summary>
-        public string StatusBadgeClass => EmployeeStatus.GetBadgeClass(Status);
+        public string StatusBadgeClass => EnrollmentConstants.GetBadgeClass(Status);
         
         /// <summary>
         /// Hiển thị text cho trạng thái
         /// </summary>
-        public string StatusText => EmployeeStatus.GetDisplayText(Status);
-        
+        public string StatusText => EnrollmentConstants.GetDisplayText(Status);
+
         /// <summary>
         /// Kiểm tra đã đăng ký hay chưa (đồng ý tham gia)
         /// </summary>

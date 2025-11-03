@@ -94,6 +94,40 @@
             public const string Completed = "Completed";
             public const string Dropped = "Dropped";
         }
+
+
+        /// <summary>
+        /// Get CSS class for status badge
+        /// </summary>
+        public static string GetBadgeClass(string status)
+        {
+            return status switch
+            {
+                Status.NotEnrolled => "badge-secondary",
+                Status.Enrolled => "badge-primary",
+                Status.InProgress => "badge-warning",
+                Status.Completed => "badge-success",
+                Status.Dropped => "badge-danger",
+                _ => "badge-secondary"
+            };
+        }
+
+        /// <summary>
+        /// Get display text for enrollment status
+        /// </summary>
+        public static string GetDisplayText(string status)
+        {
+            return status switch
+            {
+                Status.NotEnrolled => "Chưa đăng ký",
+                Status.Enrolled => "Đã đăng ký",
+                Status.InProgress => "Đang học",
+                Status.Completed => "Hoàn thành",
+                Status.Dropped => "Đã từ chối",
+                _ => status
+            };
+        }
+
     }
 
     public static class QuizConstants
