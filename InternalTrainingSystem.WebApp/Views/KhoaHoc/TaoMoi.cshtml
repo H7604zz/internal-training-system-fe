@@ -216,11 +216,27 @@
                             </div>
                             <div class="help-item">
                                 <i class="fas fa-lightbulb"></i>
-                                <span>Mỗi bài học có thể chứa: Tài liệu, Video, và Quiz</span>
+                                <span>Mỗi bài học có 3 loại: Video, Bài Đọc, hoặc Quiz</span>
+                            </div>
+                            <div class="help-item">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>Video: URL video + mô tả + link tài liệu đính kèm (tùy chọn)</span>
+                            </div>
+                            <div class="help-item">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>Bài Đọc: File tài liệu + mô tả + link tài liệu bổ sung (tùy chọn)</span>
+                            </div>
+                            <div class="help-item">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>Quiz: File Excel + cấu hình (số lần làm, điểm pass, thời gian)</span>
                             </div>
                             <div class="help-item">
                                 <i class="fas fa-lightbulb"></i>
                                 <span>Tài liệu hỗ trợ: PDF, Word, PowerPoint, Excel, Text và OpenOffice</span>
+                            </div>
+                            <div class="help-item">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>Link tài liệu có thể từ Google Drive, OneDrive hoặc dịch vụ lưu trữ khác</span>
                             </div>
                             <div class="help-item">
                                 <i class="fas fa-lightbulb"></i>
@@ -324,68 +340,136 @@
             </div>
         </div>
 
-        <!-- Lesson Content Section -->
-        <div class="lesson-content-section">
-            <h6 class="mb-3"><i class="fas fa-file-alt me-2"></i>Nội Dung Bài Học</h6>
+        <!-- Lesson Type Selection -->
+        <div class="mb-4">
+            <label class="form-label required">Loại Bài Học</label>
+            <div class="btn-group w-100 lesson-type-selector" role="group">
+                <input type="radio" class="btn-check" name="Modules[0].Lessons[0].LessonType" id="lesson-type-video-0-0" value="Video" checked>
+                <label class="btn btn-outline-primary" for="lesson-type-video-0-0">
+                    <i class="fas fa-video me-2"></i>Video
+                </label>
+                
+                <input type="radio" class="btn-check" name="Modules[0].Lessons[0].LessonType" id="lesson-type-reading-0-0" value="Reading">
+                <label class="btn btn-outline-info" for="lesson-type-reading-0-0">
+                    <i class="fas fa-book-open me-2"></i>Bài Đọc
+                </label>
+                
+                <input type="radio" class="btn-check" name="Modules[0].Lessons[0].LessonType" id="lesson-type-quiz-0-0" value="Quiz">
+                <label class="btn btn-outline-success" for="lesson-type-quiz-0-0">
+                    <i class="fas fa-question-circle me-2"></i>Quiz
+                </label>
+            </div>
+        </div>
+
+        <!-- Video Content Section -->
+        <div class="lesson-content-section video-content-section">
+            <h6 class="mb-3">
+                <i class="fas fa-video me-2 text-primary"></i>Nội Dung Video
+            </h6>
             
-            <!-- Document Upload -->
-            <div class="content-group mb-4">
-                <h6 class="content-group-title">
-                    <i class="fas fa-file-alt me-2 text-primary"></i>Tài Liệu
-                </h6>
-                <div class="row">
-                    <div class="col-md-12">
-                        <label class="form-label">Tải lên tệp tài liệu</label>
-                        <input type="file" name="LessonDocumentFiles" class="form-control" 
-                               accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.rtf,.odt,.ods,.odp" 
-                               placeholder="Chọn file tài liệu...">
-                        <small class="form-text text-muted">
-                            Hỗ trợ: PDF, Word (doc, docx), PowerPoint (ppt, pptx), Excel (xls, xlsx), Text (txt, rtf), OpenOffice (odt, ods, odp). 
-                            Kích thước tối đa: 50MB
-                        </small>
-                        <input type="hidden" name="Modules[0].Lessons[0].HasDocument" value="false" class="lesson-has-document">
-                    </div>
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label class="form-label required">URL Video</label>
+                    <input type="url" name="Modules[0].Lessons[0].VideoUrl" class="form-control video-url" 
+                           placeholder="Nhập URL video (YouTube, Vimeo, ...)">
+                    <small class="form-text text-muted">Hỗ trợ YouTube, Vimeo và các nền tảng video khác</small>
                 </div>
             </div>
 
-            <!-- Video Content -->
-            <div class="content-group mb-4">
-                <h6 class="content-group-title">
-                    <i class="fas fa-video me-2 text-primary"></i>Video
-                </h6>
-                <div class="row mb-3">
-                    <div class="col-md-12">
-                        <label class="form-label">URL Video</label>
-                        <input type="url" name="Modules[0].Lessons[0].VideoUrl" class="form-control video-url" 
-                               placeholder="Nhập URL video (YouTube, Vimeo, ...)">
-                        <small class="form-text text-muted">Hỗ trợ YouTube, Vimeo và các nền tảng video khác</small>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <label class="form-label">Mô tả Video</label>
-                        <textarea name="Modules[0].Lessons[0].VideoDescription" class="form-control" rows="3" 
-                                  placeholder="Nhập mô tả cho video này..."></textarea>
-                    </div>
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label class="form-label">Mô tả Video</label>
+                    <textarea name="Modules[0].Lessons[0].VideoDescription" class="form-control" rows="3" 
+                              placeholder="Nhập mô tả chi tiết cho video này..."></textarea>
                 </div>
             </div>
 
-            <!-- Quiz Excel Import -->
-            <div class="content-group mb-4">
-                <h6 class="content-group-title">
-                    <i class="fas fa-question-circle me-2 text-success"></i>Bài Kiểm Tra
-                </h6>
-                <div class="row">
-                    <div class="col-md-12">
-                        <label class="form-label">File Excel Quiz</label>
-                        <input type="file" name="LessonQuizFiles" class="form-control" accept=".xlsx,.xls" 
-                               placeholder="Chọn file Excel chứa câu hỏi quiz...">
-                        <small class="form-text text-muted">
-                            File Excel phải có định dạng chuẩn: Cột A (Câu hỏi), Cột B-E (Đáp án), Cột F (Đáp án đúng). 
-                            <a href="#" class="text-primary">Tải template mẫu</a>
-                        </small>
-                        <input type="hidden" name="Modules[0].Lessons[0].HasQuiz" value="false" class="lesson-has-quiz">
-                    </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <label class="form-label">Link Tài Liệu Đính Kèm (Tùy chọn)</label>
+                    <input type="url" name="Modules[0].Lessons[0].DocumentUrl" class="form-control" 
+                           placeholder="Nhập URL tài liệu đính kèm (Google Drive, OneDrive, ...)">
+                    <small class="form-text text-muted">
+                        Nhập link tài liệu từ Google Drive, OneDrive hoặc các dịch vụ lưu trữ khác
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reading Content Section -->
+        <div class="lesson-content-section reading-content-section" style="display: none;">
+            <h6 class="mb-3">
+                <i class="fas fa-book-open me-2 text-info"></i>Nội Dung Bài Đọc
+            </h6>
+            
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label class="form-label required">File Tài Liệu Chính</label>
+                    <input type="file" name="LessonDocumentFiles" class="form-control reading-file" 
+                           accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.rtf,.odt,.ods,.odp">
+                    <small class="form-text text-muted">
+                        Hỗ trợ: PDF, Word, PowerPoint, Excel, Text. Kích thước tối đa: 50MB
+                    </small>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label class="form-label">Mô tả Bài Đọc</label>
+                    <textarea name="Modules[0].Lessons[0].ReadingDescription" class="form-control" rows="3" 
+                              placeholder="Nhập mô tả chi tiết cho bài đọc này..."></textarea>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <label class="form-label">Link Tài Liệu Đính Kèm (Tùy chọn)</label>
+                    <input type="url" name="Modules[0].Lessons[0].AdditionalDocumentUrl" class="form-control" 
+                           placeholder="Nhập URL tài liệu đính kèm bổ sung (Google Drive, OneDrive, ...)">
+                    <small class="form-text text-muted">
+                        Nhập link tài liệu tham khảo thêm từ Google Drive, OneDrive hoặc các dịch vụ lưu trữ khác
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Content Section -->
+        <div class="lesson-content-section quiz-content-section" style="display: none;">
+            <h6 class="mb-3">
+                <i class="fas fa-question-circle me-2 text-success"></i>Cấu Hình Quiz
+            </h6>
+            
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label class="form-label required">File Excel Quiz</label>
+                    <input type="file" name="LessonQuizFiles" class="form-control quiz-file" accept=".xlsx,.xls">
+                    <small class="form-text text-muted">
+                        File Excel phải có định dạng chuẩn: Cột A (Câu hỏi), Cột B-E (Đáp án), Cột F (Đáp án đúng). 
+                        <a href="#" class="text-primary">Tải template mẫu</a>
+                    </small>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label required">Số Lần Làm Tối Đa</label>
+                    <input type="number" name="Modules[0].Lessons[0].MaxAttempts" class="form-control" 
+                           min="1" max="10" value="3" placeholder="VD: 3">
+                    <small class="form-text text-muted">Từ 1 đến 10 lần</small>
+                </div>
+                
+                <div class="col-md-4">
+                    <label class="form-label required">Điểm Pass (%)</label>
+                    <input type="number" name="Modules[0].Lessons[0].PassPercentage" class="form-control" 
+                           min="0" max="100" value="70" placeholder="VD: 70">
+                    <small class="form-text text-muted">Từ 0% đến 100%</small>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label required">Thời Gian (phút)</label>
+                    <input type="number" name="Modules[0].Lessons[0].TimeLimit" class="form-control" 
+                           min="1" max="180" value="30" placeholder="VD: 30">
+                    <small class="form-text text-muted">Từ 1 đến 180 phút</small>
                 </div>
             </div>
         </div>
@@ -509,18 +593,60 @@
                 clone.querySelector('input[name*="Title"]').value = lessonData.title || '';
                 clone.querySelector('input[name*="OrderIndex"]').value = lessonData.orderIndex || lessonIndex + 1;
                 
-                // Fill content data
-                if (lessonData.videoUrl) {
-                    clone.querySelector('input[name*="VideoUrl"]').value = lessonData.videoUrl;
-                }
-                if (lessonData.videoDescription) {
-                    clone.querySelector('textarea[name*="VideoDescription"]').value = lessonData.videoDescription;
-                }
-                if (lessonData.hasDocument) {
-                    clone.querySelector('input[name*="HasDocument"]').value = lessonData.hasDocument;
-                }
-                if (lessonData.hasQuiz) {
-                    clone.querySelector('input[name*="HasQuiz"]').value = lessonData.hasQuiz;
+                // Set lesson type
+                const lessonType = lessonData.type || lessonData.lessonType || 'Video';
+                const videoRadio = clone.querySelector('input[value="Video"]');
+                const readingRadio = clone.querySelector('input[value="Reading"]');
+                const quizRadio = clone.querySelector('input[value="Quiz"]');
+                const videoSection = clone.querySelector('.video-content-section');
+                const readingSection = clone.querySelector('.reading-content-section');
+                const quizSection = clone.querySelector('.quiz-content-section');
+                
+                if (lessonType === 'Reading') {
+                    if (readingRadio) readingRadio.checked = true;
+                    if (videoSection) videoSection.style.display = 'none';
+                    if (readingSection) readingSection.style.display = 'block';
+                    if (quizSection) quizSection.style.display = 'none';
+                    
+                    // Fill reading data
+                    if (lessonData.readingDescription) {
+                        clone.querySelector('textarea[name*="ReadingDescription"]').value = lessonData.readingDescription;
+                    }
+                    if (lessonData.additionalDocumentUrl) {
+                        clone.querySelector('input[name*="AdditionalDocumentUrl"]').value = lessonData.additionalDocumentUrl;
+                    }
+                } else if (lessonType === 'Quiz') {
+                    if (quizRadio) quizRadio.checked = true;
+                    if (videoSection) videoSection.style.display = 'none';
+                    if (readingSection) readingSection.style.display = 'none';
+                    if (quizSection) quizSection.style.display = 'block';
+                    
+                    // Fill quiz data
+                    if (lessonData.maxAttempts) {
+                        clone.querySelector('input[name*="MaxAttempts"]').value = lessonData.maxAttempts;
+                    }
+                    if (lessonData.passPercentage) {
+                        clone.querySelector('input[name*="PassPercentage"]').value = lessonData.passPercentage;
+                    }
+                    if (lessonData.timeLimit) {
+                        clone.querySelector('input[name*="TimeLimit"]').value = lessonData.timeLimit;
+                    }
+                } else {
+                    if (videoRadio) videoRadio.checked = true;
+                    if (videoSection) videoSection.style.display = 'block';
+                    if (readingSection) readingSection.style.display = 'none';
+                    if (quizSection) quizSection.style.display = 'none';
+                    
+                    // Fill video data
+                    if (lessonData.videoUrl) {
+                        clone.querySelector('input[name*="VideoUrl"]').value = lessonData.videoUrl;
+                    }
+                    if (lessonData.videoDescription) {
+                        clone.querySelector('textarea[name*="VideoDescription"]').value = lessonData.videoDescription;
+                    }
+                    if (lessonData.documentUrl) {
+                        clone.querySelector('input[name*="DocumentUrl"]').value = lessonData.documentUrl;
+                    }
                 }
                 
                 // Update form field names
@@ -647,6 +773,106 @@
             }
 
             function addLessonEventListeners(clone) {
+                // Lesson type toggle
+                const lessonTypeRadios = clone.querySelectorAll('input[name*="LessonType"]');
+                const videoSection = clone.querySelector('.video-content-section');
+                const readingSection = clone.querySelector('.reading-content-section');
+                const quizSection = clone.querySelector('.quiz-content-section');
+                
+                lessonTypeRadios.forEach(radio => {
+                    radio.addEventListener('change', function() {
+                        if (this.value === 'Video') {
+                            videoSection.style.display = 'block';
+                            readingSection.style.display = 'none';
+                            quizSection.style.display = 'none';
+                            
+                            // Clear reading fields
+                            const readingFile = clone.querySelector('input[name*="LessonDocumentFiles"]');
+                            const readingDesc = clone.querySelector('textarea[name*="ReadingDescription"]');
+                            const additionalDocUrl = clone.querySelector('input[name*="AdditionalDocumentUrl"]');
+                            
+                            if (readingFile) readingFile.value = '';
+                            if (readingDesc) readingDesc.value = '';
+                            if (additionalDocUrl) additionalDocUrl.value = '';
+                            
+                            // Clear quiz fields
+                            const quizFile = clone.querySelector('input[name*="LessonQuizFiles"]');
+                            const maxAttempts = clone.querySelector('input[name*="MaxAttempts"]');
+                            const passPercentage = clone.querySelector('input[name*="PassPercentage"]');
+                            const timeLimit = clone.querySelector('input[name*="TimeLimit"]');
+                            
+                            if (quizFile) quizFile.value = '';
+                            if (maxAttempts) maxAttempts.value = '3';
+                            if (passPercentage) passPercentage.value = '70';
+                            if (timeLimit) timeLimit.value = '30';
+                            
+                            // Make video URL required
+                            const videoUrl = clone.querySelector('input[name*="VideoUrl"]');
+                            if (videoUrl) videoUrl.setAttribute('required', 'required');
+                        } else if (this.value === 'Reading') {
+                            videoSection.style.display = 'none';
+                            readingSection.style.display = 'block';
+                            quizSection.style.display = 'none';
+                            
+                            // Clear video fields
+                            const videoUrl = clone.querySelector('input[name*="VideoUrl"]');
+                            const videoDesc = clone.querySelector('textarea[name*="VideoDescription"]');
+                            const docUrl = clone.querySelector('input[name*="DocumentUrl"]');
+                            
+                            if (videoUrl) {
+                                videoUrl.value = '';
+                                videoUrl.removeAttribute('required');
+                            }
+                            if (videoDesc) videoDesc.value = '';
+                            if (docUrl) docUrl.value = '';
+                            
+                            // Clear quiz fields
+                            const quizFile = clone.querySelector('input[name*="LessonQuizFiles"]');
+                            const maxAttempts = clone.querySelector('input[name*="MaxAttempts"]');
+                            const passPercentage = clone.querySelector('input[name*="PassPercentage"]');
+                            const timeLimit = clone.querySelector('input[name*="TimeLimit"]');
+                            
+                            if (quizFile) quizFile.value = '';
+                            if (maxAttempts) maxAttempts.value = '3';
+                            if (passPercentage) passPercentage.value = '70';
+                            if (timeLimit) timeLimit.value = '30';
+                            
+                            // Make reading file required
+                            const readingFile = clone.querySelector('input[name*="LessonDocumentFiles"]');
+                            if (readingFile) readingFile.setAttribute('required', 'required');
+                        } else if (this.value === 'Quiz') {
+                            videoSection.style.display = 'none';
+                            readingSection.style.display = 'none';
+                            quizSection.style.display = 'block';
+                            
+                            // Clear video fields
+                            const videoUrl = clone.querySelector('input[name*="VideoUrl"]');
+                            const videoDesc = clone.querySelector('textarea[name*="VideoDescription"]');
+                            const docUrl = clone.querySelector('input[name*="DocumentUrl"]');
+                            
+                            if (videoUrl) {
+                                videoUrl.value = '';
+                                videoUrl.removeAttribute('required');
+                            }
+                            if (videoDesc) videoDesc.value = '';
+                            if (docUrl) docUrl.value = '';
+                            
+                            // Clear reading fields
+                            const readingFile = clone.querySelector('input[name*="LessonDocumentFiles"]');
+                            const readingDesc = clone.querySelector('textarea[name*="ReadingDescription"]');
+                            const additionalDocUrl = clone.querySelector('input[name*="AdditionalDocumentUrl"]');
+                            
+                            if (readingFile) readingFile.value = '';
+                            if (readingDesc) readingDesc.value = '';
+                            if (additionalDocUrl) additionalDocUrl.value = '';
+                            
+                            // Make quiz file required
+                            const quizFile = clone.querySelector('input[name*="LessonQuizFiles"]');
+                            if (quizFile) quizFile.setAttribute('required', 'required');
+                        }
+                    });
+                });
+
                 // Remove lesson button
                 clone.querySelector('.remove-lesson').addEventListener('click', function() {
                     const lessonItem = this.closest('.lesson-item');
@@ -677,29 +903,39 @@
                     }
                 });
 
-                // File upload handlers
-                const documentFile = clone.querySelector('input[name*="LessonDocumentFiles"]');
-                const quizFile = clone.querySelector('input[name*="LessonQuizFiles"]');
+                // Validation for video URL
                 const videoUrl = clone.querySelector('input[name*="VideoUrl"]');
-
-                if (documentFile) {
-                    documentFile.addEventListener('change', function() {
-                        const hasDocumentInput = this.closest('.lesson-item').querySelector('.lesson-has-document');
-                        hasDocumentInput.value = this.files.length > 0 ? 'true' : 'false';
-                    });
-                }
-
-                if (quizFile) {
-                    quizFile.addEventListener('change', function() {
-                        const hasQuizInput = this.closest('.lesson-item').querySelector('.lesson-has-quiz');
-                        hasQuizInput.value = this.files.length > 0 ? 'true' : 'false';
-                    });
-                }
-
                 if (videoUrl) {
                     videoUrl.addEventListener('blur', function() {
-                        // You can add URL validation here if needed
-                        console.log('Video URL updated:', this.value);
+                        if (this.value && !this.checkValidity()) {
+                            alert('Vui lòng nhập URL video hợp lệ');
+                        }
+                    });
+                }
+
+                // Validation for quiz parameters
+                const maxAttempts = clone.querySelector('input[name*="MaxAttempts"]');
+                const passPercentage = clone.querySelector('input[name*="PassPercentage"]');
+                const timeLimit = clone.querySelector('input[name*="TimeLimit"]');
+                
+                if (maxAttempts) {
+                    maxAttempts.addEventListener('change', function() {
+                        if (this.value < 1) this.value = 1;
+                        if (this.value > 10) this.value = 10;
+                    });
+                }
+                
+                if (passPercentage) {
+                    passPercentage.addEventListener('change', function() {
+                        if (this.value < 0) this.value = 0;
+                        if (this.value > 100) this.value = 100;
+                    });
+                }
+                
+                if (timeLimit) {
+                    timeLimit.addEventListener('change', function() {
+                        if (this.value < 1) this.value = 1;
+                        if (this.value > 180) this.value = 180;
                     });
                 }
             }
@@ -763,6 +999,54 @@
                         hasError = true;
                         alert(`Module ${index + 1} phải có ít nhất 1 bài học.`);
                     }
+                    
+                    // Validate each lesson based on type
+                    lessons.forEach((lesson, lessonIndex) => {
+                        const lessonType = lesson.querySelector('input[name*="LessonType"]:checked');
+                        if (!lessonType) {
+                            hasError = true;
+                            alert(`Module ${index + 1}, Bài học ${lessonIndex + 1}: Vui lòng chọn loại bài học.`);
+                            return;
+                        }
+                        
+                        if (lessonType.value === 'Video') {
+                            const videoUrl = lesson.querySelector('input[name*="VideoUrl"]');
+                            if (!videoUrl || !videoUrl.value.trim()) {
+                                hasError = true;
+                                alert(`Module ${index + 1}, Bài học ${lessonIndex + 1}: Vui lòng nhập URL video.`);
+                            }
+                        } else if (lessonType.value === 'Reading') {
+                            const readingFile = lesson.querySelector('input[name*="LessonDocumentFiles"]');
+                            if (!readingFile || !readingFile.files || readingFile.files.length === 0) {
+                                hasError = true;
+                                alert(`Module ${index + 1}, Bài học ${lessonIndex + 1}: Vui lòng upload file tài liệu chính.`);
+                            }
+                        } else if (lessonType.value === 'Quiz') {
+                            const quizFile = lesson.querySelector('input[name*="LessonQuizFiles"]');
+                            if (!quizFile || !quizFile.files || quizFile.files.length === 0) {
+                                hasError = true;
+                                alert(`Module ${index + 1}, Bài học ${lessonIndex + 1}: Vui lòng upload file Excel Quiz.`);
+                            }
+                            
+                            // Validate quiz parameters
+                            const maxAttempts = lesson.querySelector('input[name*="MaxAttempts"]');
+                            const passPercentage = lesson.querySelector('input[name*="PassPercentage"]');
+                            const timeLimit = lesson.querySelector('input[name*="TimeLimit"]');
+                            
+                            if (maxAttempts && (maxAttempts.value < 1 || maxAttempts.value > 10)) {
+                                hasError = true;
+                                alert(`Module ${index + 1}, Bài học ${lessonIndex + 1}: Số lần làm bài phải từ 1 đến 10.`);
+                            }
+                            if (passPercentage && (passPercentage.value < 0 || passPercentage.value > 100)) {
+                                hasError = true;
+                                alert(`Module ${index + 1}, Bài học ${lessonIndex + 1}: Điểm pass phải từ 0% đến 100%.`);
+                            }
+                            if (timeLimit && (timeLimit.value < 1 || timeLimit.value > 180)) {
+                                hasError = true;
+                                alert(`Module ${index + 1}, Bài học ${lessonIndex + 1}: Thời gian làm bài phải từ 1 đến 180 phút.`);
+                            }
+                        }
+                    });
                 });
 
                 if (hasError) {
