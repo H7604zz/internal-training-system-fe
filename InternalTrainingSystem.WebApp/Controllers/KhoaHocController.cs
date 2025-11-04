@@ -568,7 +568,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             try
             {
-                if (string.IsNullOrEmpty(request.Action) || request.CourseId <= 0)
+                if (request.CourseId <= 0)
                 {
                     return Json(new CourseApprovalResponse
                     {
@@ -578,19 +578,39 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     });
                 }
 
-                var json = JsonSerializer.Serialize(request);
+                var payload = new { NewStatus = CourseStatus.Approved };
+                var json = JsonSerializer.Serialize(payload);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl($"api/course/{request.CourseId}/approve"), content);
+                var requestMessage = new HttpRequestMessage(new HttpMethod("PATCH"), Utilities.GetAbsoluteUrl($"api/course/update-pending-status/{request.CourseId}"))
+                {
+                    Content = content
+                };
+
+                var response = await _httpClient.SendAsync(requestMessage);
                 var responseContent = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = JsonSerializer.Deserialize<CourseApprovalResponse>(responseContent, new JsonSerializerOptions
+                    try
                     {
-                        PropertyNameCaseInsensitive = true
-                    });
-                    return Json(result);
+                        using var doc = JsonDocument.Parse(responseContent);
+                        var root = doc.RootElement;
+                        var message = root.GetProperty("message").GetString() ?? "Đã phê duyệt khóa học.";
+                        return Json(new CourseApprovalResponse
+                        {
+                            Success = true,
+                            Message = message
+                        });
+                    }
+                    catch
+                    {
+                        return Json(new CourseApprovalResponse
+                        {
+                            Success = true,
+                            Message = responseContent.Trim('"')
+                        });
+                    }
                 }
                 else
                 {
@@ -620,7 +640,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             try
             {
-                if (string.IsNullOrEmpty(request.Action) || request.CourseId <= 0 || string.IsNullOrEmpty(request.Reason))
+                if (request.CourseId <= 0 || string.IsNullOrEmpty(request.Reason))
                 {
                     return Json(new CourseApprovalResponse
                     {
@@ -640,19 +660,39 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     });
                 }
 
-                var json = JsonSerializer.Serialize(request);
+                var payload = new { NewStatus = CourseStatus.Rejected, RejectReason = request.Reason };
+                var json = JsonSerializer.Serialize(payload);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl($"api/course/{request.CourseId}/reject"), content);
+                var requestMessage = new HttpRequestMessage(new HttpMethod("PATCH"), Utilities.GetAbsoluteUrl($"api/course/update-pending-status/{request.CourseId}"))
+                {
+                    Content = content
+                };
+
+                var response = await _httpClient.SendAsync(requestMessage);
                 var responseContent = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = JsonSerializer.Deserialize<CourseApprovalResponse>(responseContent, new JsonSerializerOptions
+                    try
                     {
-                        PropertyNameCaseInsensitive = true
-                    });
-                    return Json(result);
+                        using var doc = JsonDocument.Parse(responseContent);
+                        var root = doc.RootElement;
+                        var message = root.GetProperty("message").GetString() ?? "Khóa học đã bị từ chối.";
+                        return Json(new CourseApprovalResponse
+                        {
+                            Success = true,
+                            Message = message
+                        });
+                    }
+                    catch
+                    {
+                        return Json(new CourseApprovalResponse
+                        {
+                            Success = true,
+                            Message = responseContent.Trim('"')
+                        });
+                    }
                 }
                 else
                 {
