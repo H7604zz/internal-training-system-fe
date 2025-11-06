@@ -214,9 +214,13 @@ namespace InternalTrainingSystem.WebApp.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    // Log validation errors for debugging including department selection
-                    LogModelValidationErrors(model);
-                    
+                    var errors = ModelState.Values.SelectMany(v => v.Errors)
+                                               .Select(e => e.ErrorMessage);
+                    foreach (var error in errors)
+                    {
+                        TempData["Error"] = error;
+                    }
+
                     // Reload dropdown data nhưng giữ lại toàn bộ thông tin form bao gồm selected departments
                     await ReloadFormData(model);
                     return View(model);
@@ -396,33 +400,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
         }
 
-        /// <summary>
-        /// Helper method để log validation errors
-        /// </summary>
-        private void LogModelValidationErrors(CreateFullCourseDto model = null)
-        {
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState
-                    .Where(x => x.Value.Errors.Count > 0)
-                    .Select(x => $"{x.Key}: {string.Join(", ", x.Value.Errors.Select(e => e.ErrorMessage))}")
-                    .ToList();
-
-                var logMessage = "Model validation failed with errors: {ValidationErrors}";
-                if (model != null)
-                {
-                    logMessage += " | Selected departments: [{SelectedDepartments}] | Module count: {ModuleCount}";
-                    _logger.LogWarning(logMessage, 
-                        string.Join("; ", errors),
-                        string.Join(", ", model.SelectedDepartmentIds ?? new List<int>()),
-                        model.Modules?.Count ?? 0);
-                }
-                else
-                {
-                    _logger.LogWarning(logMessage, string.Join("; ", errors));
-                }
-            }
-        }
+        
 
         [HttpGet("danh-sach-nhan-vien/{id}")]
         public async Task<IActionResult> DanhSachNhanVien(int id, string search, string status, int page = 1)

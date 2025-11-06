@@ -28,11 +28,53 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public DateTime? ApprovalDate { get; set; }
         public string? RejectionReason { get; set; }
         
+        // Course content (for detail view)
+        public List<ModuleDetailDto> Modules { get; set; } = new();
+        
         // Computed properties
         public string StatusDisplay => IsActive ? "Hoạt động" : "Không hoạt động";
         public string DurationDisplay => Duration > 0 ? $"{Duration} giờ" : "Chưa xác định";
         public string DepartmentsDisplay => Departments.Any() ? string.Join(", ", Departments.Select(d => d.DepartmentName)) : "Tất cả phòng ban";
         public string ApprovalStatusDisplay => CourseStatus.GetDisplayText(Status ?? CourseStatus.Pending);
+    }
+
+    public class ModuleDetailDto
+    {
+        public int Id { get; set; }
+        public int CourseId { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public int OrderIndex { get; set; }
+        public List<LessonListItemDto> Lessons { get; set; } = new();
+    }
+
+    public class LessonListItemDto
+    {
+        public int Id { get; set; }
+        public int ModuleId { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public LessonType Type { get; set; }
+        public int OrderIndex { get; set; }
+        public string? ContentUrl { get; set; }
+        public int? QuizId { get; set; }
+        
+        // Computed properties
+        public string TypeDisplay => Type switch
+        {
+            LessonType.Video => "Video",
+            LessonType.Reading => "Bài Đọc",
+            LessonType.Quiz => "Quiz",
+            _ => "Khác"
+        };
+        
+        public string TypeIcon => Type switch
+        {
+            LessonType.Video => "fa-video",
+            LessonType.Reading => "fa-book-open",
+            LessonType.Quiz => "fa-question-circle",
+            _ => "fa-file"
+        };
     }
 
     public class CourseDepartmentDto
