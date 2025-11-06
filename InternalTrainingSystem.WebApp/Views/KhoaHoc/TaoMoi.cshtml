@@ -367,10 +367,13 @@
                 <i class="fas fa-video me-2 text-primary"></i>Nội Dung Video
             </h6>
             
+            <!-- Type hidden field -->
+            <input type="hidden" name="Modules[0].Lessons[0].Type" value="1" class="lesson-type-value">
+            
             <div class="row mb-3">
                 <div class="col-md-12">
                     <label class="form-label required">URL Video</label>
-                    <input type="url" name="Modules[0].Lessons[0].VideoUrl" class="form-control video-url" 
+                    <input type="url" name="Modules[0].Lessons[0].ContentUrl" class="form-control video-url" 
                            placeholder="Nhập URL video (YouTube, Vimeo, ...)">
                     <small class="form-text text-muted">Hỗ trợ YouTube, Vimeo và các nền tảng video khác</small>
                 </div>
@@ -379,7 +382,7 @@
             <div class="row mb-3">
                 <div class="col-md-12">
                     <label class="form-label">Mô tả Video</label>
-                    <textarea name="Modules[0].Lessons[0].VideoDescription" class="form-control" rows="3" 
+                    <textarea name="Modules[0].Lessons[0].Description" class="form-control" rows="3" 
                               placeholder="Nhập mô tả chi tiết cho video này..."></textarea>
                 </div>
             </div>
@@ -387,7 +390,7 @@
             <div class="row">
                 <div class="col-md-12">
                     <label class="form-label">Link Tài Liệu Đính Kèm (Tùy chọn)</label>
-                    <input type="url" name="Modules[0].Lessons[0].DocumentUrl" class="form-control" 
+                    <input type="url" name="Modules[0].Lessons[0].AttachmentUrl" class="form-control" 
                            placeholder="Nhập URL tài liệu đính kèm (Google Drive, OneDrive, ...)">
                     <small class="form-text text-muted">
                         Nhập link tài liệu từ Google Drive, OneDrive hoặc các dịch vụ lưu trữ khác
@@ -402,11 +405,18 @@
                 <i class="fas fa-book-open me-2 text-info"></i>Nội Dung Bài Đọc
             </h6>
             
+            <!-- Type hidden field -->
+            <input type="hidden" name="Modules[0].Lessons[0].Type" value="2" class="lesson-type-value" disabled>
+            
+            <!-- MainFileIndex will be set dynamically when file is added -->
+            <input type="hidden" name="Modules[0].Lessons[0].MainFileIndex" class="main-file-index" value="">
+            
             <div class="row mb-3">
                 <div class="col-md-12">
                     <label class="form-label required">File Tài Liệu Chính</label>
-                    <input type="file" name="LessonDocumentFiles" class="form-control reading-file" 
-                           accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.rtf,.odt,.ods,.odp">
+                    <input type="file" name="LessonFiles" class="form-control reading-file" 
+                           accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.rtf,.odt,.ods,.odp"
+                           data-lesson-file-type="reading">
                     <small class="form-text text-muted">
                         Hỗ trợ: PDF, Word, PowerPoint, Excel, Text. Kích thước tối đa: 50MB
                     </small>
@@ -416,7 +426,7 @@
             <div class="row mb-3">
                 <div class="col-md-12">
                     <label class="form-label">Mô tả Bài Đọc</label>
-                    <textarea name="Modules[0].Lessons[0].ReadingDescription" class="form-control" rows="3" 
+                    <textarea name="Modules[0].Lessons[0].Description" class="form-control" rows="3" 
                               placeholder="Nhập mô tả chi tiết cho bài đọc này..."></textarea>
                 </div>
             </div>
@@ -424,7 +434,7 @@
             <div class="row">
                 <div class="col-md-12">
                     <label class="form-label">Link Tài Liệu Đính Kèm (Tùy chọn)</label>
-                    <input type="url" name="Modules[0].Lessons[0].AdditionalDocumentUrl" class="form-control" 
+                    <input type="url" name="Modules[0].Lessons[0].AttachmentUrl" class="form-control" 
                            placeholder="Nhập URL tài liệu đính kèm bổ sung (Google Drive, OneDrive, ...)">
                     <small class="form-text text-muted">
                         Nhập link tài liệu tham khảo thêm từ Google Drive, OneDrive hoặc các dịch vụ lưu trữ khác
@@ -439,10 +449,20 @@
                 <i class="fas fa-question-circle me-2 text-success"></i>Cấu Hình Quiz
             </h6>
             
+            <!-- Type hidden field -->
+            <input type="hidden" name="Modules[0].Lessons[0].Type" value="3" class="lesson-type-value" disabled>
+            
+            <!-- MainFileIndex will be set dynamically when file is added -->
+            <input type="hidden" name="Modules[0].Lessons[0].MainFileIndex" class="main-file-index" value="">
+            
+            <!-- IsQuizExcel always true -->
+            <input type="hidden" name="Modules[0].Lessons[0].IsQuizExcel" value="true">
+            
             <div class="row mb-3">
                 <div class="col-md-12">
                     <label class="form-label required">File Excel Quiz</label>
-                    <input type="file" name="LessonQuizFiles" class="form-control quiz-file" accept=".xlsx,.xls">
+                    <input type="file" name="LessonFiles" class="form-control quiz-file" accept=".xlsx,.xls"
+                           data-lesson-file-type="quiz">
                     <small class="form-text text-muted">
                         File Excel phải có định dạng chuẩn: Cột A (Câu hỏi), Cột B-E (Đáp án), Cột F (Đáp án đúng). 
                         <a href="#" class="text-primary">Tải template mẫu</a>
@@ -453,21 +473,21 @@
             <div class="row mb-3">
                 <div class="col-md-4">
                     <label class="form-label required">Số Lần Làm Tối Đa</label>
-                    <input type="number" name="Modules[0].Lessons[0].MaxAttempts" class="form-control" 
+                    <input type="number" name="Modules[0].Lessons[0].QuizMaxAttempts" class="form-control" 
                            min="1" max="10" value="3" placeholder="VD: 3">
                     <small class="form-text text-muted">Từ 1 đến 10 lần</small>
                 </div>
                 
                 <div class="col-md-4">
                     <label class="form-label required">Điểm Pass (%)</label>
-                    <input type="number" name="Modules[0].Lessons[0].PassPercentage" class="form-control" 
+                    <input type="number" name="Modules[0].Lessons[0].QuizPassingScore" class="form-control" 
                            min="0" max="100" value="70" placeholder="VD: 70">
                     <small class="form-text text-muted">Từ 0% đến 100%</small>
                 </div>
 
                 <div class="col-md-4">
                     <label class="form-label required">Thời Gian (phút)</label>
-                    <input type="number" name="Modules[0].Lessons[0].TimeLimit" class="form-control" 
+                    <input type="number" name="Modules[0].Lessons[0].QuizTimeLimit" class="form-control" 
                            min="1" max="180" value="30" placeholder="VD: 30">
                     <small class="form-text text-muted">Từ 1 đến 180 phút</small>
                 </div>
@@ -593,8 +613,8 @@
                 clone.querySelector('input[name*="Title"]').value = lessonData.title || '';
                 clone.querySelector('input[name*="OrderIndex"]').value = lessonData.orderIndex || lessonIndex + 1;
                 
-                // Set lesson type
-                const lessonType = lessonData.type || lessonData.lessonType || 'Video';
+                // Set lesson type - map from backend enum (1=Video, 2=Reading, 3=Quiz)
+                const lessonType = lessonData.type || lessonData.lessonType || 1; // Default Video
                 const videoRadio = clone.querySelector('input[value="Video"]');
                 const readingRadio = clone.querySelector('input[value="Reading"]');
                 const quizRadio = clone.querySelector('input[value="Quiz"]');
@@ -602,50 +622,77 @@
                 const readingSection = clone.querySelector('.reading-content-section');
                 const quizSection = clone.querySelector('.quiz-content-section');
                 
-                if (lessonType === 'Reading') {
+                // Get Type hidden fields
+                const videoTypeField = videoSection.querySelector('.lesson-type-value');
+                const readingTypeField = readingSection.querySelector('.lesson-type-value');
+                const quizTypeField = quizSection.querySelector('.lesson-type-value');
+                
+                if (lessonType === 2 || lessonType === 'Reading') {
                     if (readingRadio) readingRadio.checked = true;
                     if (videoSection) videoSection.style.display = 'none';
                     if (readingSection) readingSection.style.display = 'block';
                     if (quizSection) quizSection.style.display = 'none';
                     
+                    // Enable Reading type field
+                    videoTypeField.disabled = true;
+                    readingTypeField.disabled = false;
+                    quizTypeField.disabled = true;
+                    
                     // Fill reading data
-                    if (lessonData.readingDescription) {
-                        clone.querySelector('textarea[name*="ReadingDescription"]').value = lessonData.readingDescription;
+                    if (lessonData.description) {
+                        clone.querySelector('.reading-content-section textarea[name*="Description"]').value = lessonData.description;
                     }
-                    if (lessonData.additionalDocumentUrl) {
-                        clone.querySelector('input[name*="AdditionalDocumentUrl"]').value = lessonData.additionalDocumentUrl;
+                    if (lessonData.attachmentUrl) {
+                        clone.querySelector('.reading-content-section input[name*="AttachmentUrl"]').value = lessonData.attachmentUrl;
                     }
-                } else if (lessonType === 'Quiz') {
+                    if (lessonData.mainFileIndex !== null && lessonData.mainFileIndex !== undefined) {
+                        clone.querySelector('.reading-content-section .main-file-index').value = lessonData.mainFileIndex;
+                    }
+                } else if (lessonType === 3 || lessonType === 'Quiz') {
                     if (quizRadio) quizRadio.checked = true;
                     if (videoSection) videoSection.style.display = 'none';
                     if (readingSection) readingSection.style.display = 'none';
                     if (quizSection) quizSection.style.display = 'block';
                     
+                    // Enable Quiz type field
+                    videoTypeField.disabled = true;
+                    readingTypeField.disabled = true;
+                    quizTypeField.disabled = false;
+                    
                     // Fill quiz data
-                    if (lessonData.maxAttempts) {
-                        clone.querySelector('input[name*="MaxAttempts"]').value = lessonData.maxAttempts;
+                    if (lessonData.quizMaxAttempts) {
+                        clone.querySelector('input[name*="QuizMaxAttempts"]').value = lessonData.quizMaxAttempts;
                     }
-                    if (lessonData.passPercentage) {
-                        clone.querySelector('input[name*="PassPercentage"]').value = lessonData.passPercentage;
+                    if (lessonData.quizPassingScore) {
+                        clone.querySelector('input[name*="QuizPassingScore"]').value = lessonData.quizPassingScore;
                     }
-                    if (lessonData.timeLimit) {
-                        clone.querySelector('input[name*="TimeLimit"]').value = lessonData.timeLimit;
+                    if (lessonData.quizTimeLimit) {
+                        clone.querySelector('input[name*="QuizTimeLimit"]').value = lessonData.quizTimeLimit;
+                    }
+                    if (lessonData.mainFileIndex !== null && lessonData.mainFileIndex !== undefined) {
+                        clone.querySelector('.quiz-content-section .main-file-index').value = lessonData.mainFileIndex;
                     }
                 } else {
+                    // Video (default)
                     if (videoRadio) videoRadio.checked = true;
                     if (videoSection) videoSection.style.display = 'block';
                     if (readingSection) readingSection.style.display = 'none';
                     if (quizSection) quizSection.style.display = 'none';
                     
+                    // Enable Video type field
+                    videoTypeField.disabled = false;
+                    readingTypeField.disabled = true;
+                    quizTypeField.disabled = true;
+                    
                     // Fill video data
-                    if (lessonData.videoUrl) {
-                        clone.querySelector('input[name*="VideoUrl"]').value = lessonData.videoUrl;
+                    if (lessonData.contentUrl) {
+                        clone.querySelector('.video-content-section input[name*="ContentUrl"]').value = lessonData.contentUrl;
                     }
-                    if (lessonData.videoDescription) {
-                        clone.querySelector('textarea[name*="VideoDescription"]').value = lessonData.videoDescription;
+                    if (lessonData.description) {
+                        clone.querySelector('.video-content-section textarea[name*="Description"]').value = lessonData.description;
                     }
-                    if (lessonData.documentUrl) {
-                        clone.querySelector('input[name*="DocumentUrl"]').value = lessonData.documentUrl;
+                    if (lessonData.attachmentUrl) {
+                        clone.querySelector('.video-content-section input[name*="AttachmentUrl"]').value = lessonData.attachmentUrl;
                     }
                 }
                 
@@ -779,6 +826,11 @@
                 const readingSection = clone.querySelector('.reading-content-section');
                 const quizSection = clone.querySelector('.quiz-content-section');
                 
+                // Get Type hidden fields
+                const videoTypeField = videoSection.querySelector('.lesson-type-value');
+                const readingTypeField = readingSection.querySelector('.lesson-type-value');
+                const quizTypeField = quizSection.querySelector('.lesson-type-value');
+                
                 lessonTypeRadios.forEach(radio => {
                     radio.addEventListener('change', function() {
                         if (this.value === 'Video') {
@@ -786,88 +838,111 @@
                             readingSection.style.display = 'none';
                             quizSection.style.display = 'none';
                             
+                            // Enable Video type field, disable others
+                            videoTypeField.disabled = false;
+                            readingTypeField.disabled = true;
+                            quizTypeField.disabled = true;
+                            
                             // Clear reading fields
-                            const readingFile = clone.querySelector('input[name*="LessonDocumentFiles"]');
-                            const readingDesc = clone.querySelector('textarea[name*="ReadingDescription"]');
-                            const additionalDocUrl = clone.querySelector('input[name*="AdditionalDocumentUrl"]');
+                            const readingFile = clone.querySelector('.reading-file');
+                            const readingDesc = clone.querySelector('.reading-content-section textarea[name*="Description"]');
+                            const readingAttachmentUrl = clone.querySelector('.reading-content-section input[name*="AttachmentUrl"]');
+                            const readingMainFileIndex = clone.querySelector('.reading-content-section .main-file-index');
                             
                             if (readingFile) readingFile.value = '';
                             if (readingDesc) readingDesc.value = '';
-                            if (additionalDocUrl) additionalDocUrl.value = '';
+                            if (readingAttachmentUrl) readingAttachmentUrl.value = '';
+                            if (readingMainFileIndex) readingMainFileIndex.value = '';
                             
                             // Clear quiz fields
-                            const quizFile = clone.querySelector('input[name*="LessonQuizFiles"]');
-                            const maxAttempts = clone.querySelector('input[name*="MaxAttempts"]');
-                            const passPercentage = clone.querySelector('input[name*="PassPercentage"]');
-                            const timeLimit = clone.querySelector('input[name*="TimeLimit"]');
+                            const quizFile = clone.querySelector('.quiz-file');
+                            const quizMainFileIndex = clone.querySelector('.quiz-content-section .main-file-index');
+                            const maxAttempts = clone.querySelector('input[name*="QuizMaxAttempts"]');
+                            const passingScore = clone.querySelector('input[name*="QuizPassingScore"]');
+                            const timeLimit = clone.querySelector('input[name*="QuizTimeLimit"]');
                             
                             if (quizFile) quizFile.value = '';
+                            if (quizMainFileIndex) quizMainFileIndex.value = '';
                             if (maxAttempts) maxAttempts.value = '3';
-                            if (passPercentage) passPercentage.value = '70';
+                            if (passingScore) passingScore.value = '70';
                             if (timeLimit) timeLimit.value = '30';
                             
                             // Make video URL required
-                            const videoUrl = clone.querySelector('input[name*="VideoUrl"]');
+                            const videoUrl = clone.querySelector('input[name*="ContentUrl"]');
                             if (videoUrl) videoUrl.setAttribute('required', 'required');
                         } else if (this.value === 'Reading') {
                             videoSection.style.display = 'none';
                             readingSection.style.display = 'block';
                             quizSection.style.display = 'none';
                             
+                            // Enable Reading type field, disable others
+                            videoTypeField.disabled = true;
+                            readingTypeField.disabled = false;
+                            quizTypeField.disabled = true;
+                            
                             // Clear video fields
-                            const videoUrl = clone.querySelector('input[name*="VideoUrl"]');
-                            const videoDesc = clone.querySelector('textarea[name*="VideoDescription"]');
-                            const docUrl = clone.querySelector('input[name*="DocumentUrl"]');
+                            const videoUrl = clone.querySelector('.video-content-section input[name*="ContentUrl"]');
+                            const videoDesc = clone.querySelector('.video-content-section textarea[name*="Description"]');
+                            const videoAttachmentUrl = clone.querySelector('.video-content-section input[name*="AttachmentUrl"]');
                             
                             if (videoUrl) {
                                 videoUrl.value = '';
                                 videoUrl.removeAttribute('required');
                             }
                             if (videoDesc) videoDesc.value = '';
-                            if (docUrl) docUrl.value = '';
+                            if (videoAttachmentUrl) videoAttachmentUrl.value = '';
                             
                             // Clear quiz fields
-                            const quizFile = clone.querySelector('input[name*="LessonQuizFiles"]');
-                            const maxAttempts = clone.querySelector('input[name*="MaxAttempts"]');
-                            const passPercentage = clone.querySelector('input[name*="PassPercentage"]');
-                            const timeLimit = clone.querySelector('input[name*="TimeLimit"]');
+                            const quizFile = clone.querySelector('.quiz-file');
+                            const quizMainFileIndex = clone.querySelector('.quiz-content-section .main-file-index');
+                            const maxAttempts = clone.querySelector('input[name*="QuizMaxAttempts"]');
+                            const passingScore = clone.querySelector('input[name*="QuizPassingScore"]');
+                            const timeLimit = clone.querySelector('input[name*="QuizTimeLimit"]');
                             
                             if (quizFile) quizFile.value = '';
+                            if (quizMainFileIndex) quizMainFileIndex.value = '';
                             if (maxAttempts) maxAttempts.value = '3';
-                            if (passPercentage) passPercentage.value = '70';
+                            if (passingScore) passingScore.value = '70';
                             if (timeLimit) timeLimit.value = '30';
                             
                             // Make reading file required
-                            const readingFile = clone.querySelector('input[name*="LessonDocumentFiles"]');
+                            const readingFile = clone.querySelector('.reading-file');
                             if (readingFile) readingFile.setAttribute('required', 'required');
                         } else if (this.value === 'Quiz') {
                             videoSection.style.display = 'none';
                             readingSection.style.display = 'none';
                             quizSection.style.display = 'block';
                             
+                            // Enable Quiz type field, disable others
+                            videoTypeField.disabled = true;
+                            readingTypeField.disabled = true;
+                            quizTypeField.disabled = false;
+                            
                             // Clear video fields
-                            const videoUrl = clone.querySelector('input[name*="VideoUrl"]');
-                            const videoDesc = clone.querySelector('textarea[name*="VideoDescription"]');
-                            const docUrl = clone.querySelector('input[name*="DocumentUrl"]');
+                            const videoUrl = clone.querySelector('.video-content-section input[name*="ContentUrl"]');
+                            const videoDesc = clone.querySelector('.video-content-section textarea[name*="Description"]');
+                            const videoAttachmentUrl = clone.querySelector('.video-content-section input[name*="AttachmentUrl"]');
                             
                             if (videoUrl) {
                                 videoUrl.value = '';
                                 videoUrl.removeAttribute('required');
                             }
                             if (videoDesc) videoDesc.value = '';
-                            if (docUrl) docUrl.value = '';
+                            if (videoAttachmentUrl) videoAttachmentUrl.value = '';
                             
                             // Clear reading fields
-                            const readingFile = clone.querySelector('input[name*="LessonDocumentFiles"]');
-                            const readingDesc = clone.querySelector('textarea[name*="ReadingDescription"]');
-                            const additionalDocUrl = clone.querySelector('input[name*="AdditionalDocumentUrl"]');
+                            const readingFile = clone.querySelector('.reading-file');
+                            const readingDesc = clone.querySelector('.reading-content-section textarea[name*="Description"]');
+                            const readingAttachmentUrl = clone.querySelector('.reading-content-section input[name*="AttachmentUrl"]');
+                            const readingMainFileIndex = clone.querySelector('.reading-content-section .main-file-index');
                             
                             if (readingFile) readingFile.value = '';
                             if (readingDesc) readingDesc.value = '';
-                            if (additionalDocUrl) additionalDocUrl.value = '';
+                            if (readingAttachmentUrl) readingAttachmentUrl.value = '';
+                            if (readingMainFileIndex) readingMainFileIndex.value = '';
                             
                             // Make quiz file required
-                            const quizFile = clone.querySelector('input[name*="LessonQuizFiles"]');
+                            const quizFile = clone.querySelector('.quiz-file');
                             if (quizFile) quizFile.setAttribute('required', 'required');
                         }
                     });
@@ -904,7 +979,7 @@
                 });
 
                 // Validation for video URL
-                const videoUrl = clone.querySelector('input[name*="VideoUrl"]');
+                const videoUrl = clone.querySelector('.video-content-section input[name*="ContentUrl"]');
                 if (videoUrl) {
                     videoUrl.addEventListener('blur', function() {
                         if (this.value && !this.checkValidity()) {
@@ -914,9 +989,9 @@
                 }
 
                 // Validation for quiz parameters
-                const maxAttempts = clone.querySelector('input[name*="MaxAttempts"]');
-                const passPercentage = clone.querySelector('input[name*="PassPercentage"]');
-                const timeLimit = clone.querySelector('input[name*="TimeLimit"]');
+                const maxAttempts = clone.querySelector('input[name*="QuizMaxAttempts"]');
+                const passingScore = clone.querySelector('input[name*="QuizPassingScore"]');
+                const timeLimit = clone.querySelector('input[name*="QuizTimeLimit"]');
                 
                 if (maxAttempts) {
                     maxAttempts.addEventListener('change', function() {
@@ -925,8 +1000,8 @@
                     });
                 }
                 
-                if (passPercentage) {
-                    passPercentage.addEventListener('change', function() {
+                if (passingScore) {
+                    passingScore.addEventListener('change', function() {
                         if (this.value < 0) this.value = 0;
                         if (this.value > 100) this.value = 100;
                     });
@@ -982,7 +1057,7 @@
                 });
             }
 
-            // Form validation
+            // Form validation and file index assignment
             $('form').on('submit', function(e) {
                 const modules = document.querySelectorAll('.module-card');
                 if (modules.length === 0) {
@@ -993,6 +1068,8 @@
 
                 // Check each module has at least one lesson
                 let hasError = false;
+                let fileIndex = 0; // Track file index for LessonFiles array
+                
                 modules.forEach((module, index) => {
                     const lessons = module.querySelectorAll('.lesson-item');
                     if (lessons.length === 0) {
@@ -1000,7 +1077,7 @@
                         alert(`Module ${index + 1} phải có ít nhất 1 bài học.`);
                     }
                     
-                    // Validate each lesson based on type
+                    // Validate each lesson based on type and assign file indices
                     lessons.forEach((lesson, lessonIndex) => {
                         const lessonType = lesson.querySelector('input[name*="LessonType"]:checked');
                         if (!lessonType) {
@@ -1010,34 +1087,48 @@
                         }
                         
                         if (lessonType.value === 'Video') {
-                            const videoUrl = lesson.querySelector('input[name*="VideoUrl"]');
+                            const videoUrl = lesson.querySelector('.video-content-section input[name*="ContentUrl"]');
                             if (!videoUrl || !videoUrl.value.trim()) {
                                 hasError = true;
                                 alert(`Module ${index + 1}, Bài học ${lessonIndex + 1}: Vui lòng nhập URL video.`);
                             }
                         } else if (lessonType.value === 'Reading') {
-                            const readingFile = lesson.querySelector('input[name*="LessonDocumentFiles"]');
+                            const readingFile = lesson.querySelector('.reading-file');
                             if (!readingFile || !readingFile.files || readingFile.files.length === 0) {
                                 hasError = true;
                                 alert(`Module ${index + 1}, Bài học ${lessonIndex + 1}: Vui lòng upload file tài liệu chính.`);
+                            } else {
+                                // Set MainFileIndex for Reading lesson
+                                const mainFileIndexField = lesson.querySelector('.reading-content-section .main-file-index');
+                                if (mainFileIndexField) {
+                                    mainFileIndexField.value = fileIndex;
+                                    fileIndex++; // Increment for next file
+                                }
                             }
                         } else if (lessonType.value === 'Quiz') {
-                            const quizFile = lesson.querySelector('input[name*="LessonQuizFiles"]');
+                            const quizFile = lesson.querySelector('.quiz-file');
                             if (!quizFile || !quizFile.files || quizFile.files.length === 0) {
                                 hasError = true;
                                 alert(`Module ${index + 1}, Bài học ${lessonIndex + 1}: Vui lòng upload file Excel Quiz.`);
+                            } else {
+                                // Set MainFileIndex for Quiz lesson
+                                const mainFileIndexField = lesson.querySelector('.quiz-content-section .main-file-index');
+                                if (mainFileIndexField) {
+                                    mainFileIndexField.value = fileIndex;
+                                    fileIndex++; // Increment for next file
+                                }
                             }
                             
                             // Validate quiz parameters
-                            const maxAttempts = lesson.querySelector('input[name*="MaxAttempts"]');
-                            const passPercentage = lesson.querySelector('input[name*="PassPercentage"]');
-                            const timeLimit = lesson.querySelector('input[name*="TimeLimit"]');
+                            const maxAttempts = lesson.querySelector('input[name*="QuizMaxAttempts"]');
+                            const passingScore = lesson.querySelector('input[name*="QuizPassingScore"]');
+                            const timeLimit = lesson.querySelector('input[name*="QuizTimeLimit"]');
                             
                             if (maxAttempts && (maxAttempts.value < 1 || maxAttempts.value > 10)) {
                                 hasError = true;
                                 alert(`Module ${index + 1}, Bài học ${lessonIndex + 1}: Số lần làm bài phải từ 1 đến 10.`);
                             }
-                            if (passPercentage && (passPercentage.value < 0 || passPercentage.value > 100)) {
+                            if (passingScore && (passingScore.value < 0 || passingScore.value > 100)) {
                                 hasError = true;
                                 alert(`Module ${index + 1}, Bài học ${lessonIndex + 1}: Điểm pass phải từ 0% đến 100%.`);
                             }

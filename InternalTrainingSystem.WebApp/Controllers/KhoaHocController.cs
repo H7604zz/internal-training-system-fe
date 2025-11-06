@@ -222,10 +222,66 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     return View(model);
                 }
 
-                var json = JsonSerializer.Serialize(model);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                // Prepare metadata DTO khớp với backend CreateCourseMetadataDto
+                var metadata = new
+                {
+                    CourseCode = model.CourseCode,
+                    CourseName = model.CourseName,
+                    Description = model.Description,
+                    CourseCategoryId = model.CourseCategoryId,
+                    Duration = model.Duration,
+                    Level = model.Level,
+                    IsOnline = model.IsOnline,
+                    IsMandatory = model.IsMandatory,
+                    Departments = model.SelectedDepartmentIds, // Backend expect "Departments", not "SelectedDepartmentIds"
+                    Modules = model.Modules.Select(m => new
+                    {
+                        Title = m.Title,
+                        Description = m.Description,
+                        OrderIndex = m.OrderIndex,
+                        Lessons = m.Lessons.Select(l => new
+                        {
+                            Title = l.Title,
+                            OrderIndex = l.OrderIndex,
+                            Type = (int)l.Type, // Enum to int: Video=1, Reading=2, Quiz=3
+                            Description = l.Description,
+                            ContentUrl = l.ContentUrl, // Video URL
+                            MainFileIndex = l.MainFileIndex, // Reading file hoặc Quiz file index
+                            AttachmentUrl = l.AttachmentUrl, // Document URL hoặc Additional Document URL
+                            QuizTitle = l.QuizTitle,
+                            IsQuizExcel = l.IsQuizExcel,
+                            QuizTimeLimit = l.QuizTimeLimit,
+                            QuizMaxAttempts = l.QuizMaxAttempts,
+                            QuizPassingScore = l.QuizPassingScore
+                        }).ToList()
+                    }).ToList()
+                };
 
-                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl("api/course"), content);
+                // Serialize metadata to JSON string
+                var metadataJson = JsonSerializer.Serialize(metadata);
+
+                // Create multipart form data
+                using var formContent = new MultipartFormDataContent();
+                
+                // Add metadata as string content
+                formContent.Add(new StringContent(metadataJson, Encoding.UTF8, "application/json"), "metadata");
+
+                // Add lesson files (LessonDocumentFiles and LessonQuizFiles)
+                if (model.LessonFiles != null && model.LessonFiles.Any())
+                {
+                    foreach (var file in model.LessonFiles)
+                    {
+                        if (file != null && file.Length > 0)
+                        {
+                            var fileContent = new StreamContent(file.OpenReadStream());
+                            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+                            formContent.Add(fileContent, "lessonFiles", file.FileName);
+                        }
+                    }
+                }
+
+                // Send request to API
+                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl("api/course"), formContent);
                 var responseContent = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
@@ -236,6 +292,27 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 else
                 {
                     var errorMessage = !string.IsNullOrEmpty(responseContent) ? responseContent.Trim('"') : "Không thể tạo khóa học. Vui lòng thử lại.";
+                    
+                    // Try parse JSON error response
+                    try
+                    {
+                        var errorObj = JsonSerializer.Deserialize<JsonElement>(responseContent);
+                        if (errorObj.TryGetProperty("message", out var msgElement))
+                        {
+                            errorMessage = msgElement.GetString() ?? errorMessage;
+                        }
+                        // Check for validation errors array
+                        if (errorObj.TryGetProperty("errors", out var errorsElement))
+                        {
+                            var errors = errorsElement.EnumerateArray().Select(e => e.GetString()).ToList();
+                            errorMessage += " " + string.Join(", ", errors);
+                        }
+                    }
+                    catch
+                    {
+                        // Use raw response if JSON parse fails
+                    }
+                    
                     TempData["Error"] = errorMessage;
                     // Reload dropdown data nhưng giữ lại toàn bộ thông tin form bao gồm selected departments
                     await ReloadFormData(model);
@@ -264,7 +341,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             try
             {
                 // Load categories
-                var categoriesResponse = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/categories"));
+                var categoriesResponse = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("/categories"));
                 if (categoriesResponse.IsSuccessStatusCode)
                 {
                     var categoriesContent = await categoriesResponse.Content.ReadAsStringAsync();
@@ -280,19 +357,19 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 }
 
                 // Load departments
-                var departmentsResponse = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/departments"));
+                var departmentsResponse = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/department"));
                 if (departmentsResponse.IsSuccessStatusCode)
                 {
                     var departmentsContent = await departmentsResponse.Content.ReadAsStringAsync();
-                    var departments = JsonSerializer.Deserialize<List<dynamic>>(departmentsContent, new JsonSerializerOptions
+                    var departments = JsonSerializer.Deserialize<List<DepartmnentViewDto>>(departmentsContent, new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     });
-                    ViewBag.Departments = departments ?? new List<dynamic>();
+                    ViewBag.Departments = departments ?? new List<DepartmnentViewDto>();
                 }
                 else
                 {
-                    ViewBag.Departments = new List<dynamic>();
+                    ViewBag.Departments = new List<DepartmnentViewDto>();
                 }
                 
                 // Preserve selected departments nếu có

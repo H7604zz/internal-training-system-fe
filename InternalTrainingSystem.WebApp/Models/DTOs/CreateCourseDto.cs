@@ -87,7 +87,7 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
     }
 
     /// <summary>
-    /// DTO cho lesson trong module
+    /// DTO cho lesson trong module (khớp với backend NewLessonSpecDto)
     /// </summary>
     public class CreateLessonDto
     {
@@ -104,46 +104,61 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         [Display(Name = "Loại bài học")]
         public LessonType Type { get; set; }
 
+        [Display(Name = "Mô tả")]
+        public string? Description { get; set; }
+
+        // Video: VideoUrl -> ContentUrl
+        // Reading: không dùng
         [Display(Name = "URL nội dung")]
         public string? ContentUrl { get; set; }
 
-        [Display(Name = "Nội dung HTML")]
-        public string? ContentHtml { get; set; }
+        // Reading: MainFileIndex
+        // Quiz: QuizFileIndex
+        [Display(Name = "File index")]
+        public int? MainFileIndex { get; set; }
 
-        [Display(Name = "Upload file")]
-        public bool UploadBinary { get; set; } = false;
+        // Video: DocumentUrl -> AttachmentUrl
+        // Reading: AdditionalDocumentUrl -> AttachmentUrl
+        [Display(Name = "URL tài liệu đính kèm")]
+        public string? AttachmentUrl { get; set; }
 
+        // Quiz only
         [Display(Name = "Tiêu đề quiz")]
         public string? QuizTitle { get; set; }
 
         [Display(Name = "Quiz từ file Excel")]
-        public bool IsQuizExcel { get; set; } = false;
+        public bool IsQuizExcel { get; set; } = true; // Mặc định true vì quiz chỉ hỗ trợ Excel
 
-        // ID của file được upload (tương ứng với index trong LessonFiles array)
-        public int? FileIndex { get; set; }
+        [Range(1, 600, ErrorMessage = "Thời gian làm bài từ 1-600 phút")]
+        [Display(Name = "Thời gian làm bài (phút)")]
+        public int? QuizTimeLimit { get; set; }
+
+        [Range(1, 20, ErrorMessage = "Số lần làm bài từ 1-20")]
+        [Display(Name = "Số lần làm bài tối đa")]
+        public int? QuizMaxAttempts { get; set; }
+
+        [Range(0, 100, ErrorMessage = "Điểm pass từ 0-100%")]
+        [Display(Name = "Điểm pass (%)")]
+        public int? QuizPassingScore { get; set; }
 
         // Computed properties for display
         public string TypeDisplay => Type switch
         {
             LessonType.Video => "Video",
-            LessonType.Reading => "Đọc hiểu",
-            LessonType.File => "Tệp tin",
-            LessonType.Link => "Liên kết",
-            LessonType.Quiz => "Bài kiểm tra",
+            LessonType.Reading => "Bài Đọc",
+            LessonType.Quiz => "Quiz",
             _ => Type.ToString()
         };
     }
 
     /// <summary>
-    /// Enum cho loại bài học (copy từ backend)
+    /// Enum cho loại bài học (khớp với backend)
     /// </summary>
     public enum LessonType
     {
         Video = 1,
         Reading = 2,
-        File = 3,
-        Link = 4,
-        Quiz = 5
+        Quiz = 3
     }
 
     /// <summary>
