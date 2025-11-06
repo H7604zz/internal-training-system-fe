@@ -1,6 +1,7 @@
 @model InternalTrainingSystem.WebApp.Models.DTOs.CourseDto
 @using InternalTrainingSystem.WebApp.Constants
 @using InternalTrainingSystem.WebApp.Extensions
+@using InternalTrainingSystem.WebApp.Models.DTOs
 @{
     ViewData["Title"] = $"Chi Tiết Khóa Học - {Model.CourseName}";
 }
@@ -161,283 +162,102 @@
                         <h4 class="subsection-title">
                             <i class="fas fa-book me-2"></i>Nội dung khóa học
                         </h4>
-                        <div class="course-content">
-                            <!-- Module 1 -->
-                            <div class="module-display mb-4">
-                                <div class="card">
-                                    <div class="card-header bg-primary text-white">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <h5 class="mb-0">
-                                                <i class="fas fa-folder me-2"></i>Module 1: Giới thiệu về Lập trình Web
-                                            </h5>
-                                            <span class="badge bg-light text-dark">
-                                                <i class="fas fa-play-circle me-1"></i>4 bài học
-                                            </span>
-                                        </div>
-                                        <small class="mt-2 d-block opacity-75">
-                                            Tìm hiểu các khái niệm cơ bản về phát triển web, HTML, CSS và JavaScript
-                                        </small>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="lessons-list">
-                                            <!-- Lesson 1.1 -->
-                                            <div class="lesson-item">
-                                                <div class="lesson-header">
-                                                    <div class="lesson-info">
-                                                        <h6 class="lesson-title">
-                                                            <i class="fas fa-play-circle text-primary me-2"></i>
-                                                            Bài 1: HTML cơ bản
-                                                        </h6>
-                                                        <p class="lesson-meta text-muted mb-0">
-                                                            <i class="fas fa-video me-1"></i>Video • 45 phút
-                                                            <span class="ms-3">
-                                                                <i class="fas fa-file-pdf me-1"></i>Tài liệu PDF
-                                                            </span>
-                                                        </p>
-                                                    </div>
-                                                    <div class="lesson-actions">
-                                                        <button class="btn btn-sm btn-outline-primary">
-                                                            <i class="fas fa-eye me-1"></i>Xem
-                                                        </button>
-                                                    </div>
+                        
+                        @if (Model.Modules != null && Model.Modules.Any())
+                        {
+                            <div class="course-content">
+                                @foreach (var module in Model.Modules.OrderBy(m => m.OrderIndex))
+                                {
+                                    var moduleIndex = Model.Modules.OrderBy(m => m.OrderIndex).ToList().IndexOf(module);
+                                    var bgColorClass = moduleIndex % 3 == 0 ? "bg-primary" : moduleIndex % 3 == 1 ? "bg-success" : "bg-warning";
+                                    var textColorClass = moduleIndex % 3 == 2 ? "text-dark" : "text-white";
+                                    
+                                    <div class="module-display mb-4">
+                                        <div class="card">
+                                            <div class="card-header @bgColorClass @textColorClass">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <h5 class="mb-0">
+                                                        <i class="fas fa-folder me-2"></i>
+                                                        Module @module.OrderIndex: @module.Title
+                                                    </h5>
+                                                    <span class="badge bg-light text-dark">
+                                                        <i class="fas fa-play-circle me-1"></i>@module.Lessons.Count bài học
+                                                    </span>
                                                 </div>
+                                                @if (!string.IsNullOrEmpty(module.Description))
+                                                {
+                                                    <small class="mt-2 d-block opacity-75">
+                                                        @module.Description
+                                                    </small>
+                                                }
                                             </div>
-
-                                            <!-- Lesson 1.2 -->
-                                            <div class="lesson-item">
-                                                <div class="lesson-header">
-                                                    <div class="lesson-info">
-                                                        <h6 class="lesson-title">
-                                                            <i class="fas fa-play-circle text-primary me-2"></i>
-                                                            Bài 2: CSS Styling
-                                                        </h6>
-                                                        <p class="lesson-meta text-muted mb-0">
-                                                            <i class="fas fa-video me-1"></i>Video • 60 phút
-                                                            <span class="ms-3">
-                                                                <i class="fas fa-file-alt me-1"></i>Bài tập thực hành
-                                                            </span>
-                                                        </p>
+                                            <div class="card-body">
+                                                @if (module.Lessons != null && module.Lessons.Any())
+                                                {
+                                                    <div class="lessons-list">
+                                                        @foreach (var lesson in module.Lessons.OrderBy(l => l.OrderIndex))
+                                                        {
+                                                            <div class="lesson-item">
+                                                                <div class="lesson-header">
+                                                                    <div class="lesson-info">
+                                                                        <h6>Bài @lesson.OrderIndex: @lesson.Title</h6>
+                                                                        <div class="lesson-meta">
+                                                                            <span class="badge 
+                                                                                @(lesson.Type == LessonType.Video ? "bg-danger" : 
+                                                                                  lesson.Type == LessonType.Reading ? "bg-primary" : 
+                                                                                  "bg-success")">
+                                                                                <i class="fas @lesson.TypeIcon me-1"></i>
+                                                                                @lesson.TypeDisplay
+                                                                            </span>
+                                                                            
+                                                                            @if (lesson.Type == LessonType.Video && !string.IsNullOrEmpty(lesson.ContentUrl))
+                                                                            {
+                                                                                <a href="@lesson.ContentUrl" target="_blank" class="ms-2 text-decoration-none">
+                                                                                    <i class="fas fa-external-link-alt me-1"></i>Xem video
+                                                                                </a>
+                                                                            }
+                                                                            
+                                                                            @if (lesson.Type == LessonType.Quiz && lesson.QuizId.HasValue)
+                                                                            {
+                                                                                <span class="ms-2 text-muted">
+                                                                                    <i class="fas fa-clipboard-list me-1"></i>Quiz
+                                                                                </span>
+                                                                            }
+                                                                        </div>
+                                                                        
+                                                                        @if (!string.IsNullOrEmpty(lesson.Description))
+                                                                        {
+                                                                            <p class="lesson-description mt-2 mb-0">
+                                                                                @lesson.Description
+                                                                            </p>
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        }
                                                     </div>
-                                                    <div class="lesson-actions">
-                                                        <button class="btn btn-sm btn-outline-primary">
-                                                            <i class="fas fa-eye me-1"></i>Xem
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Lesson 1.3 -->
-                                            <div class="lesson-item">
-                                                <div class="lesson-header">
-                                                    <div class="lesson-info">
-                                                        <h6 class="lesson-title">
-                                                            <i class="fas fa-play-circle text-primary me-2"></i>
-                                                            Bài 3: JavaScript cơ bản
-                                                        </h6>
-                                                        <p class="lesson-meta text-muted mb-0">
-                                                            <i class="fas fa-video me-1"></i>Video • 90 phút
-                                                            <span class="ms-3">
-                                                                <i class="fas fa-code me-1"></i>Code examples
-                                                            </span>
-                                                        </p>
-                                                    </div>
-                                                    <div class="lesson-actions">
-                                                        <button class="btn btn-sm btn-outline-primary">
-                                                            <i class="fas fa-eye me-1"></i>Xem
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Lesson 1.4 -->
-                                            <div class="lesson-item">
-                                                <div class="lesson-header">
-                                                    <div class="lesson-info">
-                                                        <h6 class="lesson-title">
-                                                            <i class="fas fa-play-circle text-primary me-2"></i>
-                                                            Bài 4: Tích hợp HTML, CSS, JS
-                                                        </h6>
-                                                        <p class="lesson-meta text-muted mb-0">
-                                                            <i class="fas fa-video me-1"></i>Video • 75 phút
-                                                            <span class="ms-3">
-                                                                <i class="fas fa-laptop-code me-1"></i>Project demo
-                                                            </span>
-                                                        </p>
-                                                    </div>
-                                                    <div class="lesson-actions">
-                                                        <button class="btn btn-sm btn-outline-primary">
-                                                            <i class="fas fa-eye me-1"></i>Xem
-                                                        </button>
-                                                    </div>
-                                                </div>
+                                                }
+                                                else
+                                                {
+                                                    <p class="text-muted mb-0">
+                                                        <i class="fas fa-info-circle me-2"></i>
+                                                        Module này chưa có bài học nào.
+                                                    </p>
+                                                }
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                }
                             </div>
-
-                            <!-- Module 2 -->
-                            <div class="module-display mb-4">
-                                <div class="card">
-                                    <div class="card-header bg-success text-white">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <h5 class="mb-0">
-                                                <i class="fas fa-folder me-2"></i>Module 2: Framework và Thư viện
-                                            </h5>
-                                            <span class="badge bg-light text-dark">
-                                                <i class="fas fa-play-circle me-1"></i>3 bài học
-                                            </span>
-                                        </div>
-                                        <small class="mt-2 d-block opacity-75">
-                                            Học cách sử dụng các framework phổ biến như Bootstrap, jQuery
-                                        </small>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="lessons-list">
-                                            <!-- Lesson 2.1 -->
-                                            <div class="lesson-item">
-                                                <div class="lesson-header">
-                                                    <div class="lesson-info">
-                                                        <h6 class="lesson-title">
-                                                            <i class="fas fa-play-circle text-success me-2"></i>
-                                                            Bài 1: Bootstrap Framework
-                                                        </h6>
-                                                        <p class="lesson-meta text-muted mb-0">
-                                                            <i class="fas fa-video me-1"></i>Video • 80 phút
-                                                            <span class="ms-3">
-                                                                <i class="fas fa-download me-1"></i>Source code
-                                                            </span>
-                                                        </p>
-                                                    </div>
-                                                    <div class="lesson-actions">
-                                                        <button class="btn btn-sm btn-outline-success">
-                                                            <i class="fas fa-eye me-1"></i>Xem
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Lesson 2.2 -->
-                                            <div class="lesson-item">
-                                                <div class="lesson-header">
-                                                    <div class="lesson-info">
-                                                        <h6 class="lesson-title">
-                                                            <i class="fas fa-play-circle text-success me-2"></i>
-                                                            Bài 2: jQuery Library
-                                                        </h6>
-                                                        <p class="lesson-meta text-muted mb-0">
-                                                            <i class="fas fa-video me-1"></i>Video • 70 phút
-                                                            <span class="ms-3">
-                                                                <i class="fas fa-file-code me-1"></i>Exercises
-                                                            </span>
-                                                        </p>
-                                                    </div>
-                                                    <div class="lesson-actions">
-                                                        <button class="btn btn-sm btn-outline-success">
-                                                            <i class="fas fa-eye me-1"></i>Xem
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Lesson 2.3 -->
-                                            <div class="lesson-item">
-                                                <div class="lesson-header">
-                                                    <div class="lesson-info">
-                                                        <h6 class="lesson-title">
-                                                            <i class="fas fa-play-circle text-success me-2"></i>
-                                                            Bài 3: Responsive Design
-                                                        </h6>
-                                                        <p class="lesson-meta text-muted mb-0">
-                                                            <i class="fas fa-video me-1"></i>Video • 95 phút
-                                                            <span class="ms-3">
-                                                                <i class="fas fa-mobile-alt me-1"></i>Mobile examples
-                                                            </span>
-                                                        </p>
-                                                    </div>
-                                                    <div class="lesson-actions">
-                                                        <button class="btn btn-sm btn-outline-success">
-                                                            <i class="fas fa-eye me-1"></i>Xem
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Khóa học này chưa có nội dung. Vui lòng cập nhật thêm modules và bài học.
                             </div>
-
-                            <!-- Module 3 -->
-                            <div class="module-display mb-4">
-                                <div class="card">
-                                    <div class="card-header bg-warning text-dark">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <h5 class="mb-0">
-                                                <i class="fas fa-folder me-2"></i>Module 3: Dự án thực tế
-                                            </h5>
-                                            <span class="badge bg-dark text-white">
-                                                <i class="fas fa-play-circle me-1"></i>2 bài học
-                                            </span>
-                                        </div>
-                                        <small class="mt-2 d-block">
-                                            Xây dựng một website hoàn chỉnh từ những kiến thức đã học
-                                        </small>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="lessons-list">
-                                            <!-- Lesson 3.1 -->
-                                            <div class="lesson-item">
-                                                <div class="lesson-header">
-                                                    <div class="lesson-info">
-                                                        <h6 class="lesson-title">
-                                                            <i class="fas fa-play-circle text-warning me-2"></i>
-                                                            Bài 1: Thiết kế và lập trình
-                                                        </h6>
-                                                        <p class="lesson-meta text-muted mb-0">
-                                                            <i class="fas fa-video me-1"></i>Video • 120 phút
-                                                            <span class="ms-3">
-                                                                <i class="fas fa-file-archive me-1"></i>Project files
-                                                            </span>
-                                                        </p>
-                                                    </div>
-                                                    <div class="lesson-actions">
-                                                        <button class="btn btn-sm btn-outline-warning">
-                                                            <i class="fas fa-eye me-1"></i>Xem
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Lesson 3.2 -->
-                                            <div class="lesson-item">
-                                                <div class="lesson-header">
-                                                    <div class="lesson-info">
-                                                        <h6 class="lesson-title">
-                                                            <i class="fas fa-play-circle text-warning me-2"></i>
-                                                            Bài 2: Deploy và bảo trì
-                                                        </h6>
-                                                        <p class="lesson-meta text-muted mb-0">
-                                                            <i class="fas fa-video me-1"></i>Video • 60 phút
-                                                            <span class="ms-3">
-                                                                <i class="fas fa-cloud me-1"></i>Hosting guide
-                                                            </span>
-                                                        </p>
-                                                    </div>
-                                                    <div class="lesson-actions">
-                                                        <button class="btn btn-sm btn-outline-warning">
-                                                            <i class="fas fa-eye me-1"></i>Xem
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        }
                     </div>
-
-                    
                 </div>
             </div>
 
