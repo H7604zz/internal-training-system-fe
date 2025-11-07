@@ -6,6 +6,7 @@ using InternalTrainingSystem.WebApp.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using System.Text;
+using Microsoft.AspNetCore.Diagnostics;
 
 namespace InternalTrainingSystem.WebApp.Controllers
 {
@@ -169,6 +170,52 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
 
             return RedirectToAction("DanhSachNhanVien", "KhoaHoc", new { id = model.CourseId });
+        }
+
+        [HttpGet("by-course/{courseId}")]
+        public async Task<IActionResult> GetClassesByCourse(int courseId)
+        {
+            try
+            {
+                if (courseId <= 0)
+                {
+                    return BadRequest(new { success = false, message = "ID khóa học không hợp lệ." });
+                }
+
+                // Call API to get classes by course
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/class/by-course/{courseId}"));
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    var cleanMessage = !string.IsNullOrEmpty(errorContent) ? errorContent.Trim('"') : "Không thể tải danh sách lớp học.";
+                    
+                    return StatusCode((int)response.StatusCode, new 
+                    { 
+                        success = false, 
+                        message = cleanMessage
+                    });
+                }
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var classes = JsonSerializer.Deserialize<List<ClassListDto>>(responseContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                }) ?? new List<ClassListDto>();
+                
+                return Ok(new
+                {
+                    success = true,
+                    data = classes
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new 
+                { 
+                    success = false, 
+                    message = "Đã xảy ra lỗi khi tải danh sách lớp học." 
+                });
+            }
         }
     }
 }

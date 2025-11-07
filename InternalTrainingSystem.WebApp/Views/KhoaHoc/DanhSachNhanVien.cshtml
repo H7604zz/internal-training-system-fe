@@ -60,6 +60,9 @@
                             <i class="fas fa-plus-circle me-1"></i>Tạo Lớp Học
                         </button>
                     }
+                    <button type="button" class="btn btn-outline-primary ms-2" onclick="openCourseClassesModal()" title="Xem các lớp thuộc khóa học này">
+                        <i class="fas fa-chalkboard-teacher me-1"></i>Xem Lớp Học
+                    </button>
                 </div>
             </div>
 
@@ -203,6 +206,47 @@
 
 @await Html.PartialAsync("_CreateClassModal", createClassModel)
 
+<!-- Modal: Danh sách lớp của khóa học -->
+<div class="modal fade" id="courseClassesModal" tabindex="-1" aria-labelledby="courseClassesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="courseClassesModalLabel">
+                    <i class="fas fa-chalkboard me-2"></i>Danh Sách Lớp Học Của Khóa
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="classesLoading" class="text-center py-4 d-none">
+                    <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                    <div class="mt-2">Đang tải danh sách lớp...</div>
+                </div>
+                <div id="classesError" class="d-none"></div>
+                <div id="classesEmpty" class="empty-state d-none">
+                    <i class="fas fa-chalkboard fa-3x"></i>
+                    <h5 class="mt-2">Chưa có lớp nào cho khóa học này</h5>
+                </div>
+                <div id="classesTableWrapper" class="table-responsive d-none">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 100px;">Mã Lớp</th>
+                                <th>Tên Lớp</th>
+                                <th style="width: 220px;">Mentor</th>
+                                <th style="width: 120px;" class="text-center">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="classesTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     @Html.AntiForgeryToken()
     <script>
@@ -271,6 +315,90 @@
             modal.show();
         }
         
+        // Fetch and show classes for current course
+        async function openCourseClassesModal() {
+            const courseId = @ViewBag.CourseId;
+            const modalEl = document.getElementById('courseClassesModal');
+            const loadingEl = document.getElementById('classesLoading');
+            const errorEl = document.getElementById('classesError');
+            const emptyEl = document.getElementById('classesEmpty');
+            const tableWrapperEl = document.getElementById('classesTableWrapper');
+            const tbodyEl = document.getElementById('classesTableBody');
+
+            // Reset states
+            errorEl.classList.add('d-none');
+            emptyEl.classList.add('d-none');
+            tableWrapperEl.classList.add('d-none');
+            tbodyEl.innerHTML = '';
+            loadingEl.classList.remove('d-none');
+
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+
+            try {
+                const res = await fetch(`/lop-hoc/by-course/${courseId}`);
+                
+                const contentType = res.headers.get('content-type') || '';
+                
+                let payload = null;
+                if (contentType.includes('application/json')) {
+                    payload = await res.json();
+                } else {
+                    const text = await res.text();
+                    payload = { success: res.ok, message: text, data: [] };
+                }
+
+                loadingEl.classList.add('d-none');
+
+                // 404 means no classes found - this is a valid state, not an error
+                if (res.status === 404) {
+                    emptyEl.classList.remove('d-none');
+                    return;
+                }
+
+                // Handle other non-success status codes as errors
+                if (!res.ok || payload?.success === false) {
+                    const errorMessage = payload?.message || 'Không thể tải danh sách lớp học.';
+                    errorEl.textContent = errorMessage;
+                    errorEl.classList.remove('d-none');
+                    return;
+                }
+
+                const list = payload?.data || [];
+                
+                if (!Array.isArray(list) || list.length === 0) {
+                    emptyEl.classList.remove('d-none');
+                    return;
+                }
+
+                // Render rows
+                for (const cls of list) {
+                    const id = cls.classId;
+                    const name = cls.className || `Lớp #${id}`;
+                    const mentor = cls.mentorName || '';
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><span class="fw-semibold">#${id}</span></td>
+                        <td>${name}</td>
+                        <td>${mentor}</td>
+                        <td class="text-center">
+                            <a class="btn btn-sm btn-outline-primary" href="/lop-hoc/chi-tiet/${id}">
+                                <i class="fas fa-external-link-alt me-1"></i>Chi tiết
+                            </a>
+                        </td>
+                    `;
+                    tbodyEl.appendChild(tr);
+                }
+
+                tableWrapperEl.classList.remove('d-none');
+            } catch (e) {
+                loadingEl.classList.add('d-none');
+                errorEl.textContent = `Lỗi: ${e.message || 'Đã xảy ra lỗi khi tải danh sách lớp học.'}`;
+                errorEl.classList.remove('d-none');
+            }
+        }
+
         // Handle create class form submission
         document.addEventListener('DOMContentLoaded', function() {
             const createClassForm = document.getElementById('createClassForm');

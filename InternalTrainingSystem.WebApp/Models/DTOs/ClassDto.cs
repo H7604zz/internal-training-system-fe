@@ -33,9 +33,14 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string Email { get; set; } = string.Empty;
     }
 
-    public class CreateClassesDto
+    public class ClassListDto
     {
-        public List<CreateClassDto> Classes { get; set; } = new();
+        public int ClassId { get; set; }
+        public string ClassName { get; set; } = string.Empty;
+        public string MentorId { get; set; } = string.Empty;
+        public string? MentorName { get; set; }
+        public bool IsActive { get; set; } = true;
+        public string? Status { get; set; }
     }
 
     public class CreateClassDto
