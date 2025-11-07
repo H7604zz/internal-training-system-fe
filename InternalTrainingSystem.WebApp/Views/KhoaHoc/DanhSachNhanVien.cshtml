@@ -103,71 +103,66 @@
             </form>
         </div>
 
-        <!-- Employee List -->
+        <!-- Employee List (Table) -->
         <div class="employees-list">
-            @if (Model != null && Model.Any())
-            {
-                @foreach (var employee in Model)
-                {
-                    <div class="employee-card" data-status="@employee.Status.ToLower()">
-                        <div class="employee-header-card">
-                            <div class="employee-info">
-                                <div class="employee-avatar">
-                                    @(employee.FullName.Split(' ').LastOrDefault()?.FirstOrDefault().ToString().ToUpper())
-                                </div>
-                                <div class="employee-details">
-                                    <h5>@employee.FullName</h5>
-                                    <div class="employee-meta">
-                                        <i class="fas fa-id-card me-1"></i>Mã NV: @employee.EmployeeId
-                                    </div>
-                                    <div class="employee-meta">
-                                        <i class="fas fa-building me-1"></i>@employee.Department
-                                    </div>
-                                    <div class="employee-meta">
-                                        <i class="fas fa-user-tie me-1"></i>@employee.Position
-                                    </div>
-                                </div>
-                                <div class="response-status">
-                                    <span class="status-badge @employee.StatusBadgeClass">
-                                        @employee.StatusText
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        @if (!string.IsNullOrEmpty(employee.Reason) || !string.IsNullOrEmpty(employee.Email))
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle employee-table">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 60px;" class="text-center">STT</th>
+                            <th style="width: 140px;">Mã NV</th>
+                            <th>Email</th>
+                            <th style="min-width: 220px;">Họ và tên</th>
+                            <th>Phòng ban</th>
+                            <th>Chức vụ</th>
+                            <th style="width: 140px;" class="text-center">Trạng thái</th>
+                            <th style="min-width: 200px;">Ghi chú</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
                         {
-                            <div class="employee-body">
-                                @if (!string.IsNullOrEmpty(employee.Reason))
-                                {
-                                    <div class="employee-note">
-                                        <i class="fas fa-comment-alt me-2"></i>
-                                        <strong>Ghi chú:</strong> @employee.Reason
-                                    </div>
-                                }
-
-                                <div class="d-flex justify-content-between align-items-center">
-                                    @if (!string.IsNullOrEmpty(employee.Email))
-                                    {
-                                        <div class="contact-info">
-                                            <i class="fas fa-envelope me-1"></i>
-                                            <span>@employee.Email</span>
-                                        </div>
-                                    }
-                                </div>
-                            </div>
+                            int startIndex = (ViewBag.CurrentPage != null && ViewBag.PageSize != null) 
+                                ? ((int)ViewBag.CurrentPage - 1) * (int)ViewBag.PageSize + 1 
+                                : 1; 
+                            var stt = startIndex; 
+                            foreach (var employee in Model)
+                            {
+                                <tr data-status="@employee.Status.ToLower()">
+                                    <td class="text-center">@stt</td>
+                                    <td class="fw-semibold">@employee.EmployeeId</td>
+                                    <td class="text-primary">@employee.Email</td>
+                                    <td>@employee.FullName</td>
+                                    <td>@employee.Department</td>
+                                    <td>@employee.Position</td>
+                                    <td class="text-center">
+                                        <span class="status-badge @employee.StatusBadgeClass">@employee.StatusText</span>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(employee.Reason))
+                                        {
+                                            @employee.Reason
+                                        }
+                                    </td>
+                                </tr>
+                                stt++;
+                            }
                         }
-                    </div>
-                }
-            }
-            else
-            {
-                <div class="empty-state">
-                    <i class="fas fa-users-slash"></i>
-                    <h3>Không tìm thấy nhân viên nào</h3>
-                    <p>Không có nhân viên nào phù hợp với bộ lọc hiện tại.</p>
-                </div>
-            }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center py-4">
+                                    <div class="empty-state mb-0">
+                                        <i class="fas fa-users-slash"></i>
+                                        <h5 class="mt-2 mb-1">Không tìm thấy nhân viên nào</h5>
+                                        <div class="text-muted">Không có nhân viên nào phù hợp với bộ lọc hiện tại.</div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Pagination -->

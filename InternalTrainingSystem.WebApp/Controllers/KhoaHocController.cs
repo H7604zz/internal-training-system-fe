@@ -428,7 +428,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 }
 
                 // Sử dụng page size cố định từ constants
-                var pageSize = PaginationConstants.CoursePageSize;
+                var pageSize = PaginationConstants.StaffPageSize;
 
                 // Build query parameters for eligible staff
                 var queryParams = $"?page={page}&pageSize={pageSize}";

@@ -39,5 +39,10 @@ namespace InternalTrainingSystem.WebApp.Constants
         /// Số lượng phòng ban hiển thị trên mỗi trang
         /// </summary>
         public const int DepartmentPageSize = 10;
+
+        /// <summary>
+        /// Số lượng nhân viên - dùng cho trang danh sách nhân viên
+        /// </summary>
+        public const int StaffPageSize = 20;
     }
 }
