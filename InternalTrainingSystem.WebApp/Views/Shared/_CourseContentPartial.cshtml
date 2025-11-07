@@ -118,11 +118,11 @@ else
         if (window.courseModalsInitialized) return;
         window.courseModalsInitialized = true;
 
-        function ensureVideoModal() {
+                function ensureVideoModal() {
             if (document.getElementById('videoModal')) return;
             const html = `
-<div class="modal fade" id="videoModal" tabindex="-1" aria-labelledby="videoModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered">
+<div class="modal fade modal-video" id="videoModal" tabindex="-1" aria-labelledby="videoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="videoModalLabel">
@@ -147,11 +147,11 @@ else
             });
         }
 
-        function ensureDocumentModal() {
+                function ensureDocumentModal() {
             if (document.getElementById('documentModal')) return;
             const html = `
-<div class="modal fade" id="documentModal" tabindex="-1" aria-labelledby="documentModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered">
+<div class="modal fade modal-document" id="documentModal" tabindex="-1" aria-labelledby="documentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="documentModalLabel">
@@ -162,7 +162,7 @@ else
       </div>
       <div class="modal-body p-0">
         <div class="document-viewer">
-          <iframe id="documentFrame" src="" style="width: 100%; height: 80vh; border: none;"></iframe>
+          <iframe id="documentFrame" src="" style="width: 100%; height: 60vh; border: none;"></iframe>
         </div>
       </div>
       <div class="modal-footer">
@@ -222,7 +222,9 @@ else
                     const title = this.getAttribute('data-document-title') || '';
                     const url = this.getAttribute('data-document-url') || '';
                     let viewer = url;
-                    if (url.toLowerCase().endsWith('.pdf')) {
+                    const lower = url.toLowerCase();
+                    const shouldUseGViewer = ['.pdf','.doc','.docx','.xls','.xlsx','.ppt','.pptx'].some(ext => lower.endsWith(ext));
+                    if (shouldUseGViewer) {
                         viewer = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
                     }
                     const titleEl = document.getElementById('documentTitle');
