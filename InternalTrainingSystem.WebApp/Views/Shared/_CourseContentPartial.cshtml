@@ -1,0 +1,258 @@
+@model IEnumerable<InternalTrainingSystem.WebApp.Models.DTOs.ModuleDetailDto>
+@using InternalTrainingSystem.WebApp.Models.DTOs
+
+@if (Model != null && Model.Any())
+{
+    <div class="course-content">
+        @foreach (var module in Model.OrderBy(m => m.OrderIndex))
+        {
+            var moduleIndex = Model.OrderBy(m => m.OrderIndex).ToList().IndexOf(module);
+            var bgColorClass = moduleIndex % 3 == 0 ? "bg-primary" : moduleIndex % 3 == 1 ? "bg-success" : "bg-warning";
+            var textColorClass = moduleIndex % 3 == 2 ? "text-dark" : "text-white";
+            
+            <div class="module-display mb-4">
+                <div class="card">
+                    <div class="card-header @bgColorClass @textColorClass">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-folder me-2"></i>
+                                Module @module.OrderIndex: @module.Title
+                            </h5>
+                            <span class="badge bg-light text-dark">
+                                <i class="fas fa-play-circle me-1"></i>@module.Lessons.Count bài học
+                            </span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(module.Description))
+                        {
+                            <small class="mt-2 d-block opacity-75">
+                                @module.Description
+                            </small>
+                        }
+                    </div>
+                    <div class="card-body">
+                        @if (module.Lessons != null && module.Lessons.Any())
+                        {
+                            <div class="lessons-list">
+                                @foreach (var lesson in module.Lessons.OrderBy(l => l.OrderIndex))
+                                {
+                                    <div class="lesson-item">
+                                        <div class="lesson-header">
+                                            <div class="lesson-info">
+                                                <h6>Bài @lesson.OrderIndex: @lesson.Title</h6>
+                                                <div class="lesson-meta">
+                                                    <span class="badge 
+                                                        @(lesson.Type == LessonType.Video ? "bg-danger" : 
+                                                          lesson.Type == LessonType.Reading ? "bg-primary" : 
+                                                          "bg-success")">
+                                                        <i class="fas @lesson.TypeIcon me-1"></i>
+                                                        @lesson.TypeDisplay
+                                                    </span>
+                                                    
+                                                    @if (lesson.Type == LessonType.Video && !string.IsNullOrEmpty(lesson.ContentUrl))
+                                                    {
+                                                        <a href="#" 
+                                                           class="ms-2 text-decoration-none video-link"
+                                                           data-video-url="@lesson.ContentUrl"
+                                                           data-video-title="@lesson.Title">
+                                                            <i class="fas fa-play-circle me-1"></i>Xem video
+                                                        </a>
+                                                    }
+                                                    
+                                                    @if (lesson.Type == LessonType.Reading && !string.IsNullOrEmpty(lesson.ContentUrl))
+                                                    {
+                                                        <a href="#" 
+                                                           class="ms-2 text-decoration-none document-link"
+                                                           data-document-url="@lesson.ContentUrl"
+                                                           data-document-title="@lesson.Title">
+                                                            <i class="fas fa-file-alt me-1"></i>Xem tài liệu
+                                                        </a>
+                                                    }
+                                                    
+                                                    @if (lesson.Type == LessonType.Quiz && lesson.QuizId.HasValue)
+                                                    {
+                                                        <span class="ms-2 text-muted">
+                                                            <i class="fas fa-clipboard-list me-1"></i>Quiz
+                                                        </span>
+                                                    }
+                                                </div>
+                                                
+                                                @if (!string.IsNullOrEmpty(lesson.Description))
+                                                {
+                                                    <p class="lesson-description mt-2 mb-0">
+                                                        @lesson.Description
+                                                    </p>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Module này chưa có bài học nào.
+                            </p>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        Khóa học này chưa có nội dung. Vui lòng cập nhật thêm modules và bài học.
+    </div>
+}
+
+<!-- Modals are created dynamically by script to avoid duplicate IDs across pages -->
+
+<script>
+    (function () {
+        'use strict';
+
+        if (window.courseModalsInitialized) return;
+        window.courseModalsInitialized = true;
+
+        function ensureVideoModal() {
+            if (document.getElementById('videoModal')) return;
+            const html = `
+<div class="modal fade" id="videoModal" tabindex="-1" aria-labelledby="videoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="videoModalLabel">
+          <i class="fas fa-play-circle me-2"></i>
+          <span id="videoTitle"></span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div class="ratio ratio-16x9">
+          <iframe id="videoFrame" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>`;
+            document.body.insertAdjacentHTML('beforeend', html);
+            const modalEl = document.getElementById('videoModal');
+            modalEl.addEventListener('hidden.bs.modal', function () {
+                const frame = document.getElementById('videoFrame');
+                if (frame) frame.src = '';
+            });
+        }
+
+        function ensureDocumentModal() {
+            if (document.getElementById('documentModal')) return;
+            const html = `
+<div class="modal fade" id="documentModal" tabindex="-1" aria-labelledby="documentModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="documentModalLabel">
+          <i class="fas fa-file-alt me-2"></i>
+          <span id="documentTitle"></span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div class="document-viewer">
+          <iframe id="documentFrame" src="" style="width: 100%; height: 80vh; border: none;"></iframe>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a id="documentDownloadLink" href="#" class="btn btn-primary"><i class="fas fa-download me-2"></i>Tải xuống</a>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-2"></i>Đóng</button>
+      </div>
+    </div>
+  </div>
+</div>`;
+            document.body.insertAdjacentHTML('beforeend', html);
+            const modalEl = document.getElementById('documentModal');
+            modalEl.addEventListener('hidden.bs.modal', function () {
+                const frame = document.getElementById('documentFrame');
+                if (frame) frame.src = '';
+            });
+        }
+
+        function toEmbedUrl(url) {
+            try {
+                if (url.includes('youtube.com/watch')) {
+                    const u = new URL(url);
+                    const id = u.searchParams.get('v');
+                    return id ? `https://www.youtube.com/embed/${id}` : url;
+                }
+                if (url.includes('youtu.be/')) {
+                    const id = url.split('youtu.be/')[1].split('?')[0];
+                    return `https://www.youtube.com/embed/${id}`;
+                }
+                if (url.includes('vimeo.com/')) {
+                    const id = url.split('vimeo.com/')[1].split('?')[0];
+                    return `https://player.vimeo.com/video/${id}`;
+                }
+            } catch {}
+            return url;
+        }
+
+        function wireLinks() {
+            document.querySelectorAll('.video-link').forEach(a => {
+                a.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    ensureVideoModal();
+                    const title = this.getAttribute('data-video-title') || '';
+                    const url = toEmbedUrl(this.getAttribute('data-video-url') || '');
+                    const titleEl = document.getElementById('videoTitle');
+                    const frameEl = document.getElementById('videoFrame');
+                    if (titleEl) titleEl.textContent = title;
+                    if (frameEl) frameEl.src = url;
+                    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('videoModal'));
+                    modal.show();
+                }, { once: false });
+            });
+
+            document.querySelectorAll('.document-link').forEach(a => {
+                a.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    ensureDocumentModal();
+                    const title = this.getAttribute('data-document-title') || '';
+                    const url = this.getAttribute('data-document-url') || '';
+                    let viewer = url;
+                    if (url.toLowerCase().endsWith('.pdf')) {
+                        viewer = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+                    }
+                    const titleEl = document.getElementById('documentTitle');
+                    const frameEl = document.getElementById('documentFrame');
+                    if (titleEl) titleEl.textContent = title;
+                    if (frameEl) frameEl.src = viewer;
+                    // download button
+                    const dl = document.getElementById('documentDownloadLink');
+                    const fresh = dl.cloneNode(true);
+                    dl.parentNode.replaceChild(fresh, dl);
+                    fresh.addEventListener('click', function (ev) {
+                        ev.preventDefault();
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = title || 'document';
+                        a.target = '_blank';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    });
+                    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('documentModal'));
+                    modal.show();
+                }, { once: false });
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', wireLinks);
+        } else {
+            wireLinks();
+        }
+    })();
+</script>
