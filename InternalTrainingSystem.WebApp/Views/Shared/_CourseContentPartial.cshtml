@@ -70,9 +70,12 @@
                                                     
                                                     @if (lesson.Type == LessonType.Quiz && lesson.QuizId.HasValue)
                                                     {
-                                                        <span class="ms-2 text-muted">
-                                                            <i class="fas fa-clipboard-list me-1"></i>Quiz
-                                                        </span>
+                                                        <a href="#" 
+                                                           class="ms-2 text-decoration-none quiz-link"
+                                                           data-quiz-id="@lesson.QuizId"
+                                                           data-quiz-title="@lesson.Title">
+                                                            <i class="fas fa-clipboard-list me-1"></i>Xem quiz
+                                                        </a>
                                                     }
                                                 </div>
                                                 
@@ -180,6 +183,69 @@ else
             });
         }
 
+        function ensureQuizModal() {
+            if (document.getElementById('quizModal')) return;
+            const html = `
+<div class="modal fade modal-quiz" id="quizModal" tabindex="-1" aria-labelledby="quizModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="quizModalLabel">
+                    <i class="fas fa-clipboard-list me-2"></i>
+                    <span id="quizTitle"></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="quizLoadingSpinner" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                </div>
+                <div id="quizContent" style="display: none;">
+                    <div class="quiz-info mb-4 p-3 bg-light rounded">
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <strong><i class="fas fa-clock me-2"></i>Thời gian:</strong>
+                                <span id="quizTimeLimit"></span> phút
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <strong><i class="fas fa-redo me-2"></i>Số lần làm tối đa:</strong>
+                                <span id="quizMaxAttempts"></span>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <strong><i class="fas fa-check-circle me-2"></i>Điểm đạt:</strong>
+                                <span id="quizPassingScore"></span>%
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <strong><i class="fas fa-list me-2"></i>Số lần đã làm:</strong>
+                                <span id="quizAttemptCount"></span>
+                            </div>
+                        </div>
+                        <div class="mt-2" id="quizDescriptionContainer">
+                            <strong><i class="fas fa-info-circle me-2"></i>Mô tả:</strong>
+                            <p class="mb-0 mt-1" id="quizDescription"></p>
+                        </div>
+                    </div>
+                    
+                    <h6 class="mb-3"><i class="fas fa-question-circle me-2"></i>Danh sách câu hỏi (<span id="questionCount"></span> câu)</h6>
+                    <div id="questionsList"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" id="startQuizBtn">
+                    <i class="fas fa-play me-2"></i>Bắt đầu làm quiz
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>`;
+            document.body.insertAdjacentHTML('beforeend', html);
+        }
+
         function toEmbedUrl(url) {
             try {
                 if (url.includes('youtube.com/watch')) {
@@ -249,6 +315,162 @@ else
                     modal.show();
                 }, { once: false });
             });
+
+            document.querySelectorAll('.quiz-link').forEach(a => {
+                a.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    ensureQuizModal();
+                    const quizId = this.getAttribute('data-quiz-id');
+                    const title = this.getAttribute('data-quiz-title') || 'Quiz';
+                    loadQuizDetail(quizId, title);
+                }, { once: false });
+            });
+        }
+
+        async function loadQuizDetail(quizId, title) {
+            const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('quizModal'));
+            modal.show();
+
+            document.getElementById('quizTitle').textContent = title;
+            document.getElementById('quizLoadingSpinner').style.display = 'block';
+            document.getElementById('quizContent').style.display = 'none';
+
+            try {
+                const response = await fetch(`/quiz/get-quiz-detail/${quizId}`);
+                
+                if (!response.ok) {
+                    let errorMessage = 'Không thể tải thông tin quiz';
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.message) {
+                            errorMessage = errorData.message;
+                        }
+                    } catch (e) {
+                        if (response.status === 404) {
+                            errorMessage = `Quiz với ID ${quizId} không tồn tại`;
+                        } else if (response.status === 401) {
+                            errorMessage = 'Bạn cần đăng nhập để xem quiz này';
+                        } else if (response.status === 403) {
+                            errorMessage = 'Bạn không có quyền xem quiz này';
+                        } else {
+                            errorMessage = `Không thể tải thông tin quiz (Status: ${response.status})`;
+                        }
+                    }
+                    throw new Error(errorMessage);
+                }
+                
+                const data = await response.json();
+                
+                if (!data) {
+                    throw new Error('Không nhận được dữ liệu quiz');
+                }
+                
+                displayQuizDetail(data);
+            } catch (error) {
+                document.getElementById('quizLoadingSpinner').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        ${error.message}
+                    </div>`;
+            }
+        }
+
+        function displayQuizDetail(quiz) {
+            try {
+                document.getElementById('quizLoadingSpinner').style.display = 'none';
+                document.getElementById('quizContent').style.display = 'block';
+
+                document.getElementById('quizTimeLimit').textContent = quiz.timeLimit || 0;
+                document.getElementById('quizMaxAttempts').textContent = quiz.maxAttempts || 0;
+                document.getElementById('quizPassingScore').textContent = quiz.passingScore || 0;
+                document.getElementById('quizAttemptCount').textContent = quiz.attemptCount || 0;
+                
+                const descContainer = document.getElementById('quizDescriptionContainer');
+                if (quiz.description) {
+                    document.getElementById('quizDescription').textContent = quiz.description;
+                    descContainer.style.display = 'block';
+                } else {
+                    descContainer.style.display = 'none';
+                }
+
+                document.getElementById('questionCount').textContent = quiz.questions?.length || 0;
+
+                const questionsList = document.getElementById('questionsList');
+                questionsList.innerHTML = '';
+
+                if (quiz.questions && quiz.questions.length > 0) {
+                    quiz.questions.sort((a, b) => a.orderIndex - b.orderIndex).forEach((question, index) => {
+                    const questionDiv = document.createElement('div');
+                    questionDiv.className = 'question-item mb-3 p-3 border rounded';
+                    
+                    let questionTypeIcon = 'fa-check-circle';
+                    let questionTypeBadge = 'Multiple Choice';
+                    let questionTypeBadgeClass = 'bg-primary';
+                    
+                    if (question.questionType === 'TrueFalse') {
+                        questionTypeIcon = 'fa-toggle-on';
+                        questionTypeBadge = 'True/False';
+                        questionTypeBadgeClass = 'bg-info';
+                    } else if (question.questionType === 'Essay') {
+                        questionTypeIcon = 'fa-pen';
+                        questionTypeBadge = 'Essay';
+                        questionTypeBadgeClass = 'bg-warning text-dark';
+                    }
+                    
+                    let answersHtml = '';
+                    if (question.answers && question.answers.length > 0) {
+                        const sortedAnswers = [...question.answers].sort((a, b) => a.orderIndex - b.orderIndex);
+                        answersHtml = '<ul class="list-unstyled mt-2 ms-3">';
+                        sortedAnswers.forEach(answer => {
+                            const correctIcon = answer.isCorrect 
+                                ? '<i class="fas fa-check-circle text-success me-2"></i>' 
+                                : '<i class="far fa-circle text-muted me-2"></i>';
+                            answersHtml += `<li class="mb-1">${correctIcon}${answer.answerText}</li>`;
+                        });
+                        answersHtml += '</ul>';
+                    }
+                    
+                    questionDiv.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="mb-0">
+                                <span class="badge bg-secondary me-2">Câu ${index + 1}</span>
+                                ${question.questionText}
+                            </h6>
+                            <div>
+                                <span class="badge ${questionTypeBadgeClass} me-1">
+                                    <i class="fas ${questionTypeIcon} me-1"></i>${questionTypeBadge}
+                                </span>
+                                <span class="badge bg-success">
+                                    <i class="fas fa-star me-1"></i>${question.points} điểm
+                                </span>
+                            </div>
+                        </div>
+                        ${answersHtml}
+                    `;
+                    
+                    questionsList.appendChild(questionDiv);
+                });
+            } else {
+                questionsList.innerHTML = '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>Quiz này chưa có câu hỏi nào.</div>';
+            }
+
+            // Handle start quiz button
+            const startBtn = document.getElementById('startQuizBtn');
+            const newStartBtn = startBtn.cloneNode(true);
+            startBtn.parentNode.replaceChild(newStartBtn, startBtn);
+            
+            newStartBtn.addEventListener('click', function() {
+                window.location.href = `/quiz/${quiz.quizId}/start`;
+            });
+            } catch (error) {
+                document.getElementById('quizLoadingSpinner').style.display = 'block';
+                document.getElementById('quizContent').style.display = 'none';
+                document.getElementById('quizLoadingSpinner').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Lỗi hiển thị quiz: ${error.message}
+                    </div>`;
+            }
         }
 
         if (document.readyState === 'loading') {
