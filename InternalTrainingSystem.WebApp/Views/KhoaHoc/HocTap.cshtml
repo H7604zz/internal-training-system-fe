@@ -5,6 +5,14 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/hoc-tap.css" asp-append-version="true" />
+    <style>
+        /* Lightweight inline styles for lazy video UI */
+        .video-lazy { position: relative; background:#000; border-radius:12px; overflow:hidden; min-height:320px; display:flex; align-items:center; justify-content:center; }
+        .video-lazy-thumb { position:absolute; inset:0; background:#000 center/cover no-repeat; filter:brightness(0.6); }
+        .video-lazy .play-btn-big { position:relative; z-index:2; display:flex; align-items:center; gap:.5rem; padding:.75rem 1.25rem; border-radius:999px; border:none; background:#d93025; color:#fff; font-weight:600; box-shadow:0 4px 16px rgba(0,0,0,.25); }
+        .video-lazy .play-btn-big i { font-size:1rem; }
+        .video-lazy .spinner-wrap { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.35); z-index:3; }
+    </style>
 }
 
 <div class="learning-container">
@@ -13,7 +21,7 @@
         <div class="learning-header">
             <div class="container">
                 <div class="row align-items-center">
-                    <div class="col-md-8">
+                    <div class="col-md-4">
                         <div class="d-flex align-items-center mb-2">
                             <a href="@Url.Action("DanhSachKhoaHocCuaToi", "KhoaHoc")" class="btn btn-back me-3">
                                 <i class="fas fa-arrow-left"></i>
@@ -24,12 +32,6 @@
                                     <span class="badge badge-info me-2">
                                         <i class="fas fa-tag me-1"></i>@Model.CourseCode
                                     </span>
-                                    <span class="badge badge-secondary me-2">
-                                        <i class="fas fa-layer-group me-1"></i>@Model.CategoryName
-                                    </span>
-                                    <span class="badge badge-primary">
-                                        <i class="fas fa-signal me-1"></i>@Model.Level
-                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -38,7 +40,7 @@
                             <p class="course-description">@Model.Description</p>
                         }
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-8">
                         <div class="progress-card">
                             <div class="progress-info">
                                 <span class="progress-label">Tiến độ học tập</span>
@@ -164,8 +166,33 @@
                                 
                                 <!-- Video Lesson -->
                                 <div id="video-content" class="content-section d-none">
+                                    <!-- YouTube Embed -->
+                                    <div id="video-youtube" class="video-wrapper d-none">
+                                        <iframe id="youtube-iframe" 
+                                                width="100%" 
+                                                height="500" 
+                                                frameborder="0" 
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                allowfullscreen>
+                                        </iframe>
+                                    </div>
+                                    
+                                    <!-- Lazy overlay: show thumb + play until user clicks (for direct video files) -->
+                                    <div id="video-lazy" class="video-lazy d-none">
+                                        <div id="video-lazy-thumb" class="video-lazy-thumb"></div>
+                                        <button id="video-lazy-play" type="button" class="play-btn-big" onclick="startVideoPlayback()">
+                                            <i class="fas fa-play"></i><span>Phát</span>
+                                        </button>
+                                        <div id="video-lazy-spinner" class="spinner-wrap d-none">
+                                            <div class="spinner-border text-light" role="status" aria-hidden="true"></div>
+                                        </div>
+                                    </div>
+                                    <div id="video-loading" class="video-loading d-none d-flex flex-column justify-content-center align-items-center" style="min-height: 320px;">
+                                        <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
+                                        <div class="mt-2 text-muted small">Đang tải video...</div>
+                                    </div>
                                     <div class="video-wrapper">
-                                        <video id="video-player" controls controlsList="nodownload">
+                                        <video id="video-player" class="d-none" controls preload="metadata" controlsList="nodownload">
                                             <source id="video-source" src="" type="video/mp4">
                                             Trình duyệt của bạn không hỗ trợ video.
                                         </video>
@@ -208,9 +235,6 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="quiz-description mt-3">
-                                            <p id="quiz-description">--</p>
-                                        </div>
                                         <div class="text-center mt-3">
                                             <button class="btn btn-primary btn-lg" id="btn-start-quiz" onclick="startQuiz()">
                                                 <i class="fas fa-play me-2"></i>Bắt đầu làm bài
@@ -246,6 +270,81 @@
         let currentLessonType = null;
         let currentQuizId = null;
         let courseId = @Model.CourseId;
+        
+        // Store lesson data from server-side model
+        const lessonsData = @Html.Raw(Json.Serialize(Model.Modules.SelectMany(m => m.Lessons)));
+
+        // ---------- Helpers ----------
+        function getLesson(lessonId) {
+            return lessonsData.find(l => l.lessonId === lessonId);
+        }
+
+        function isAbsoluteUrl(url) {
+            return /^https?:\/\//i.test(url);
+        }
+
+        function toAbsoluteUrl(url) {
+            if (!url) return '';
+            return isAbsoluteUrl(url) ? url : `${window.location.origin}${url.startsWith('/') ? '' : '/'}${url}`;
+        }
+
+        function getExtension(url) {
+            if (!url) return '';
+            const clean = url.split('?')[0].split('#')[0];
+            const idx = clean.lastIndexOf('.');
+            return idx >= 0 ? clean.substring(idx + 1).toLowerCase() : '';
+        }
+
+        function isYouTubeUrl(url) {
+            if (!url) return false;
+            return /(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/i.test(url);
+        }
+
+        function extractYouTubeId(url) {
+            const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/i);
+            return match ? match[1] : null;
+        }
+
+        async function fetchBlobUrl(url) {
+            const abs = toAbsoluteUrl(url);
+            const resp = await fetch(abs, { credentials: 'include' });
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const blob = await resp.blob();
+            return URL.createObjectURL(blob);
+        }
+
+        let pendingVideoUrl = null; // absolute url string
+        let pendingVideoMime = 'video/mp4';
+        let currentVideoBlobUrl = null; // revoke when switching lessons
+
+        function resetVideo() {
+            const video = document.getElementById('video-player');
+            const source = document.getElementById('video-source');
+            const loading = document.getElementById('video-loading');
+            const lazy = document.getElementById('video-lazy');
+            const spinner = document.getElementById('video-lazy-spinner');
+            const playBtn = document.getElementById('video-lazy-play');
+            const youtube = document.getElementById('video-youtube');
+            const youtubeIframe = document.getElementById('youtube-iframe');
+            
+            loading.classList.add('d-none');
+            spinner.classList.add('d-none');
+            playBtn.classList.remove('d-none');
+            lazy.classList.add('d-none');
+            youtube.classList.add('d-none');
+            
+            video.pause();
+            video.classList.add('d-none');
+            try { video.removeAttribute('src'); } catch {}
+            source.src = '';
+            youtubeIframe.src = '';
+            
+            if (currentVideoBlobUrl) {
+                URL.revokeObjectURL(currentVideoBlobUrl);
+                currentVideoBlobUrl = null;
+            }
+            pendingVideoUrl = null;
+        }
 
         function loadLesson(lessonId, lessonType) {
             currentLessonId = lessonId;
@@ -277,86 +376,258 @@
         }
 
         function loadVideoLesson(lessonId) {
-            // Call API to get video lesson details
-            fetch(`/api/lesson/${lessonId}/video`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('lesson-title').textContent = data.title;
-                    document.getElementById('video-source').src = data.contentUrl;
-                    document.getElementById('video-player').load();
-                    document.getElementById('video-content').classList.remove('d-none');
-                })
-                .catch(error => {
-                    console.error('Error loading video lesson:', error);
-                    alert('Không thể tải bài học video. Vui lòng thử lại!');
-                });
+            resetVideo();
+            const lesson = getLesson(lessonId);
+            if (!lesson) {
+                alert('Không tìm thấy thông tin bài học!');
+                return;
+            }
+
+            const url = lesson.contentUrl || lesson.attachmentUrl;
+            document.getElementById('lesson-title').textContent = lesson.title || 'Bài học';
+
+            const videoContent = document.getElementById('video-content');
+            videoContent.classList.remove('d-none');
+
+            if (!url) {
+                alert('Không tìm thấy video cho bài học này!');
+                return;
+            }
+
+            // Check if it's a YouTube URL
+            if (isYouTubeUrl(url)) {
+                const videoId = extractYouTubeId(url);
+                if (videoId) {
+                    const youtube = document.getElementById('video-youtube');
+                    const youtubeIframe = document.getElementById('youtube-iframe');
+                    youtubeIframe.src = `https://www.youtube.com/embed/${videoId}?rel=0`;
+                    youtube.classList.remove('d-none');
+                } else {
+                    alert('Không thể trích xuất ID video YouTube!');
+                }
+                return;
+            }
+
+            // For direct video files: use lazy load UI
+            const lazy = document.getElementById('video-lazy');
+            const thumb = document.getElementById('video-lazy-thumb');
+            const spinner = document.getElementById('video-lazy-spinner');
+            const playBtn = document.getElementById('video-lazy-play');
+            spinner.classList.add('d-none');
+            playBtn.classList.remove('d-none');
+            lazy.classList.remove('d-none');
+            thumb.style.backgroundImage = 'linear-gradient(180deg, rgba(0,0,0,.2), rgba(0,0,0,.2))';
+
+            const video = document.getElementById('video-player');
+            const source = document.getElementById('video-source');
+            video.classList.add('d-none');
+
+            const absUrl = toAbsoluteUrl(url);
+            const ext = getExtension(absUrl);
+            pendingVideoMime = ext === 'webm' ? 'video/webm' : ext === 'ogg' ? 'video/ogg' : 'video/mp4';
+            pendingVideoUrl = absUrl;
+
+            video.oncanplay = function() {
+                spinner.classList.add('d-none');
+                video.classList.remove('d-none');
+                lazy.classList.add('d-none');
+            };
+            video.onerror = async function() {
+                try {
+                    spinner.classList.remove('d-none');
+                    const blobUrl = await fetchBlobUrl(pendingVideoUrl);
+                    currentVideoBlobUrl = blobUrl;
+                    const s = document.getElementById('video-source');
+                    s.type = pendingVideoMime;
+                    s.src = blobUrl;
+                    video.load();
+                } catch (e) {
+                    spinner.classList.add('d-none');
+                    console.error('Video load failed:', e);
+                    alert('Không thể phát video. Vui lòng thử lại hoặc liên hệ quản trị viên.');
+                }
+            };
         }
 
-        function loadReadingLesson(lessonId) {
-            // Call API to get reading lesson details
-            fetch(`/api/lesson/${lessonId}/reading`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('lesson-title').textContent = data.title;
-                    
-                    if (data.contentUrl) {
-                        // If it's a document file, show in iframe
-                        document.getElementById('document-frame').src = data.contentUrl;
-                        document.getElementById('reading-document').classList.remove('d-none');
-                        document.getElementById('reading-text').classList.add('d-none');
-                    } else if (data.description) {
-                        // If it's text content, show as text
-                        document.getElementById('reading-text').innerHTML = data.description;
-                        document.getElementById('reading-text').classList.remove('d-none');
-                        document.getElementById('reading-document').classList.add('d-none');
-                    }
-                    
-                    document.getElementById('reading-content').classList.remove('d-none');
-                })
-                .catch(error => {
-                    console.error('Error loading reading lesson:', error);
-                    alert('Không thể tải bài học đọc. Vui lòng thử lại!');
-                });
+        async function startVideoPlayback() {
+            if (!pendingVideoUrl) return;
+            const video = document.getElementById('video-player');
+            const source = document.getElementById('video-source');
+            const spinner = document.getElementById('video-lazy-spinner');
+            const playBtn = document.getElementById('video-lazy-play');
+            playBtn.classList.add('d-none');
+            spinner.classList.remove('d-none');
+
+            // Try direct URL first
+            source.type = pendingVideoMime;
+            source.src = pendingVideoUrl;
+            video.load();
         }
 
-        function loadQuizLesson(lessonId) {
-            // Call API to get quiz lesson details
-            fetch(`/api/lesson/${lessonId}/quiz`)
-                .then(response => response.json())
-                .then(data => {
-                    currentQuizId = data.quizId;
-                    document.getElementById('lesson-title').textContent = data.title;
-                    document.getElementById('quiz-description').textContent = data.description || 'Không có mô tả';
-                    document.getElementById('quiz-time-limit').textContent = data.timeLimit > 0 ? `${data.timeLimit} phút` : 'Không giới hạn';
-                    document.getElementById('quiz-attempts').textContent = data.maxAttempts > 0 ? `${data.attemptCount}/${data.maxAttempts}` : `${data.attemptCount}/Không giới hạn`;
-                    document.getElementById('quiz-passing-score').textContent = `${data.passingScore}%`;
-                    document.getElementById('quiz-best-score').textContent = data.bestScore ? `${data.bestScore}%` : 'Chưa làm bài';
+        async function loadReadingLesson(lessonId) {
+            const lesson = getLesson(lessonId);
+            if (!lesson) {
+                alert('Không tìm thấy thông tin bài học!');
+                return;
+            }
 
-                    // Update button state
-                    const btnStartQuiz = document.getElementById('btn-start-quiz');
-                    if (data.canAttempt) {
-                        btnStartQuiz.disabled = false;
-                        btnStartQuiz.innerHTML = '<i class="fas fa-play me-2"></i>Bắt đầu làm bài';
+            document.getElementById('lesson-title').textContent = lesson.title || 'Bài học';
+
+            const url = lesson.contentUrl || lesson.attachmentUrl;
+            const readingText = document.getElementById('reading-text');
+            const readingDoc = document.getElementById('reading-document');
+            const iframe = document.getElementById('document-frame');
+
+            // Reset view
+            readingText.classList.add('d-none');
+            readingDoc.classList.add('d-none');
+            readingText.innerHTML = '';
+            iframe.src = '';
+
+            if (url) {
+                const absUrl = toAbsoluteUrl(url);
+                const ext = getExtension(absUrl);
+                try {
+                    if (ext === 'pdf') {
+                        // Use blob URL to avoid forced download by Content-Disposition
+                        const blobUrl = await fetchBlobUrl(absUrl);
+                        iframe.src = `${blobUrl}#toolbar=1&navpanes=0`;
+                        readingDoc.classList.remove('d-none');
+                    } else if (['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'].includes(ext)) {
+                        // Try Office viewer (requires public access to the file URL)
+                        const viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(absUrl)}`;
+                        iframe.src = viewerUrl;
+                        readingDoc.classList.remove('d-none');
+                    } else if (['txt', 'md', 'csv', 'json'].includes(ext)) {
+                        const resp = await fetch(absUrl, { credentials: 'include' });
+                        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                        const text = await resp.text();
+                        readingText.innerText = text;
+                        readingText.classList.remove('d-none');
                     } else {
-                        btnStartQuiz.disabled = true;
-                        btnStartQuiz.innerHTML = '<i class="fas fa-ban me-2"></i>Đã hết lượt làm bài';
+                        // Fallback: try embed via blob
+                        const blobUrl = await fetchBlobUrl(absUrl);
+                        iframe.src = blobUrl;
+                        readingDoc.classList.remove('d-none');
                     }
+                } catch (e) {
+                    console.error('Reading content load failed:', e);
+                    alert('Không thể hiển thị tài liệu. Vui lòng thử lại hoặc tải xuống sau.');
+                    return;
+                }
+            } else if (lesson.description) {
+                readingText.innerHTML = lesson.description;
+                readingText.classList.remove('d-none');
+            } else {
+                alert('Không tìm thấy nội dung cho bài học này!');
+                return;
+            }
 
-                    // Load quiz attempt history
-                    loadQuizHistory(data.quizId, data.attempts);
-
-                    document.getElementById('quiz-content').classList.remove('d-none');
-                })
-                .catch(error => {
-                    console.error('Error loading quiz lesson:', error);
-                    alert('Không thể tải bài kiểm tra. Vui lòng thử lại!');
-                });
+            document.getElementById('reading-content').classList.remove('d-none');
         }
 
-        function loadQuizHistory(quizId, attempts) {
+        async function loadQuizLesson(lessonId) {
+            // Get lesson data from stored data
+            const lesson = lessonsData.find(l => l.lessonId === lessonId);
+            
+            if (!lesson || !lesson.quizId) {
+                alert('Không tìm thấy thông tin bài kiểm tra!');
+                return;
+            }
+            
+            currentQuizId = lesson.quizId;
+            document.getElementById('lesson-title').textContent = lesson.title;
+            document.getElementById('quiz-content').classList.remove('d-none');
+
+            // Show loading state
+            const btnStartQuiz = document.getElementById('btn-start-quiz');
+            btnStartQuiz.disabled = true;
+            btnStartQuiz.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang tải...';
+            
+            document.getElementById('quiz-time-limit').textContent = '--';
+            document.getElementById('quiz-attempts').textContent = '--';
+            document.getElementById('quiz-passing-score').textContent = '--';
+            document.getElementById('quiz-best-score').textContent = '--';
+            
+            document.getElementById('quiz-history-list').innerHTML = `
+                <div class="text-center py-3">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                </div>
+            `;
+
+            try {
+                // Call API 1: Get Quiz Info - /quiz/get-quiz-info/{quizId}
+                const infoResponse = await fetch(`/quiz/get-quiz-info/${currentQuizId}`);
+                if (!infoResponse.ok) {
+                    throw new Error(`Không thể tải thông tin quiz (Status: ${infoResponse.status})`);
+                }
+                const quizInfo = await infoResponse.json();
+
+                // Display quiz info
+                document.getElementById('quiz-time-limit').textContent = quizInfo.timeLimit > 0 ? `${quizInfo.timeLimit} phút` : 'Không giới hạn';
+                document.getElementById('quiz-passing-score').textContent = `${quizInfo.passingScore}%`;
+                document.getElementById('quiz-best-score').textContent = quizInfo.bestScore !== null && quizInfo.bestScore !== undefined 
+                    ? `${quizInfo.bestScore}%` 
+                    : 'Chưa làm bài';
+
+                // Display attempts info
+                const remainingAttempts = quizInfo.remainingAttempts;
+                const maxAttempts = quizInfo.maxAttempts;
+                const attemptCount = maxAttempts > 0 ? (maxAttempts - remainingAttempts) : remainingAttempts;
+                
+                if (maxAttempts > 0) {
+                    document.getElementById('quiz-attempts').textContent = `${attemptCount}/${maxAttempts}`;
+                } else {
+                    document.getElementById('quiz-attempts').textContent = `${attemptCount}/Không giới hạn`;
+                }
+
+                // Update button state based on quiz info
+                if (quizInfo.isLocked) {
+                    btnStartQuiz.disabled = true;
+                    btnStartQuiz.innerHTML = '<i class="fas fa-lock me-2"></i>Quiz đã bị khóa';
+                } else if (remainingAttempts === 0 && maxAttempts > 0) {
+                    btnStartQuiz.disabled = true;
+                    btnStartQuiz.innerHTML = '<i class="fas fa-ban me-2"></i>Đã hết lượt làm bài';
+                } else if (quizInfo.hasPassed) {
+                    btnStartQuiz.disabled = false;
+                    btnStartQuiz.innerHTML = '<i class="fas fa-check-circle me-2"></i>Làm lại bài (Đã đạt)';
+                } else {
+                    btnStartQuiz.disabled = false;
+                    btnStartQuiz.innerHTML = '<i class="fas fa-play me-2"></i>Bắt đầu làm bài';
+                }
+
+                // Call API 2: Get Quiz History - /quiz/get-quiz-history/{courseId}/{quizId}
+                const historyResponse = await fetch(`/quiz/get-quiz-history/${courseId}/${currentQuizId}`);
+                if (!historyResponse.ok) {
+                    throw new Error(`Không thể tải lịch sử làm bài (Status: ${historyResponse.status})`);
+                }
+                const historyData = await historyResponse.json();
+
+                // Display quiz history
+                displayQuizHistory(historyData);
+
+            } catch (error) {
+                console.error('Error loading quiz lesson:', error);
+                
+                // Show error in UI
+                document.getElementById('quiz-history-list').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        ${error.message}
+                    </div>
+                `;
+                
+                btnStartQuiz.disabled = true;
+                btnStartQuiz.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Không thể tải';
+            }
+        }
+
+        function displayQuizHistory(historyData) {
             const historyList = document.getElementById('quiz-history-list');
             
-            if (!attempts || attempts.length === 0) {
+            if (!historyData || historyData.length === 0) {
                 historyList.innerHTML = `
                     <div class="empty-state-small">
                         <i class="fas fa-clipboard-list"></i>
@@ -375,18 +646,49 @@
             html += '<th>Kết quả</th>';
             html += '</tr></thead><tbody>';
 
-            attempts.forEach((attempt, index) => {
+            historyData.forEach((attempt, index) => {
+                // Format dates
+                const startTime = attempt.startTime ? new Date(attempt.startTime).toLocaleString('vi-VN') : '--';
+                const endTime = attempt.endTime ? new Date(attempt.endTime).toLocaleString('vi-VN') : 'Chưa hoàn thành';
+                
+                // Format score
+                const score = attempt.score !== null && attempt.score !== undefined 
+                    ? `${attempt.score}/${attempt.maxScore || 0}` 
+                    : '--';
+                
+                // Determine status badge
+                let statusBadge = 'bg-secondary';
+                let statusText = 'Chưa hoàn thành';
+                
+                if (attempt.status === 'Completed' || attempt.status === 'Submitted') {
+                    if (attempt.isPassed) {
+                        statusBadge = 'bg-success';
+                        statusText = 'Đạt';
+                    } else {
+                        statusBadge = 'bg-danger';
+                        statusText = 'Không đạt';
+                    }
+                } else if (attempt.status === 'InProgress') {
+                    statusBadge = 'bg-warning text-dark';
+                    statusText = 'Đang làm';
+                }
+                
                 html += '<tr>';
                 html += `<td>${index + 1}</td>`;
-                html += `<td>${attempt.startTimeDisplay}</td>`;
-                html += `<td>${attempt.endTimeDisplay}</td>`;
-                html += `<td><strong>${attempt.scoreDisplay}</strong></td>`;
-                html += `<td><span class="badge ${attempt.statusBadgeClass}">${attempt.statusDisplay}</span></td>`;
+                html += `<td>${startTime}</td>`;
+                html += `<td>${endTime}</td>`;
+                html += `<td><strong>${score}</strong></td>`;
+                html += `<td><span class="badge ${statusBadge}">${statusText}</span></td>`;
                 html += '</tr>';
             });
 
             html += '</tbody></table></div>';
             historyList.innerHTML = html;
+        }
+
+        function loadQuizHistory(quizId, attempts) {
+            // This function is kept for backward compatibility but now uses displayQuizHistory
+            displayQuizHistory(attempts);
         }
 
         function startQuiz() {

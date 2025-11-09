@@ -1016,13 +1016,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             try
             {
-                // Kiểm tra authentication
-                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
-                {
-                    TempData["Error"] = "Phiên đăng nhập đã hết hạn";
-                    return RedirectToAction("DangNhap", "Auth");
-                }
-
                 // Get course learning details with progress
                 var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/course/{courseId}/learning"));
                 
@@ -1074,11 +1067,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             try
             {
-                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
-                {
-                    return Json(new { success = false, message = "Phiên đăng nhập đã hết hạn" });
-                }
-
                 var json = JsonSerializer.Serialize(request);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
