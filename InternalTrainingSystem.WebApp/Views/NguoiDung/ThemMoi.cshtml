@@ -35,7 +35,7 @@
                                     <label asp-for="EmployeeId" class="form-label required">
                                         <i class="fas fa-id-card me-1"></i>Mã Nhân Viên
                                     </label>
-                                    <input asp-for="EmployeeId" class="form-control form-control-lg" 
+                                    <input asp-for="EmployeeId" class="form-control  " 
                                            placeholder="Nhập mã nhân viên (ví dụ: EMP001)">
                                     <span asp-validation-for="EmployeeId" class="text-danger"></span>
                                     <div class="form-text">
@@ -48,7 +48,7 @@
                                     <label asp-for="FullName" class="form-label required">
                                         <i class="fas fa-user me-1"></i>Họ và Tên
                                     </label>
-                                    <input asp-for="FullName" class="form-control form-control-lg" 
+                                    <input asp-for="FullName" class="form-control  " 
                                            placeholder="Nhập họ và tên đầy đủ">
                                     <span asp-validation-for="FullName" class="text-danger"></span>
                                     <div class="form-text">
@@ -61,7 +61,7 @@
                                     <label asp-for="Email" class="form-label required">
                                         <i class="fas fa-envelope me-1"></i>Email
                                     </label>
-                                    <input asp-for="Email" type="email" class="form-control form-control-lg" 
+                                    <input asp-for="Email" type="email" class="form-control  " 
                                            placeholder="email@company.com">
                                     <span asp-validation-for="Email" class="text-danger"></span>
                                     <div class="form-text">
@@ -74,7 +74,7 @@
                                     <label asp-for="Phone" class="form-label">
                                         <i class="fas fa-phone me-1"></i>Số Điện Thoại
                                     </label>
-                                    <input asp-for="Phone" type="tel" class="form-control form-control-lg" 
+                                    <input asp-for="Phone" type="tel" class="form-control  " 
                                            placeholder="0123456789">
                                     <span asp-validation-for="Phone" class="text-danger"></span>
                                     <div class="form-text">
@@ -87,7 +87,7 @@
                                     <label asp-for="DepartmentId" class="form-label required">
                                         <i class="fas fa-building me-1"></i>Phòng Ban
                                     </label>
-                                    <select asp-for="DepartmentId" class="form-select form-select-lg">
+                                    <select asp-for="DepartmentId" class="form-select">
                                         <option value="">-- Chọn phòng ban --</option>
                                         @if (ViewBag.Departments != null)
                                         {
@@ -112,7 +112,7 @@
                                     <label asp-for="Position" class="form-label">
                                         <i class="fas fa-briefcase me-1"></i>Chức Vụ
                                     </label>
-                                    <input asp-for="Position" class="form-control form-control-lg" 
+                                    <input asp-for="Position" class="form-control  " 
                                            placeholder="Nhập chức vụ (ví dụ: Nhân viên, Chuyên viên...)">
                                     <span asp-validation-for="Position" class="text-danger"></span>
                                     <div class="form-text">
