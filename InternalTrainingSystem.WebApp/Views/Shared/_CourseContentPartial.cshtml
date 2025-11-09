@@ -219,10 +219,6 @@ else
                                 <strong><i class="fas fa-check-circle me-2"></i>Điểm đạt:</strong>
                                 <span id="quizPassingScore"></span>%
                             </div>
-                            <div class="col-md-6 mb-2">
-                                <strong><i class="fas fa-list me-2"></i>Số lần đã làm:</strong>
-                                <span id="quizAttemptCount"></span>
-                            </div>
                         </div>
                         <div class="mt-2" id="quizDescriptionContainer">
                             <strong><i class="fas fa-info-circle me-2"></i>Mô tả:</strong>
@@ -452,15 +448,6 @@ else
             } else {
                 questionsList.innerHTML = '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>Quiz này chưa có câu hỏi nào.</div>';
             }
-
-            // Handle start quiz button
-            const startBtn = document.getElementById('startQuizBtn');
-            const newStartBtn = startBtn.cloneNode(true);
-            startBtn.parentNode.replaceChild(newStartBtn, startBtn);
-            
-            newStartBtn.addEventListener('click', function() {
-                window.location.href = `/quiz/${quiz.quizId}/start`;
-            });
             } catch (error) {
                 document.getElementById('quizLoadingSpinner').style.display = 'block';
                 document.getElementById('quizContent').style.display = 'none';
