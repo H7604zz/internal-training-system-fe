@@ -50,6 +50,7 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string Type { get; set; } = string.Empty; // Video, Reading, Quiz
         public int OrderIndex { get; set; }
         public string? ContentUrl { get; set; }
+        public string? AttachmentUrl { get; set; }  
         public int? QuizId { get; set; }
         public bool IsCompleted { get; set; }
         public DateTime? CompletedDate { get; set; }
