@@ -116,4 +116,42 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
 
         public string ResponseDateDisplay => ResponseDate?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa phản hồi";
     }
+
+    /// <summary>
+    /// DTO để tạo mới người dùng - khớp với Backend CreateUserDto
+    /// </summary>
+    public class CreateStaffDto
+    {
+        [Required(ErrorMessage = "Mã nhân viên là bắt buộc")]
+        [StringLength(100, ErrorMessage = "Mã nhân viên không được vượt quá 100 ký tự")]
+        [Display(Name = "Mã nhân viên")]
+        public string EmployeeId { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Họ tên là bắt buộc")]
+        [StringLength(100, ErrorMessage = "Họ tên không được vượt quá 100 ký tự")]
+        [Display(Name = "Họ và tên")]
+        public string FullName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Email là bắt buộc")]
+        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+        [StringLength(256, ErrorMessage = "Email không được vượt quá 256 ký tự")]
+        [Display(Name = "Email")]
+        public string Email { get; set; } = string.Empty;
+
+        [Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
+        [StringLength(30, ErrorMessage = "Số điện thoại không được vượt quá 30 ký tự")]
+        [Display(Name = "Số điện thoại")]
+        public string? Phone { get; set; }
+
+        [Required(ErrorMessage = "Phòng ban là bắt buộc")]
+        [Display(Name = "Phòng ban")]
+        public int DepartmentId { get; set; }
+
+        [StringLength(100, ErrorMessage = "Chức vụ không được vượt quá 100 ký tự")]
+        [Display(Name = "Chức vụ")]
+        public string? Position { get; set; }
+
+        // RoleName mặc định là Staff, khớp với backend
+        public string RoleName { get; set; } = "Staff";
+    }
 }
