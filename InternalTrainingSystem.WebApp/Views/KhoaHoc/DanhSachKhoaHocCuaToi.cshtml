@@ -137,12 +137,26 @@
                                         </button>
                                     </div>
                                 }
-                                else if (course.IsAccepted && course.Status == "Open")
+                                else if ((course.IsAccepted || course.IsInProgress) && course.CourseStatus == "Open")
                                 {
                                     <div class="course-actions">
-                                        <button type="button" class="btn btn-outline-warning" onclick="showResponseModal(@course.CourseId, 'Dropped', '@course.CourseName')">
-                                            <i class="fas fa-times me-1"></i>Hủy tham gia
-                                        </button>
+                                        <a href="@Url.Action("HocTap", "KhoaHoc", new { courseId = course.CourseId })" class="btn btn-primary">
+                                            <i class="fas fa-play me-1"></i>Học ngay
+                                        </a>
+                                        @if (course.IsAccepted)
+                                        {
+                                            <button type="button" class="btn btn-outline-warning" onclick="showResponseModal(@course.CourseId, 'Dropped', '@course.CourseName')">
+                                                <i class="fas fa-times me-1"></i>Hủy tham gia
+                                            </button>
+                                        }
+                                    </div>
+                                }
+                                else if (course.IsCompleted)
+                                {
+                                    <div class="course-actions">
+                                        <a href="@Url.Action("HocTap", "KhoaHoc", new { courseId = course.CourseId })" class="btn btn-outline-primary">
+                                            <i class="fas fa-eye me-1"></i>Xem lại
+                                        </a>
                                     </div>
                                 }
                             </div>
