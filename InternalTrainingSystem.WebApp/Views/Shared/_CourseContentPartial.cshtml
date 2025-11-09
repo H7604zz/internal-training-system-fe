@@ -1,6 +1,8 @@
 @model IEnumerable<InternalTrainingSystem.WebApp.Models.DTOs.ModuleDetailDto>
 @using InternalTrainingSystem.WebApp.Models.DTOs
 
+<link rel="stylesheet" href="~/css/course-content.css" asp-append-version="true" />
+
 @if (Model != null && Model.Any())
 {
     <div class="course-content">
@@ -233,9 +235,6 @@ else
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-success" id="startQuizBtn">
-                    <i class="fas fa-play me-2"></i>Bắt đầu làm quiz
-                </button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     <i class="fas fa-times me-2"></i>Đóng
                 </button>
