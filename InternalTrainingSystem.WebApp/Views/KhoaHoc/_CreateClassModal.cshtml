@@ -19,7 +19,7 @@
                                 <div class="card-body bg-info">
                                     <h6><i class="fas fa-graduation-cap me-2"></i>Thông Tin Khóa Học</h6>
                                     <p class="mb-1"><strong>Tên khóa học:</strong> <span id="courseNameDisplay">@Model.CourseName</span></p>
-                                    <p class="mb-0"><strong>Số nhân viên đã chốt:</strong> <span id="totalEmployeesDisplay">@Model.TotalEmployees</span> nhân viên</p>
+                                    <p class="mb-0"><strong>Số nhân viên đã chốt:</strong> <span id="totalEmployeesDisplay">@ViewBag.TotalEnrolledCount</span> nhân viên</p>
                                 </div>
                             </div>
                             <input type="hidden" asp-for="CourseId" />
