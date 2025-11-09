@@ -1,0 +1,145 @@
+@model InternalTrainingSystem.WebApp.Models.DTOs.CertificateDto
+@{
+    ViewData["Title"] = "Chứng Chỉ Hoàn Thành";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/chung-chi.css" asp-append-version="true" />
+</head>
+<body>
+    <!-- Action Buttons (Hidden when printing) -->
+    <div class="certificate-actions no-print">
+        <div class="container-actions">
+            <a href="@Url.Action("DanhSachKhoaHocCuaToi", "KhoaHoc")" class="btn btn-back">
+                <i class="fas fa-arrow-left me-2"></i>Quay lại
+            </a>
+            <div class="action-buttons">
+                <button onclick="window.print()" class="btn btn-print">
+                    <i class="fas fa-print me-2"></i>In chứng chỉ
+                </button>
+                <a href="@Url.Action("TaiXuongChungChi", "KhoaHoc", new { courseId = Model.CourseId })" class="btn btn-download">
+                    <i class="fas fa-download me-2"></i>Tải xuống PDF
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Certificate Container -->
+    <div class="certificate-wrapper">
+        <div class="certificate-page">
+            <!-- Decorative Border -->
+            <div class="certificate-border">
+                <!-- Certificate Content -->
+                <div class="certificate-content">
+                    <!-- Corner Decorations -->
+                    <div class="corner-ornament top-left"></div>
+                    <div class="corner-ornament top-right"></div>
+                    <div class="corner-ornament bottom-left"></div>
+                    <div class="corner-ornament bottom-right"></div>
+
+                    <!-- Header with Logo -->
+                    <div class="certificate-header">
+                        <div class="logo-section">
+                            <svg class="certificate-logo" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="60" cy="60" r="55" fill="none" stroke="#4A90E2" stroke-width="3"/>
+                                <circle cx="60" cy="60" r="45" fill="none" stroke="#4A90E2" stroke-width="2" stroke-dasharray="5,5"/>
+                                <path d="M 40 60 L 55 75 L 80 45" fill="none" stroke="#4A90E2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <circle cx="60" cy="60" r="10" fill="#4A90E2"/>
+                            </svg>
+                        </div>
+                        <p class="organization-name">HỆ THỐNG ĐÀO TẠO NỘI BỘ</p>
+                    </div>
+
+                    <!-- Title -->
+                    <div class="certificate-title-section">
+                        <h1 class="certificate-title">CHỨNG CHỈ HOÀN THÀNH</h1>
+                        <div class="title-underline">
+                            <span class="underline-decoration"></span>
+                            <i class="fas fa-certificate decoration-icon"></i>
+                            <span class="underline-decoration"></span>
+                        </div>
+                        <p class="certificate-subtitle">duc</p>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="certificate-body">
+                        <p class="certificate-intro">Trao cho học viên:</p>
+                        
+                        <h2 class="employee-name">@Model.UserFullName</h2>
+                        
+                        <p class="completion-text">Đã hoàn thành khóa học:</p>
+                        
+                        <h3 class="course-name">@Model.CourseName</h3>
+                        
+                        <!-- Course Information Grid -->
+                        <div class="course-info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Mã khóa học:</span>
+                                <span class="info-value">@Model.CourseCode</span>
+                            </div>
+                            
+                            <div class="info-item">
+                                <span class="info-label">Tên chứng chỉ:</span>
+                                <span class="info-value">@Model.CertificateName</span>
+                            </div>
+                            
+                            @if (Model.HasExpiration)
+                            {
+                                <div class="info-item">
+                                    <span class="info-label">Ngày hết hạn:</span>
+                                    <span class="info-value @(Model.IsExpired ? "text-danger" : "")">@Model.ExpirationDateDisplay</span>
+                                </div>
+                            }
+                        </div>
+                        
+                        <p class="issue-date">Ngày cấp: <strong>@Model.IssueDateDisplay</strong></p>
+                    </div>
+
+                    <!-- Footer with Signatures -->
+                    <div class="certificate-footer">
+                        <div class="signature-container">
+                            <div class="signature-block left">
+                                <div class="company-seal">
+                                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="50" cy="50" r="45" fill="none" stroke="#4A90E2" stroke-width="3"/>
+                                        <circle cx="50" cy="50" r="35" fill="none" stroke="#4A90E2" stroke-width="2"/>
+                                        <text x="50" y="55" text-anchor="middle" font-size="20" fill="#4A90E2" font-weight="bold">SEAL</text>
+                                    </svg>
+                                </div>
+                            </div>
+                            
+                            <div class="signature-block right">
+                                <div class="signature-placeholder">
+                                    <svg viewBox="0 0 150 60" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M 10 30 Q 40 10, 70 30 T 130 30" fill="none" stroke="#333" stroke-width="2"/>
+                                    </svg>
+                                </div>
+                                <div class="signature-line"></div>
+                                <p class="signature-title">Giám đốc đào tạo</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enhance print dialog
+        window.onbeforeprint = function() {
+            document.title = 'Chung_Chi_@Model.UserFullName.Replace(" ", "_")_@Model.CourseCode';
+        };
+        
+        window.onafterprint = function() {
+            document.title = '@ViewData["Title"]';
+        };
+    </script>
+</body>
+</html>

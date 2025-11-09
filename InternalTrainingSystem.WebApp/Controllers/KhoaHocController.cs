@@ -1108,6 +1108,88 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 return Json(new { success = false, message = "Có lỗi xảy ra khi đánh dấu hoàn thành bài học" });
             }
         }
+
+        /// <summary>
+        /// Hiển thị chứng chỉ hoàn thành khóa học
+        /// </summary>
+        [HttpGet("chung-chi/{courseId}")]
+        [Authorize(Roles = UserRoles.Staff)]
+        public async Task<IActionResult> ChungChi(int courseId)
+        {
+            try
+            {
+                // Get certificate details from API
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/certificate/course/{courseId}"));
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        TempData["Error"] = "Bạn chưa hoàn thành khóa học này để nhận chứng chỉ.";
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                    {
+                        TempData["Error"] = "Bạn không có quyền xem chứng chỉ này.";
+                    }
+                    else
+                    {
+                        TempData["Error"] = "Đã xảy ra lỗi khi tải chứng chỉ.";
+                    }
+                    return RedirectToAction("DanhSachKhoaHocCuaToi");
+                }
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var certificate = JsonSerializer.Deserialize<CertificateDto>(responseContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (certificate == null)
+                {
+                    TempData["Error"] = "Không thể tải thông tin chứng chỉ.";
+                    return RedirectToAction("DanhSachKhoaHocCuaToi");
+                }
+
+                return View(certificate);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while loading certificate for course {CourseId}", courseId);
+                TempData["Error"] = "Đã xảy ra lỗi khi tải chứng chỉ.";
+                return RedirectToAction("DanhSachKhoaHocCuaToi");
+            }
+        }
+
+        /// <summary>
+        /// Tải xuống chứng chỉ dạng PDF
+        /// </summary>
+        [HttpGet("chung-chi/{courseId}/tai-xuong")]
+        [Authorize(Roles = UserRoles.Staff)]
+        public async Task<IActionResult> TaiXuongChungChi(int courseId)
+        {
+            try
+            {
+                // Call API to download certificate PDF
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/certificate/course/{courseId}/download"));
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    TempData["Error"] = "Không thể tải xuống chứng chỉ. Vui lòng thử lại sau.";
+                    return RedirectToAction("ChungChi", new { courseId });
+                }
+
+                var fileBytes = await response.Content.ReadAsByteArrayAsync();
+                var fileName = $"ChungChi_{courseId}_{DateTime.Now:yyyyMMdd}.pdf";
+                
+                return File(fileBytes, "application/pdf", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while downloading certificate for course {CourseId}", courseId);
+                TempData["Error"] = "Đã xảy ra lỗi khi tải xuống chứng chỉ.";
+                return RedirectToAction("ChungChi", new { courseId });
+            }
+        }
     }
 
 
