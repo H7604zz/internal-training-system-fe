@@ -1006,5 +1006,109 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
             return RedirectToAction("DanhSachNhanVien", new { id = courseId });
         }
+
+        /// <summary>
+        /// Trang học tập của nhân viên
+        /// </summary>
+        [HttpGet("hoc-tap/{courseId}")]
+        [Authorize(Roles = UserRoles.Staff)]
+        public async Task<IActionResult> HocTap(int courseId)
+        {
+            try
+            {
+                // Kiểm tra authentication
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
+                {
+                    TempData["Error"] = "Phiên đăng nhập đã hết hạn";
+                    return RedirectToAction("DangNhap", "Auth");
+                }
+
+                // Get course learning details with progress
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/course/{courseId}/learning"));
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        TempData["Error"] = "Không tìm thấy khóa học hoặc bạn chưa được ghi danh vào khóa học này.";
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                    {
+                        TempData["Error"] = "Bạn không có quyền truy cập khóa học này.";
+                    }
+                    else
+                    {
+                        TempData["Error"] = "Đã xảy ra lỗi khi tải thông tin khóa học.";
+                    }
+                    return RedirectToAction("DanhSachKhoaHocCuaToi");
+                }
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var courseLearning = JsonSerializer.Deserialize<CourseLearningDto>(responseContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (courseLearning == null)
+                {
+                    TempData["Error"] = "Không thể tải thông tin khóa học.";
+                    return RedirectToAction("DanhSachKhoaHocCuaToi");
+                }
+
+                return View(courseLearning);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while loading learning page for course {CourseId}", courseId);
+                TempData["Error"] = "Đã xảy ra lỗi khi tải trang học tập.";
+                return RedirectToAction("DanhSachKhoaHocCuaToi");
+            }
+        }
+
+        /// <summary>
+        /// Đánh dấu bài học hoàn thành
+        /// </summary>
+        [HttpPost("hoc-tap/hoan-thanh-bai-hoc")]
+        [Authorize(Roles = UserRoles.Staff)]
+        public async Task<IActionResult> HoanThanhBaiHoc([FromBody] CompleteLessonRequest request)
+        {
+            try
+            {
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
+                {
+                    return Json(new { success = false, message = "Phiên đăng nhập đã hết hạn" });
+                }
+
+                var json = JsonSerializer.Serialize(request);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync(
+                    Utilities.GetAbsoluteUrl($"api/lesson/{request.LessonId}/complete"), 
+                    content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadAsStringAsync();
+                    var progressUpdate = JsonSerializer.Deserialize<LessonProgressUpdateDto>(result, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                    
+                    return Json(new { success = true, message = "Đã đánh dấu hoàn thành bài học", progress = progressUpdate });
+                }
+                else
+                {
+                    var errorMessage = await response.Content.ReadAsStringAsync();
+                    return Json(new { success = false, message = errorMessage.Trim('"') });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while completing lesson {LessonId}", request.LessonId);
+                return Json(new { success = false, message = "Có lỗi xảy ra khi đánh dấu hoàn thành bài học" });
+            }
+        }
     }
+
+
 }

@@ -1,0 +1,456 @@
+@model InternalTrainingSystem.WebApp.Models.DTOs.CourseLearningDto
+@{
+    ViewData["Title"] = "Học tập - " + Model.CourseName;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/hoc-tap.css" asp-append-version="true" />
+}
+
+<div class="learning-container">
+    <div class="container-fluid">
+        <!-- Header Section -->
+        <div class="learning-header">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center mb-2">
+                            <a href="@Url.Action("DanhSachKhoaHocCuaToi", "KhoaHoc")" class="btn btn-back me-3">
+                                <i class="fas fa-arrow-left"></i>
+                            </a>
+                            <div>
+                                <h1 class="course-title mb-1">@Model.CourseName</h1>
+                                <div class="course-meta">
+                                    <span class="badge badge-info me-2">
+                                        <i class="fas fa-tag me-1"></i>@Model.CourseCode
+                                    </span>
+                                    <span class="badge badge-secondary me-2">
+                                        <i class="fas fa-layer-group me-1"></i>@Model.CategoryName
+                                    </span>
+                                    <span class="badge badge-primary">
+                                        <i class="fas fa-signal me-1"></i>@Model.Level
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.Description))
+                        {
+                            <p class="course-description">@Model.Description</p>
+                        }
+                    </div>
+                    <div class="col-md-4">
+                        <div class="progress-card">
+                            <div class="progress-info">
+                                <span class="progress-label">Tiến độ học tập</span>
+                                <span class="progress-value">@Model.ProgressDisplay</span>
+                            </div>
+                            <div class="progress progress-custom">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: @Model.Progress%" 
+                                     aria-valuenow="@Model.Progress" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="learning-content">
+            <div class="container">
+                <div class="row">
+                    <!-- Sidebar - Course Outline -->
+                    <div class="col-lg-4">
+                        <div class="course-outline">
+                            <div class="outline-header">
+                                <h3>
+                                    <i class="fas fa-list-ul me-2"></i>Nội dung khóa học
+                                </h3>
+                            </div>
+                            <div class="outline-body">
+                                @if (Model.Modules != null && Model.Modules.Any())
+                                {
+                                    @foreach (var module in Model.Modules.OrderBy(m => m.OrderIndex))
+                                    {
+                                        <div class="module-item @(module.IsCompleted ? "completed" : "")">
+                                            <div class="module-header" data-bs-toggle="collapse" 
+                                                 data-bs-target="#module-@module.ModuleId" 
+                                                 aria-expanded="true">
+                                                <div class="module-title">
+                                                    <i class="fas @(module.IsCompleted ? "fa-check-circle text-success" : "fa-circle text-muted") me-2"></i>
+                                                    <span>@module.Title</span>
+                                                </div>
+                                                <div class="module-meta">
+                                                    <span class="lesson-count">@module.CompletedLessons/@module.TotalLessons</span>
+                                                    <i class="fas fa-chevron-down"></i>
+                                                </div>
+                                            </div>
+                                            <div class="collapse show" id="module-@module.ModuleId">
+                                                <div class="lessons-list">
+                                                    @foreach (var lesson in module.Lessons.OrderBy(l => l.OrderIndex))
+                                                    {
+                                                        <div class="lesson-item @(lesson.IsCompleted ? "completed" : "")" 
+                                                             data-lesson-id="@lesson.LessonId"
+                                                             onclick="loadLesson(@lesson.LessonId, '@lesson.Type')">
+                                                            <i class="fas @lesson.StatusIcon me-2"></i>
+                                                            <span class="lesson-title">@lesson.Title</span>
+                                                            <i class="fas @lesson.TypeIcon lesson-type-icon"></i>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="empty-state">
+                                        <i class="fas fa-book-open"></i>
+                                        <p>Chưa có nội dung học tập</p>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Learning Area -->
+                    <div class="col-lg-8">
+                        <div class="learning-area">
+                            <!-- Welcome Screen -->
+                            <div id="welcome-screen" class="welcome-screen">
+                                <div class="welcome-content">
+                                    <i class="fas fa-graduation-cap welcome-icon"></i>
+                                    <h2>Chào mừng bạn đến với khóa học!</h2>
+                                    <p>Vui lòng chọn một bài học từ danh sách bên trái để bắt đầu.</p>
+                                    <div class="course-stats mt-4">
+                                        <div class="stat-item">
+                                            <i class="fas fa-layer-group"></i>
+                                            <div>
+                                                <div class="stat-value">@Model.Modules.Count</div>
+                                                <div class="stat-label">Chương</div>
+                                            </div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <i class="fas fa-book"></i>
+                                            <div>
+                                                <div class="stat-value">@Model.Modules.Sum(m => m.TotalLessons)</div>
+                                                <div class="stat-label">Bài học</div>
+                                            </div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <i class="fas fa-clock"></i>
+                                            <div>
+                                                <div class="stat-value">@Model.DurationDisplay</div>
+                                                <div class="stat-label">Thời lượng</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Lesson Content Area (Hidden by default) -->
+                            <div id="lesson-content" class="lesson-content d-none">
+                                <div class="lesson-header">
+                                    <h2 id="lesson-title" class="mb-2">Tiêu đề bài học</h2>
+                                    <div class="lesson-actions">
+                                        <button class="btn btn-outline-success btn-sm" id="btn-complete-lesson" onclick="completeLesson()">
+                                            <i class="fas fa-check me-1"></i>Hoàn thành
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Video Lesson -->
+                                <div id="video-content" class="content-section d-none">
+                                    <div class="video-wrapper">
+                                        <video id="video-player" controls controlsList="nodownload">
+                                            <source id="video-source" src="" type="video/mp4">
+                                            Trình duyệt của bạn không hỗ trợ video.
+                                        </video>
+                                    </div>
+                                </div>
+
+                                <!-- Reading Lesson -->
+                                <div id="reading-content" class="content-section d-none">
+                                    <div class="reading-wrapper">
+                                        <div id="reading-text" class="reading-text"></div>
+                                        <div id="reading-document" class="document-viewer d-none">
+                                            <iframe id="document-frame" src="" frameborder="0"></iframe>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Quiz Lesson -->
+                                <div id="quiz-content" class="content-section d-none">
+                                    <!-- Quiz Info Card -->
+                                    <div class="quiz-info-card">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="info-item">
+                                                    <i class="fas fa-clock text-primary"></i>
+                                                    <span><strong>Thời gian:</strong> <span id="quiz-time-limit">--</span></span>
+                                                </div>
+                                                <div class="info-item">
+                                                    <i class="fas fa-redo text-info"></i>
+                                                    <span><strong>Số lần làm:</strong> <span id="quiz-attempts">--</span></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="info-item">
+                                                    <i class="fas fa-check-double text-success"></i>
+                                                    <span><strong>Điểm đạt:</strong> <span id="quiz-passing-score">--</span></span>
+                                                </div>
+                                                <div class="info-item">
+                                                    <i class="fas fa-trophy text-warning"></i>
+                                                    <span><strong>Điểm cao nhất:</strong> <span id="quiz-best-score">--</span></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="quiz-description mt-3">
+                                            <p id="quiz-description">--</p>
+                                        </div>
+                                        <div class="text-center mt-3">
+                                            <button class="btn btn-primary btn-lg" id="btn-start-quiz" onclick="startQuiz()">
+                                                <i class="fas fa-play me-2"></i>Bắt đầu làm bài
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Quiz Attempt History -->
+                                    <div class="quiz-history-card mt-4">
+                                        <h4 class="mb-3">
+                                            <i class="fas fa-history me-2"></i>Lịch sử làm bài
+                                        </h4>
+                                        <div id="quiz-history-list">
+                                            <div class="empty-state-small">
+                                                <i class="fas fa-clipboard-list"></i>
+                                                <p>Chưa có lượt làm bài nào</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentLessonId = null;
+        let currentLessonType = null;
+        let currentQuizId = null;
+        let courseId = @Model.CourseId;
+
+        function loadLesson(lessonId, lessonType) {
+            currentLessonId = lessonId;
+            currentLessonType = lessonType;
+
+            // Hide welcome screen and show lesson content
+            document.getElementById('welcome-screen').classList.add('d-none');
+            document.getElementById('lesson-content').classList.remove('d-none');
+
+            // Hide all content sections
+            document.getElementById('video-content').classList.add('d-none');
+            document.getElementById('reading-content').classList.add('d-none');
+            document.getElementById('quiz-content').classList.add('d-none');
+
+            // Highlight selected lesson
+            document.querySelectorAll('.lesson-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`.lesson-item[data-lesson-id="${lessonId}"]`).classList.add('active');
+
+            // Load lesson content based on type
+            if (lessonType === 'Video') {
+                loadVideoLesson(lessonId);
+            } else if (lessonType === 'Reading') {
+                loadReadingLesson(lessonId);
+            } else if (lessonType === 'Quiz') {
+                loadQuizLesson(lessonId);
+            }
+        }
+
+        function loadVideoLesson(lessonId) {
+            // Call API to get video lesson details
+            fetch(`/api/lesson/${lessonId}/video`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('lesson-title').textContent = data.title;
+                    document.getElementById('video-source').src = data.contentUrl;
+                    document.getElementById('video-player').load();
+                    document.getElementById('video-content').classList.remove('d-none');
+                })
+                .catch(error => {
+                    console.error('Error loading video lesson:', error);
+                    alert('Không thể tải bài học video. Vui lòng thử lại!');
+                });
+        }
+
+        function loadReadingLesson(lessonId) {
+            // Call API to get reading lesson details
+            fetch(`/api/lesson/${lessonId}/reading`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('lesson-title').textContent = data.title;
+                    
+                    if (data.contentUrl) {
+                        // If it's a document file, show in iframe
+                        document.getElementById('document-frame').src = data.contentUrl;
+                        document.getElementById('reading-document').classList.remove('d-none');
+                        document.getElementById('reading-text').classList.add('d-none');
+                    } else if (data.description) {
+                        // If it's text content, show as text
+                        document.getElementById('reading-text').innerHTML = data.description;
+                        document.getElementById('reading-text').classList.remove('d-none');
+                        document.getElementById('reading-document').classList.add('d-none');
+                    }
+                    
+                    document.getElementById('reading-content').classList.remove('d-none');
+                })
+                .catch(error => {
+                    console.error('Error loading reading lesson:', error);
+                    alert('Không thể tải bài học đọc. Vui lòng thử lại!');
+                });
+        }
+
+        function loadQuizLesson(lessonId) {
+            // Call API to get quiz lesson details
+            fetch(`/api/lesson/${lessonId}/quiz`)
+                .then(response => response.json())
+                .then(data => {
+                    currentQuizId = data.quizId;
+                    document.getElementById('lesson-title').textContent = data.title;
+                    document.getElementById('quiz-description').textContent = data.description || 'Không có mô tả';
+                    document.getElementById('quiz-time-limit').textContent = data.timeLimit > 0 ? `${data.timeLimit} phút` : 'Không giới hạn';
+                    document.getElementById('quiz-attempts').textContent = data.maxAttempts > 0 ? `${data.attemptCount}/${data.maxAttempts}` : `${data.attemptCount}/Không giới hạn`;
+                    document.getElementById('quiz-passing-score').textContent = `${data.passingScore}%`;
+                    document.getElementById('quiz-best-score').textContent = data.bestScore ? `${data.bestScore}%` : 'Chưa làm bài';
+
+                    // Update button state
+                    const btnStartQuiz = document.getElementById('btn-start-quiz');
+                    if (data.canAttempt) {
+                        btnStartQuiz.disabled = false;
+                        btnStartQuiz.innerHTML = '<i class="fas fa-play me-2"></i>Bắt đầu làm bài';
+                    } else {
+                        btnStartQuiz.disabled = true;
+                        btnStartQuiz.innerHTML = '<i class="fas fa-ban me-2"></i>Đã hết lượt làm bài';
+                    }
+
+                    // Load quiz attempt history
+                    loadQuizHistory(data.quizId, data.attempts);
+
+                    document.getElementById('quiz-content').classList.remove('d-none');
+                })
+                .catch(error => {
+                    console.error('Error loading quiz lesson:', error);
+                    alert('Không thể tải bài kiểm tra. Vui lòng thử lại!');
+                });
+        }
+
+        function loadQuizHistory(quizId, attempts) {
+            const historyList = document.getElementById('quiz-history-list');
+            
+            if (!attempts || attempts.length === 0) {
+                historyList.innerHTML = `
+                    <div class="empty-state-small">
+                        <i class="fas fa-clipboard-list"></i>
+                        <p>Chưa có lượt làm bài nào</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="table-responsive"><table class="table table-hover">';
+            html += '<thead><tr>';
+            html += '<th>#</th>';
+            html += '<th>Thời gian làm bài</th>';
+            html += '<th>Thời gian nộp bài</th>';
+            html += '<th>Điểm</th>';
+            html += '<th>Kết quả</th>';
+            html += '</tr></thead><tbody>';
+
+            attempts.forEach((attempt, index) => {
+                html += '<tr>';
+                html += `<td>${index + 1}</td>`;
+                html += `<td>${attempt.startTimeDisplay}</td>`;
+                html += `<td>${attempt.endTimeDisplay}</td>`;
+                html += `<td><strong>${attempt.scoreDisplay}</strong></td>`;
+                html += `<td><span class="badge ${attempt.statusBadgeClass}">${attempt.statusDisplay}</span></td>`;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table></div>';
+            historyList.innerHTML = html;
+        }
+
+        function startQuiz() {
+            if (!currentQuizId) {
+                alert('Không tìm thấy thông tin bài kiểm tra!');
+                return;
+            }
+            
+            // Redirect to quiz page
+            window.location.href = `/quiz/lam-bai/${currentQuizId}`;
+        }
+
+        function completeLesson() {
+            if (!currentLessonId) {
+                alert('Vui lòng chọn một bài học!');
+                return;
+            }
+
+            if (confirm('Bạn có chắc chắn đã hoàn thành bài học này?')) {
+                const btnComplete = document.getElementById('btn-complete-lesson');
+                btnComplete.disabled = true;
+                btnComplete.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang xử lý...';
+
+                fetch('@Url.Action("HoanThanhBaiHoc", "KhoaHoc")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        lessonId: currentLessonId,
+                        courseId: courseId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Đã đánh dấu hoàn thành bài học!');
+                        // Reload page to update progress
+                        window.location.reload();
+                    } else {
+                        alert('Lỗi: ' + data.message);
+                        btnComplete.disabled = false;
+                        btnComplete.innerHTML = '<i class="fas fa-check me-1"></i>Hoàn thành';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error completing lesson:', error);
+                    alert('Có lỗi xảy ra khi đánh dấu hoàn thành bài học!');
+                    btnComplete.disabled = false;
+                    btnComplete.innerHTML = '<i class="fas fa-check me-1"></i>Hoàn thành';
+                });
+            }
+        }
+
+        // Track video progress for auto-complete
+        document.addEventListener('DOMContentLoaded', function() {
+            const videoPlayer = document.getElementById('video-player');
+            if (videoPlayer) {
+                videoPlayer.addEventListener('ended', function() {
+                    if (confirm('Bạn đã xem hết video. Đánh dấu hoàn thành bài học này?')) {
+                        completeLesson();
+                    }
+                });
+            }
+        });
+    </script>
+}
