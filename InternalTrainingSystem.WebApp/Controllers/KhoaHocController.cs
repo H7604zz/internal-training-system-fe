@@ -1061,28 +1061,24 @@ namespace InternalTrainingSystem.WebApp.Controllers
         /// <summary>
         /// Đánh dấu bài học hoàn thành
         /// </summary>
-        [HttpPost("hoc-tap/hoan-thanh-bai-hoc")]
+        [HttpPost("hoan-thanh-bai-hoc")]
         [Authorize(Roles = UserRoles.Staff)]
         public async Task<IActionResult> HoanThanhBaiHoc([FromBody] CompleteLessonRequest request)
         {
             try
             {
-                var json = JsonSerializer.Serialize(request);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                if (request == null || request.LessonId <= 0)
+                {
+                    return Json(new { success = false, message = "LessonId không hợp lệ." });
+                }
 
                 var response = await _httpClient.PostAsync(
-                    Utilities.GetAbsoluteUrl($"api/lesson/{request.LessonId}/complete"), 
-                    content);
+                    Utilities.GetAbsoluteUrl($"api/course/lessons/{request.LessonId}/complete"), 
+                    null);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = await response.Content.ReadAsStringAsync();
-                    var progressUpdate = JsonSerializer.Deserialize<LessonProgressUpdateDto>(result, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
-                    
-                    return Json(new { success = true, message = "Đã đánh dấu hoàn thành bài học", progress = progressUpdate });
+                    return Json(new { success = true, message = "Bạn đã hoàn thành bài học này."});
                 }
                 else
                 {
@@ -1092,7 +1088,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while completing lesson {LessonId}", request.LessonId);
+                _logger.LogError(ex, "Error completing lesson {LessonId}", request?.LessonId);
                 return Json(new { success = false, message = "Có lỗi xảy ra khi đánh dấu hoàn thành bài học" });
             }
         }

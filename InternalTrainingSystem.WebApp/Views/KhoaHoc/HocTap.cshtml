@@ -12,6 +12,13 @@
         .video-lazy .play-btn-big { position:relative; z-index:2; display:flex; align-items:center; gap:.5rem; padding:.75rem 1.25rem; border-radius:999px; border:none; background:#d93025; color:#fff; font-weight:600; box-shadow:0 4px 16px rgba(0,0,0,.25); }
         .video-lazy .play-btn-big i { font-size:1rem; }
         .video-lazy .spinner-wrap { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.35); z-index:3; }
+        
+        /* Completed status badge */
+        #lesson-completed-status .badge {
+            font-size: 0.95rem;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+        }
     </style>
 }
 
@@ -161,6 +168,11 @@
                                         <button class="btn btn-outline-success btn-sm" id="btn-complete-lesson" onclick="completeLesson()">
                                             <i class="fas fa-check me-1"></i>Hoàn thành
                                         </button>
+                                        <div class="d-none" id="lesson-completed-status">
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check-circle me-1"></i>Đã hoàn thành
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -365,6 +377,9 @@
             });
             document.querySelector(`.lesson-item[data-lesson-id="${lessonId}"]`).classList.add('active');
 
+            // Update completion button status
+            updateCompletionButton(lessonId);
+
             // Load lesson content based on type
             if (lessonType === 'Video') {
                 loadVideoLesson(lessonId);
@@ -372,6 +387,26 @@
                 loadReadingLesson(lessonId);
             } else if (lessonType === 'Quiz') {
                 loadQuizLesson(lessonId);
+            }
+        }
+
+        // Update completion button based on lesson status
+        function updateCompletionButton(lessonId) {
+            const lesson = getLesson(lessonId);
+            const btnComplete = document.getElementById('btn-complete-lesson');
+            const completedStatus = document.getElementById('lesson-completed-status');
+
+            if (lesson && lesson.isCompleted) {
+                // Lesson is completed - hide button, show status
+                btnComplete.classList.add('d-none');
+                completedStatus.classList.remove('d-none');
+            } else {
+                // Lesson not completed - show button, hide status
+                btnComplete.classList.remove('d-none');
+                completedStatus.classList.add('d-none');
+                // Reset button state
+                btnComplete.disabled = false;
+                btnComplete.innerHTML = '<i class="fas fa-check me-1"></i>Hoàn thành';
             }
         }
 
@@ -701,35 +736,83 @@
             window.location.href = `/quiz/lam-bai/${currentQuizId}`;
         }
 
+        // Update progress bar without reloading page
+        function updateProgressBar() {
+            // Calculate total and completed lessons
+            const totalLessons = lessonsData.length;
+            const completedLessons = lessonsData.filter(l => l.isCompleted).length;
+            const progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+            
+            // Update progress text
+            const progressValue = document.querySelector('.progress-value');
+            if (progressValue) {
+                progressValue.textContent = `${completedLessons}/${totalLessons} bài học`;
+            }
+            
+            // Update progress bar
+            const progressBar = document.querySelector('.progress-bar');
+            if (progressBar) {
+                progressBar.style.width = `${progress}%`;
+                progressBar.setAttribute('aria-valuenow', progress);
+            }
+            
+            console.log(`Progress updated: ${completedLessons}/${totalLessons} (${progress}%)`);
+        }
+
         function completeLesson() {
             if (!currentLessonId) {
                 alert('Vui lòng chọn một bài học!');
                 return;
             }
 
+            console.log('Completing lesson with ID:', currentLessonId, 'Type:', typeof currentLessonId);
+
             if (confirm('Bạn có chắc chắn đã hoàn thành bài học này?')) {
                 const btnComplete = document.getElementById('btn-complete-lesson');
                 btnComplete.disabled = true;
                 btnComplete.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang xử lý...';
+
+                const requestBody = {
+                    lessonId: currentLessonId
+                };
+                console.log('Request body:', requestBody);
 
                 fetch('@Url.Action("HoanThanhBaiHoc", "KhoaHoc")', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        lessonId: currentLessonId,
-                        courseId: courseId
-                    })
+                    body: JSON.stringify(requestBody)
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert('Đã đánh dấu hoàn thành bài học!');
-                        // Reload page to update progress
-                        window.location.reload();
+                        // Update lesson status in local data
+                        const lesson = getLesson(currentLessonId);
+                        if (lesson) {
+                            lesson.isCompleted = true;
+                        }
+
+                        // Update UI: Hide button, show completed status
+                        btnComplete.classList.add('d-none');
+                        document.getElementById('lesson-completed-status').classList.remove('d-none');
+
+                        // Update lesson item in sidebar
+                        const lessonItem = document.querySelector(`.lesson-item[data-lesson-id="${currentLessonId}"]`);
+                        if (lessonItem) {
+                            lessonItem.classList.add('completed');
+                            const icon = lessonItem.querySelector('i.fas');
+                            if (icon) {
+                                icon.className = 'fas fa-check-circle text-success me-2';
+                            }
+                        }
+
+                        // Update progress bar in header
+                        updateProgressBar();
+
+                        alert(data.message);
                     } else {
-                        alert('Lỗi: ' + data.message);
+                        alert(data.message);
                         btnComplete.disabled = false;
                         btnComplete.innerHTML = '<i class="fas fa-check me-1"></i>Hoàn thành';
                     }

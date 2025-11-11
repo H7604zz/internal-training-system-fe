@@ -133,13 +133,9 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         }
     }
 
-    /// <summary>
-    /// Request DTO for completing a lesson
-    /// </summary>
     public class CompleteLessonRequest
     {
         public int LessonId { get; set; }
-        public int CourseId { get; set; }
     }
 
     /// <summary>
