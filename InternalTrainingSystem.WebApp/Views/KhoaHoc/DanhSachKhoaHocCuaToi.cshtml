@@ -129,10 +129,10 @@
                                 @if (course.IsPending)
                                 {
                                     <div class="course-actions">
-                                        <button type="button" class="btn btn-success" onclick="showResponseModal(@course.CourseId, 'Enrolled', '@course.CourseName')">
+                                        <button type="button" class="btn btn-success" onclick="showResponseModal(@course.CourseId, '@EnrollmentConstants.Status.Enrolled', '@course.CourseName')">
                                             <i class="fas fa-check me-1"></i>Tham gia
                                         </button>
-                                        <button type="button" class="btn btn-danger" onclick="showResponseModal(@course.CourseId, 'Dropped', '@course.CourseName')">
+                                        <button type="button" class="btn btn-danger" onclick="showResponseModal(@course.CourseId, '@EnrollmentConstants.Status.Dropped', '@course.CourseName')">
                                             <i class="fas fa-times me-1"></i>Từ chối
                                         </button>
                                     </div>
@@ -143,12 +143,6 @@
                                         <a href="@Url.Action("HocTap", "KhoaHoc", new { courseId = course.CourseId })" class="btn btn-primary">
                                             <i class="fas fa-play me-1"></i>Học ngay
                                         </a>
-                                        @if (course.IsAccepted)
-                                        {
-                                            <button type="button" class="btn btn-outline-warning" onclick="showResponseModal(@course.CourseId, 'Dropped', '@course.CourseName')">
-                                                <i class="fas fa-times me-1"></i>Hủy tham gia
-                                            </button>
-                                        }
                                     </div>
                                 }
                                 else if (course.IsCompleted)
@@ -227,9 +221,9 @@
                         </label>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="note" class="form-label">Ghi chú (tùy chọn)</label>
-                        <textarea class="form-control" id="note" rows="3" placeholder="Nhập ghi chú của bạn..."></textarea>
+                    <div class="mb-3" id="noteSection">
+                        <label for="note" class="form-label">Lý do từ chối <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="note" rows="3" placeholder="Vui lòng nhập lý do từ chối khóa học..." required></textarea>
                     </div>
                 </form>
             </div>
@@ -258,6 +252,19 @@
             const responseText = responseType === 'Enrolled' ? 'Tham gia khóa học' : 'Từ chối tham gia';
             document.getElementById('responseText').textContent = responseText;
             
+            // Hiển thị/ẩn ô nhập lý do dựa trên loại phản hồi
+            const noteSection = document.getElementById('noteSection');
+            const noteTextarea = document.getElementById('note');
+            if (responseType === 'Enrolled') {
+                // Tham gia - không cần lý do
+                noteSection.style.display = 'none';
+                noteTextarea.removeAttribute('required');
+            } else {
+                // Từ chối - bắt buộc nhập lý do
+                noteSection.style.display = 'block';
+                noteTextarea.setAttribute('required', 'required');
+            }
+            
             const confirmBtn = document.getElementById('confirmBtn');
             confirmBtn.className = responseType === 'Enrolled' ? 'btn btn-success' : 'btn btn-danger';
             confirmBtn.innerHTML = responseType === 'Enrolled' ? '<i class="fas fa-check me-1"></i>Xác nhận tham gia' : '<i class="fas fa-times me-1"></i>Xác nhận từ chối';
@@ -273,6 +280,13 @@
             
             if (!courseId || !responseType) {
                 alert('Dữ liệu không hợp lệ!');
+                return;
+            }
+            
+            // Kiểm tra nếu là từ chối thì bắt buộc phải có lý do
+            if (responseType === 'Dropped' && !note.trim()) {
+                alert('Vui lòng nhập lý do từ chối!');
+                document.getElementById('note').focus();
                 return;
             }
             
@@ -292,7 +306,7 @@
                 body: JSON.stringify({
                     courseId: parseInt(courseId),
                     responseType: responseType,
-                    note: note
+                    note: note.trim() || null
                 })
             })
             .then(response => response.json())
@@ -312,7 +326,6 @@
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
                 alert('Có lỗi xảy ra khi gửi phản hồi. Vui lòng thử lại!');
             })
             .finally(() => {

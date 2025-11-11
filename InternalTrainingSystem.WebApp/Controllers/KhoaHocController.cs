@@ -864,12 +864,11 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             try
             {
-                var id = HttpContext.Session.GetString("Id");
                 // Sử dụng page size cố định từ constants cho khóa học của nhân viên
                 var pageSize = PaginationConstants.EmployeeCoursePageSize;
 
                 // Gọi API với tham số phân trang và filter
-                var queryParams = $"?userId={id}&page={page}&pageSize={pageSize}";
+                var queryParams = $"?page={page}&pageSize={pageSize}";
                 if (!string.IsNullOrEmpty(status) && status != "all")
                     queryParams += $"&status={Uri.EscapeDataString(status)}";
 
@@ -918,48 +917,62 @@ namespace InternalTrainingSystem.WebApp.Controllers
         /// </summary>
         [HttpPost("phan-hoi-khoa-hoc")]
         [Authorize(Roles = UserRoles.Staff)]
-        public async Task<IActionResult> PhanHoiKhoaHoc(int courseId, string responseType, string? note = null)
+        public async Task<IActionResult> PhanHoiKhoaHoc([FromBody] CourseResponseRequestDto request)
         {
             try
             {
-                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
+                // Validate request
+                if (request == null || request.CourseId <= 0 || string.IsNullOrEmpty(request.ResponseType))
                 {
-                    return Json(new { success = false, message = "Phiên đăng nhập đã hết hạn" });
+                    return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
                 }
 
+                // Kiểm tra responseType hợp lệ
+                bool isConfirmed = request.ResponseType == EnrollmentConstants.Status.Enrolled;
+                
+                // Tạo request body theo đúng format API
                 var requestBody = new
                 {
-                    //EmployeeId = employeeId,
-                    CourseId = courseId,
-                    ResponseType = responseType,
-                    Note = note
+                    IsConfirmed = isConfirmed,
+                    Reason = request.Note
                 };
 
                 var json = JsonSerializer.Serialize(requestBody);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl($"api/course/{courseId}/respond"), content);
+                // Log để debug
+                var apiUrl = Utilities.GetAbsoluteUrl($"api/course/{request.CourseId}/enrollments/status");
+
+                var response = await _httpClient.PatchAsync(apiUrl, content);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var message = responseType.ToLower() switch
-                    {
-                        "accepted" => "Đã xác nhận tham gia khóa học thành công!",
-                        "declined" => "Đã từ chối tham gia khóa học.",
-                        _ => "Đã cập nhật phản hồi thành công!"
-                    };
+                    var message = isConfirmed 
+                        ? "Đã xác nhận tham gia khóa học thành công!" 
+                        : "Đã từ chối tham gia khóa học.";
 
                     return Json(new { success = true, message = message });
                 }
                 else
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    var errorMessage = !string.IsNullOrEmpty(errorContent) ? errorContent.Trim('"') : "Không thể cập nhật phản hồi. Vui lòng thử lại.";
+                    _logger.LogError($"API Error - Status: {response.StatusCode}, Content: {errorContent}");
+                    
+                    // Xử lý các lỗi cụ thể
+                    var errorMessage = response.StatusCode switch
+                    {
+                        System.Net.HttpStatusCode.NotFound => "Không tìm thấy khóa học hoặc bạn chưa được ghi danh.",
+                        System.Net.HttpStatusCode.Unauthorized => "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+                        System.Net.HttpStatusCode.BadRequest => !string.IsNullOrEmpty(errorContent) ? errorContent.Trim('"') : "Dữ liệu không hợp lệ.",
+                        _ => !string.IsNullOrEmpty(errorContent) ? errorContent.Trim('"') : "Không thể cập nhật phản hồi. Vui lòng thử lại."
+                    };
+                    
                     return Json(new { success = false, message = errorMessage });
                 }
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, $"Error in PhanHoiKhoaHoc - CourseId: {request?.CourseId}, ResponseType: {request?.ResponseType}");
                 return Json(new { success = false, message = "Đã xảy ra lỗi khi cập nhật phản hồi" });
             }
         }
