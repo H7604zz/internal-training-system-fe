@@ -623,12 +623,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     return RedirectToAction("Index");
                 }
 
-                if (course.Status != CourseStatus.Pending)
-                {
-                    TempData["Warning"] = "Khóa học này đã được xử lý phê duyệt.";
-                    return RedirectToAction("ChiTiet", new { id });
-                }
-
                 ViewBag.ApprovalHistory = await GetApprovalHistory(id);
 
                 return View(course);
@@ -795,14 +789,44 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
         }
 
-
-
         private async Task<List<ApprovalHistoryDto>> GetApprovalHistory(int courseId)
         {
             try
             {
-                // Get course details first
-                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/course/{courseId}"));
+                // Gọi API lấy lịch sử khóa học từ backend
+                var historyResponse = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/course/histories?Id={courseId}"));
+                
+                if (historyResponse.IsSuccessStatusCode)
+                {
+                    var historyContent = await historyResponse.Content.ReadAsStringAsync();
+                    var courseHistories = JsonSerializer.Deserialize<List<CourseHistoryDto>>(historyContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    if (courseHistories != null && courseHistories.Any())
+                    {
+                        // Convert CourseHistoryDto to ApprovalHistoryDto
+                        var approvalHistory = courseHistories.Select((h, index) => new ApprovalHistoryDto
+                        {
+                            Id = index + 1,
+                            CourseId = courseId,
+                            Action = h.ActionName,
+                            Description = h.Description ?? h.ActionName,
+                            ActionBy = h.FullName ?? "Hệ thống",
+                            ActionDate = h.ActionDate
+                        }).OrderBy(h => h.ActionDate).ToList();
+
+                        return approvalHistory;
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to get course histories from API. Status: {StatusCode}", historyResponse.StatusCode);
+                }
+
+                // Fallback: Nếu API không trả về dữ liệu, tạo lịch sử mặc định từ course details
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/course/{courseId}/detail"));
                 if (!response.IsSuccessStatusCode)
                 {
                     return new List<ApprovalHistoryDto>();
@@ -826,16 +850,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
                         Description = "Khóa học được tạo",
                         ActionBy = course.CreatedBy ?? "Nhân viên đào tạo",
                         ActionDate = course.CreatedDate
-                    },
-                    new ApprovalHistoryDto
-                    {
-                        Id = 2,
-                        CourseId = courseId,
-                        Action = ApprovalAction.Submitted,
-                        Description = "Gửi yêu cầu phê duyệt",
-                        Note = "Khóa học đã sẵn sàng để phê duyệt",
-                        ActionBy = course.CreatedBy ?? "Nhân viên đào tạo",
-                        ActionDate = course.CreatedDate.AddMinutes(30)
                     }
                 };
 
@@ -844,7 +858,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 {
                     history.Add(new ApprovalHistoryDto
                     {
-                        Id = 3,
+                        Id = 2,
                         CourseId = courseId,
                         Action = ApprovalAction.Approved,
                         Description = "Khóa học đã được phê duyệt",
@@ -857,7 +871,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 {
                     history.Add(new ApprovalHistoryDto
                     {
-                        Id = 3,
+                        Id = 2,
                         CourseId = courseId,
                         Action = ApprovalAction.Rejected,
                         Description = "Khóa học bị từ chối",
@@ -871,7 +885,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error occurred while getting approval history for course {courseId}");
+                _logger.LogError(ex, "Error occurred while getting approval history for course {CourseId}", courseId);
                 return new List<ApprovalHistoryDto>();
             }
         }

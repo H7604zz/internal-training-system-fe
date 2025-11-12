@@ -155,9 +155,6 @@
                             @foreach (var historyItem in ViewBag.ApprovalHistory)
                             {
                                 <div class="history-item">
-                                    <div class="history-icon @historyItem.ActionColor">
-                                        <i class="@historyItem.ActionIcon"></i>
-                                    </div>
                                     <div class="history-content">
                                         <div class="history-action">@historyItem.Description</div>
                                         <div class="history-user">Bởi: @historyItem.ActionBy</div>
@@ -172,29 +169,7 @@
                                 </div>
                             }
                         }
-                        else
-                        {
-                            <div class="history-item">
-                                <div class="history-icon created">
-                                    <i class="fas fa-plus"></i>
-                                </div>
-                                <div class="history-content">
-                                    <div class="history-action">Khóa học được tạo</div>
-                                    <div class="history-user">Bởi: @(ViewBag.CreatedBy ?? "Nhân viên đào tạo")</div>
-                                    <div class="history-time">@(Model.CreatedDate.ToString("dd/MM/yyyy HH:mm"))</div>
-                                </div>
-                            </div>
-                            <div class="history-item">
-                                <div class="history-icon pending">
-                                    <i class="fas fa-clock"></i>
-                                </div>
-                                <div class="history-content">
-                                    <div class="history-action">Gửi yêu cầu phê duyệt</div>
-                                    <div class="history-user">Chờ phê duyệt từ Giám Đốc</div>
-                                    <div class="history-time">@(DateTime.Now.ToString("dd/MM/yyyy HH:mm"))</div>
-                                </div>
-                            </div>
-                        }
+
                     </div>
                 </div>
             </div>
