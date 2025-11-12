@@ -108,6 +108,29 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     return RedirectToAction("Index");
                 }
 
+                StatisticsCourseDto? statistics = null;
+                try
+                {
+                    var statsResponse = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/course/statistics/{id}"));
+                    if (statsResponse.IsSuccessStatusCode)
+                    {
+                        var statsContent = await statsResponse.Content.ReadAsStringAsync();
+                        statistics = JsonSerializer.Deserialize<StatisticsCourseDto>(statsContent, new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        });
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Failed to load statistics for course {CourseId}. Status: {StatusCode}", id, statsResponse.StatusCode);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Error loading statistics for course {CourseId}", id);
+                }
+
+                ViewBag.Statistics = statistics;
                 return View(course);
             }
             catch (Exception ex)

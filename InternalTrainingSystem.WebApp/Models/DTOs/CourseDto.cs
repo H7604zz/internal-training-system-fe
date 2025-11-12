@@ -134,4 +134,10 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string ActionIcon => ApprovalAction.GetIcon(Action);
         public string ActionColor => ApprovalAction.GetColor(Action);
     }
+
+    public class StatisticsCourseDto
+    {
+        public int ClassCount { get; set; }
+        public int StudentCount { get; set; }
+    }
 }
