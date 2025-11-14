@@ -265,8 +265,8 @@ namespace InternalTrainingSystem.WebApp.Controllers
         /// <summary>
         /// Lấy danh sách chứng chỉ của người dùng
         /// </summary>
-        [HttpGet("chung-chi")]
-        public async Task<IActionResult> ChungChi()
+        [HttpGet("chung-chi-cua-toi")]
+        public async Task<IActionResult> ChungChiCuaToi()
         {
             try
             {
