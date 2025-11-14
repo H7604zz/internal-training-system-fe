@@ -17,112 +17,34 @@
 
         @if (Model != null && Model.Any())
         {
-            <!-- Statistics -->
-            <div class="stats-row">
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-certificate text-primary"></i></div>
-                    <div class="stat-value">@Model.Count</div>
-                    <div class="stat-label">Tổng Chứng Chỉ</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-check-circle text-success"></i></div>
-                    <div class="stat-value">@Model.Count(c => !c.IsExpired)</div>
-                    <div class="stat-label">Còn Hiệu Lực</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-exclamation-triangle text-warning"></i></div>
-                    <div class="stat-value">@Model.Count(c => c.IsExpired)</div>
-                    <div class="stat-label">Đã Hết Hạn</div>
-                </div>
-            </div>
-
             <!-- Certificates List -->
             @foreach (var certificate in Model)
             {
-                <div class="certificate-card">
+                <div class="certificate-card" onclick="window.location.href='@Url.Action("XemChungChi","KhoaHoc", new { courseId = certificate.CourseId })'" style="cursor: pointer;">
                     <div class="certificate-header">
-                        <div class="certificate-icon">
-                            <i class="fas fa-award"></i>
-                        </div>
-                        <div class="certificate-info">
-                            <h3 class="certificate-name">@certificate.CertificateName</h3>
-                            <div class="course-name">@certificate.CourseName</div>
-                            <span class="course-code">@certificate.CourseCode</span>
-                            
-                            @if (certificate.IsExpired)
-                            {
-                                <span class="certificate-status status-expired ms-2">
-                                    <i class="fas fa-times-circle"></i> Đã hết hạn
-                                </span>
-                            }
-                            else if (certificate.HasExpiration)
-                            {
-                                <span class="certificate-status status-valid ms-2">
-                                    <i class="fas fa-check-circle"></i> Còn hiệu lực
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="certificate-status status-no-expiry ms-2">
-                                    <i class="fas fa-infinity"></i> Không hết hạn
-                                </span>
-                            }
-                        </div>
-                    </div>
-
-                    <div class="certificate-details">
-                        <div class="detail-item">
-                            <div class="detail-icon">
-                                <i class="fas fa-calendar-check"></i>
+                        <div class="certificate-left">
+                            <div class="certificate-icon">
+                                <i class="fas fa-award"></i>
                             </div>
-                            <div class="detail-content">
-                                <div class="detail-label">Ngày cấp</div>
-                                <div class="detail-value">@certificate.IssueDateDisplay</div>
-                            </div>
-                        </div>
-
-                        @if (certificate.HasExpiration)
-                        {
-                            <div class="detail-item">
-                                <div class="detail-icon">
-                                    <i class="fas fa-calendar-times"></i>
-                                </div>
-                                <div class="detail-content">
-                                    <div class="detail-label">Ngày hết hạn</div>
-                                    <div class="detail-value">@certificate.ExpirationDateDisplay</div>
+                            <div class="certificate-info">
+                                <h3 class="certificate-name">@certificate.CertificateName</h3>
+                                <div class="course-meta">
+                                    <div class="course-name">@certificate.CourseName</div>
+                                    <span class="course-code">@certificate.CourseCode</span>
                                 </div>
                             </div>
-                        }
-
-                        <div class="detail-item">
-                            <div class="detail-icon">
-                                <i class="fas fa-fingerprint"></i>
-                            </div>
-                            <div class="detail-content">
-                                <div class="detail-label">Mã chứng chỉ</div>
-                                <div class="detail-value">#@certificate.CertificateId</div>
-                            </div>
                         </div>
-                    </div>
-
-                    <div class="certificate-actions">
-                        <a asp-controller="KhoaHoc" 
-                           asp-action="XemChungChi" 
-                           asp-route-courseId="@certificate.CourseId" 
-                           class="btn-view">
-                            <i class="fas fa-eye"></i>
-                            Xem Chứng Chỉ
-                        </a>
                         <a asp-controller="KhoaHoc" 
                            asp-action="TaiChungChi" 
                            asp-route-courseId="@certificate.CourseId" 
-                           class="btn-download">
+                           class="btn-download" onclick="event.stopPropagation()">
                             <i class="fas fa-download"></i>
                             Tải Xuống
                         </a>
                     </div>
                 </div>
             }
+           
         }
         else
         {
