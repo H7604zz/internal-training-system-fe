@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using InternalTrainingSystem.WebApp.Models;
+using InternalTrainingSystem.WebApp.Constants;
 
 namespace InternalTrainingSystem.WebApp.Controllers
 {
@@ -130,6 +131,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
         // GET: nguoi-dung/thong-tin-ca-nhan
         [HttpGet("thong-tin-ca-nhan")]
+        [Authorize(Roles = UserRoles.Staff)]
         public async Task<IActionResult> ThongTinCaNhan()
         {
             try
@@ -164,6 +166,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         /// </summary>
         [HttpPost("cap-nhat-thong-tin")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = UserRoles.Staff)]
         public async Task<IActionResult> CapNhatThongTin(UpdateProfileDto model)
         {
             try
@@ -266,6 +269,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         /// Lấy danh sách chứng chỉ của người dùng
         /// </summary>
         [HttpGet("chung-chi-cua-toi")]
+        [Authorize(Roles = UserRoles.Staff)]
         public async Task<IActionResult> ChungChiCuaToi()
         {
             try
