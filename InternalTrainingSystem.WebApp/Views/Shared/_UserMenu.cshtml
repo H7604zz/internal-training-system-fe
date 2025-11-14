@@ -52,7 +52,7 @@
             <li><h6 class="dropdown-header">@userEmail</h6></li>
             <li><hr class="dropdown-divider"></li>
             <li>
-                <a class="dropdown-item" asp-controller="Auth" asp-action="ThongTinCaNhan">
+                <a class="dropdown-item" asp-controller="NguoiDung" asp-action="ThongTinCaNhan">
                     <i class="fas fa-user me-2"></i>Thông tin cá nhân
                 </a>
             </li>
@@ -82,10 +82,12 @@
 
         // Auto logout when session expires
         function checkSessionExpiry() {
-            fetch('/api/user/profile')
-                .then(response => response.json())
-                .then(data => {
-                    if (!data.success && data.message.includes('hết hạn')) {
+            fetch('@Url.Action("ThongTinCaNhan", "NguoiDung")', {
+                method: 'GET'
+            })
+                .then(response => {
+                    // Nếu redirect về trang đăng nhập (status 302), session đã hết hạn
+                    if (response.redirected && response.url.includes('dang-nhap')) {
                         alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
                         window.location.href = '@Url.Action("DangNhap", "Auth")';
                     }

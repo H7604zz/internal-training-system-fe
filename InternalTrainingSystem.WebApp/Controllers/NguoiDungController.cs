@@ -128,6 +128,72 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
         }
 
+        // GET: nguoi-dung/thong-tin-ca-nhan
+        [HttpGet("thong-tin-ca-nhan")]
+        public async Task<IActionResult> ThongTinCaNhan()
+        {
+            try
+            {
+                // Kiểm tra đăng nhập
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
+                {
+                    return RedirectToAction("DangNhap", "Auth");
+                }
+
+                // Lấy thông tin user từ API
+                var userProfile = await GetProfileAsync();
+                
+                if (userProfile != null)
+                {
+                    return View(userProfile);
+                }
+                
+                // Nếu không lấy được profile, redirect về trang chủ với thông báo lỗi
+                TempData["Error"] = "Không thể lấy thông tin cá nhân.";
+                return RedirectToAction("Index", "TrangChu");
+            }
+            catch (Exception)
+            {
+                TempData["Error"] = "Đã xảy ra lỗi khi tải thông tin cá nhân.";
+                return RedirectToAction("Index", "TrangChu");
+            }
+        }
+
+        /// <summary>
+        /// Cập nhật thông tin cá nhân
+        /// </summary>
+        [HttpPost("cap-nhat-thong-tin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CapNhatThongTin(UpdateProfileDto model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var userProfile = await GetProfileAsync();
+                    if (userProfile != null)
+                    {
+                        ViewBag.ShowUpdateForm = true;
+                        return View("ThongTinCaNhan", userProfile);
+                    }
+
+                    TempData["Error"] = "Không thể lấy thông tin cá nhân để hiển thị.";
+                    return RedirectToAction("ThongTinCaNhan");
+                }
+
+                // Gọi API update
+                var message = await UpdateProfileAsync(model);
+
+                TempData["Success"] = message; 
+                return RedirectToAction("ThongTinCaNhan");
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message; 
+                return RedirectToAction("ThongTinCaNhan");
+            }
+        }
+
         /// <summary>
         /// Helper method để lấy danh sách phòng ban
         /// </summary>
@@ -152,6 +218,72 @@ namespace InternalTrainingSystem.WebApp.Controllers
             catch
             {
                 return new List<DepartmnentViewDto>();
+            }
+        }
+
+        /// <summary>
+        /// Helper method để lấy thông tin user profile
+        /// </summary>
+        private async Task<UserProfileDto?> GetProfileAsync()
+        {
+            try
+            {
+                var token = TokenHelpers.GetAccessToken(_httpContextAccessor);
+                if (string.IsNullOrEmpty(token))
+                {
+                    return null;
+                }
+
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/user/profile"));
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var profileResponse = JsonSerializer.Deserialize<UserProfileDto>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    return profileResponse;
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    TokenHelpers.ClearTokens(_httpContextAccessor);
+                    return null;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Helper method để update profile
+        /// </summary>
+        private async Task<string> UpdateProfileAsync(UpdateProfileDto model)
+        {
+            var jsonContent = new StringContent(
+                JsonSerializer.Serialize(model),
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await _httpClient.PatchAsync(Utilities.GetAbsoluteUrl("api/user/update-profile"), jsonContent);
+
+            var message = await response.Content.ReadAsStringAsync();
+            message = message.Trim('"');
+
+            if (response.IsSuccessStatusCode)
+            {
+                return message;
+            }
+            else
+            {
+                throw new Exception(message);
             }
         }
     }

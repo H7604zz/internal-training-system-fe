@@ -189,7 +189,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     }
                     
                     TempData["Success"] = "Đổi mật khẩu thành công";
-                    return RedirectToAction("ThongTinCaNhan");
+                    return RedirectToAction("ThongTinCaNhan", "NguoiDung");
                 }
                 else
                 {
@@ -221,102 +221,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
         }
 
-        /// <summary>
-        /// Trang thông tin cá nhân
-        /// </summary>
-        public async Task<IActionResult> ThongTinCaNhan()
-        {
-            try
-            {
-                // Kiểm tra đăng nhập
-                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
-                {
-                    return RedirectToAction("DangNhap");
-                }
-
-                // Lấy thông tin user từ API
-                var userProfile = await GetProfileAsync();
-                
-                if (userProfile != null)
-                {
-                    return View(userProfile);
-                }
-                
-                // Nếu không lấy được profile, redirect về trang chủ với thông báo lỗi
-                TempData["Error"] = "Không thể lấy thông tin cá nhân.";
-                return RedirectToAction("Index", "TrangChu");
-            }
-            catch (Exception)
-            {
-                TempData["Error"] = "Đã xảy ra lỗi khi tải thông tin cá nhân.";
-                return RedirectToAction("Index", "TrangChu");
-            }
-        }
-
-        /// <summary>
-        /// Cập nhật thông tin cá nhân
-        /// </summary>
-        [HttpPost]
-        public async Task<IActionResult> CapNhatThongTin(UpdateProfileDto model)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    var userProfile = await GetProfileAsync();
-                    if (userProfile != null)
-                    {
-                        ViewBag.ShowUpdateForm = true;
-                        return View("ThongTinCaNhan", userProfile);
-                    }
-
-                    TempData["Error"] = "Không thể lấy thông tin cá nhân để hiển thị.";
-                    return RedirectToAction("ThongTinCaNhan");
-                }
-
-                // Gọi API update
-                var message = await UpdateProfileAsync(model);
-
-                TempData["Success"] = message; 
-                return RedirectToAction("ThongTinCaNhan");
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = ex.Message; 
-                return RedirectToAction("ThongTinCaNhan");
-            }
-        }
-
-
-        /// <summary>
-        /// API endpoint để lấy thông tin người dùng hiện tại
-        /// </summary>
-        [HttpGet]
-        [Route("api/user/profile")]
-        public async Task<IActionResult> GetProfile()
-        {
-            try
-            {
-                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
-                {
-                    return Json(new { success = false, message = "Phiên đăng nhập đã hết hạn" });
-                }
-
-                var userProfile = await GetProfileAsync();
-                if (userProfile != null)
-                {
-                    return Json(new { success = true, data = userProfile });
-                }
-                else
-                {
-                    return Json(new { success = false, message = "Không thể lấy thông tin người dùng" });
-                }
-            }
-            catch (Exception)
-            {
-                return Json(new { success = false, message = "Đã xảy ra lỗi khi lấy thông tin người dùng" });
-            }
-        }
+        
 
         /// <summary>
         /// API endpoint gửi OTP cho quên mật khẩu
@@ -363,10 +268,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 return Json(new { success = false, message = "Đã xảy ra lỗi khi đặt lại mật khẩu" });
             }
         }
-
-        
-
-        
 
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto loginRequest)
         {
@@ -443,52 +344,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 // Vẫn xóa token local
                 TokenHelpers.ClearTokens(_httpContextAccessor);
                 return new LogoutResponseDto { Success = true, Message = "Đăng xuất thành công" };
-            }
-        }
-
-        public async Task<UserProfileDto?> GetProfileAsync()
-        {
-            try
-            {
-                var token = TokenHelpers.GetAccessToken(_httpContextAccessor);
-                if (string.IsNullOrEmpty(token))
-                {
-                    return null;
-                }
-
-                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/user/profile"));
-                var responseContent = await response.Content.ReadAsStringAsync();
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var profileResponse = JsonSerializer.Deserialize<UserProfileDto>(responseContent, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
-
-                    return profileResponse;
-                }
-                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                {
-                    // Token có thể đã hết hạn, thử refresh
-                    var refreshResult = await TryRefreshToken();
-                    if (refreshResult)
-                    {
-                        // Thử lại với token mới
-                        return await GetProfileAsync();
-                    }
-
-                    TokenHelpers.ClearTokens(_httpContextAccessor);
-                    return null;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            catch (Exception ex)
-            {
-                return null;
             }
         }
 
