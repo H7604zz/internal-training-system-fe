@@ -72,7 +72,7 @@
                     <div class="certificate-body">
                         <p class="certificate-intro">Trao cho học viên:</p>
                         
-                        <h2 class="employee-name">@Model.UserFullName</h2>
+                        <h2 class="employee-name">@Model.FullName</h2>
                         
                         <p class="completion-text">Đã hoàn thành khóa học:</p>
                         
@@ -134,7 +134,7 @@
     <script>
         // Enhance print dialog
         window.onbeforeprint = function() {
-            document.title = 'Chung_Chi_@Model.UserFullName.Replace(" ", "_")_@Model.CourseCode';
+            document.title = 'Chung_Chi_@Model.FullName.Replace(" ", "_")_@Model.CourseCode';
         };
         
         window.onafterprint = function() {

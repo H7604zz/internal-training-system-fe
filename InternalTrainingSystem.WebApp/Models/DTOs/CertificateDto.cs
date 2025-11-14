@@ -10,7 +10,7 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string CourseCode { get; set; } = string.Empty;
         public string CertificateName { get; set; } = string.Empty;
         public string CourseName { get; set; } = string.Empty;
-        public string UserFullName { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
         public DateTime IssueDate { get; set; }
         public DateTime? ExpirationDate { get; set; }
         
