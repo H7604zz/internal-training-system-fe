@@ -1146,14 +1146,14 @@ namespace InternalTrainingSystem.WebApp.Controllers
         /// <summary>
         /// Hiển thị chứng chỉ hoàn thành khóa học
         /// </summary>
-        [HttpGet("chung-chi/{courseId}")]
+        [HttpGet("chung-chi/{certificateId}")]
         [Authorize(Roles = UserRoles.Staff)]
-        public async Task<IActionResult> ChungChi(int courseId)
+        public async Task<IActionResult> ChungChi(int certificateId)
         {
             try
             {
                 // Get certificate details from API
-                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/certificate/course/{courseId}"));
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/certificate/{certificateId}"));
                 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -1188,7 +1188,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while loading certificate for course {CourseId}", courseId);
+                _logger.LogError(ex, "Error occurred while loading certificate {CertificateId}", certificateId);
                 TempData["Error"] = "Đã xảy ra lỗi khi tải chứng chỉ.";
                 return RedirectToAction("DanhSachKhoaHocCuaToi");
             }
