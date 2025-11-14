@@ -51,7 +51,6 @@
                                 <circle cx="60" cy="60" r="55" fill="none" stroke="#4A90E2" stroke-width="3"/>
                                 <circle cx="60" cy="60" r="45" fill="none" stroke="#4A90E2" stroke-width="2" stroke-dasharray="5,5"/>
                                 <path d="M 40 60 L 55 75 L 80 45" fill="none" stroke="#4A90E2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-                                <circle cx="60" cy="60" r="10" fill="#4A90E2"/>
                             </svg>
                         </div>
                         <p class="organization-name">HỆ THỐNG ĐÀO TẠO NỘI BỘ</p>
@@ -65,7 +64,6 @@
                             <i class="fas fa-certificate decoration-icon"></i>
                             <span class="underline-decoration"></span>
                         </div>
-                        <p class="certificate-subtitle">duc</p>
                     </div>
 
                     <!-- Body -->
@@ -90,13 +88,6 @@
                                 <span class="info-value">@Model.CertificateName</span>
                             </div>
                             
-                            @if (Model.HasExpiration)
-                            {
-                                <div class="info-item">
-                                    <span class="info-label">Ngày hết hạn:</span>
-                                    <span class="info-value @(Model.IsExpired ? "text-danger" : "")">@Model.ExpirationDateDisplay</span>
-                                </div>
-                            }
                         </div>
                         
                         <p class="issue-date">Ngày cấp: <strong>@Model.IssueDateDisplay</strong></p>

@@ -20,7 +20,7 @@
             <!-- Certificates List -->
             @foreach (var certificate in Model)
             {
-                <div class="certificate-card" onclick="window.location.href='@Url.Action("XemChungChi","KhoaHoc", new { courseId = certificate.CourseId })'" style="cursor: pointer;">
+                <div class="certificate-card" onclick="window.location.href='/khoa-hoc/chung-chi/@certificate.CertificateId'" style="cursor: pointer;">
                     <div class="certificate-header">
                         <div class="certificate-left">
                             <div class="certificate-icon">

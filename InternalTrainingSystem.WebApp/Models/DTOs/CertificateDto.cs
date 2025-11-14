@@ -12,12 +12,8 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string CourseName { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
         public DateTime IssueDate { get; set; }
-        public DateTime? ExpirationDate { get; set; }
         
         // Computed properties
         public string IssueDateDisplay => IssueDate.ToString("dd/MM/yyyy");
-        public string ExpirationDateDisplay => ExpirationDate?.ToString("dd/MM/yyyy") ?? "Không có";
-        public bool HasExpiration => ExpirationDate.HasValue;
-        public bool IsExpired => ExpirationDate.HasValue && ExpirationDate.Value < DateTime.Now;
     }
 }
