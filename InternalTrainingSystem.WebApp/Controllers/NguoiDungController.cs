@@ -263,6 +263,79 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         /// <summary>
+        /// Lấy danh sách chứng chỉ của người dùng
+        /// </summary>
+        [HttpGet("chung-chi")]
+        public async Task<IActionResult> ChungChi()
+        {
+            try
+            {
+                // Kiểm tra đăng nhập
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
+                {
+                    return RedirectToAction("DangNhap", "Auth");
+                }
+
+                // Lấy danh sách chứng chỉ từ API
+                var certificates = await GetCertificatesAsync();
+                
+                if (certificates == null)
+                {
+                    TempData["Error"] = "Không thể lấy danh sách chứng chỉ.";
+                    return View(new List<CertificateDto>());
+                }
+
+                return View(certificates);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Đã xảy ra lỗi: {ex.Message}";
+                return View(new List<CertificateDto>());
+            }
+        }
+
+        /// <summary>
+        /// Helper method để lấy danh sách chứng chỉ
+        /// </summary>
+        private async Task<List<CertificateDto>?> GetCertificatesAsync()
+        {
+            try
+            {
+                var token = TokenHelpers.GetAccessToken(_httpContextAccessor);
+                if (string.IsNullOrEmpty(token))
+                {
+                    return null;
+                }
+
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/user/certificates"));
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var certificates = JsonSerializer.Deserialize<List<CertificateDto>>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    return certificates ?? new List<CertificateDto>();
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    TokenHelpers.ClearTokens(_httpContextAccessor);
+                    return null;
+                }
+                else
+                {
+                    return new List<CertificateDto>();
+                }
+            }
+            catch (Exception)
+            {
+                return new List<CertificateDto>();
+            }
+        }
+
+        /// <summary>
         /// Helper method để update profile
         /// </summary>
         private async Task<string> UpdateProfileAsync(UpdateProfileDto model)
