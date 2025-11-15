@@ -5,7 +5,11 @@ using InternalTrainingSystem.WebApp.Middleware;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
+    });
 
 // Configure routing to use kebab-case parameter transformer
 builder.Services.Configure<RouteOptions>(options =>

@@ -6,7 +6,7 @@
 }
 
 body {
-    font-family: 'Georgia', 'Times New Roman', serif;
+    font-family: 'Noto Serif', 'Times New Roman', serif;
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     padding: 2rem;
     min-height: 100vh;
@@ -47,7 +47,7 @@ body {
     display: inline-flex;
     align-items: center;
     transition: all 0.3s ease;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .btn-back {
@@ -97,19 +97,20 @@ body {
 
 .certificate-page {
     width: 100%;
-    max-width: 1000px;
-    aspect-ratio: 1.414 / 1; /* A4 landscape ratio */
+    max-width: 1200px;
     background: #fff;
     box-shadow: 0 8px 32px rgba(0,0,0,0.15);
     border-radius: 8px;
     overflow: hidden;
+    min-height: 800px;
 }
 
 /* Certificate Border */
 .certificate-border {
     width: 100%;
     height: 100%;
-    padding: 2rem;
+    min-height: 800px;
+    padding: 2.5rem;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     position: relative;
 }
@@ -117,8 +118,9 @@ body {
 .certificate-content {
     width: 100%;
     height: 100%;
+    min-height: 700px;
     background: #ffffff;
-    padding: 3rem;
+    padding: 2.5rem;
     border: 8px double #4A90E2;
     position: relative;
     display: flex;
@@ -181,7 +183,7 @@ body {
 }
 
 .organization-name {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-family: 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
     font-size: 1.1rem;
     font-weight: 700;
     color: #2c3e50;
@@ -197,10 +199,11 @@ body {
 }
 
 .certificate-title {
-    font-size: 3rem;
+    font-family: 'Noto Serif', 'Georgia', serif;
+    font-size: 2.5rem;
     font-weight: 700;
     color: #2c3e50;
-    letter-spacing: 4px;
+    letter-spacing: 3px;
     margin-bottom: 1rem;
     text-transform: uppercase;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -252,7 +255,8 @@ body {
 }
 
 .employee-name {
-    font-size: 2.5rem;
+    font-family: 'Noto Sans', sans-serif;
+    font-size: 2rem;
     font-weight: 700;
     color: #2c3e50;
     margin: 1rem 0;
@@ -276,10 +280,11 @@ body {
 }
 
 .course-name {
-    font-size: 2rem;
+    font-family: 'Noto Serif', 'Georgia', serif;
+    font-size: 1.6rem;
     font-weight: 700;
     color: #4A90E2;
-    margin: 1rem 0 2rem;
+    margin: 1rem 0 1.5rem;
     line-height: 1.4;
 }
 
@@ -287,11 +292,11 @@ body {
 .course-info-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-    margin: 2rem auto;
+    gap: 1rem;
+    margin: 1.5rem auto;
     max-width: 700px;
     background: #f8f9fa;
-    padding: 1.5rem;
+    padding: 1.2rem;
     border-radius: 8px;
     border: 2px solid #e9ecef;
 }
@@ -324,7 +329,7 @@ body {
 .issue-date {
     font-size: 1.2rem;
     color: #555;
-    margin-top: 2rem;
+    margin-top: 1.5rem;
 }
 
 .issue-date strong {
@@ -334,7 +339,7 @@ body {
 
 /* Footer / Signatures */
 .certificate-footer {
-    margin-top: 2rem;
+    margin-top: 1.5rem;
 }
 
 .signature-container {
