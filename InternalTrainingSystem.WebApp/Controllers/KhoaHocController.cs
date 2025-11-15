@@ -1205,7 +1205,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             try
             {
                 // Call API to download certificate PDF
-                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/certificate/course/{courseId}/download"));
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/certificate/{courseId}/download"));
                 
                 if (!response.IsSuccessStatusCode)
                 {

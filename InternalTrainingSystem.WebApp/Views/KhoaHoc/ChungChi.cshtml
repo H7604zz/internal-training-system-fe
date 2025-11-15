@@ -29,7 +29,7 @@
                 <button onclick="window.print()" class="btn btn-print">
                     <i class="fas fa-print me-2"></i>In chứng chỉ
                 </button>
-                <a href="@Url.Action("TaiXuongChungChi", "KhoaHoc", new { courseId = Model.CourseId })" class="btn btn-download">
+                <a asp-action="TaiXuongChungChi" asp-controller="KhoaHoc" asp-route-courseId="@Model.CourseId" class="btn btn-download">
                     <i class="fas fa-download me-2"></i>Tải xuống PDF
                 </a>
             </div>

@@ -6,7 +6,7 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
     public class CertificateDto
     {
         public int CertificateId { get; set; }
-        public string CourseId { get; set; }
+        public int CourseId { get; set; }
         public string CourseCode { get; set; } = string.Empty;
         public string CertificateName { get; set; } = string.Empty;
         public string CourseName { get; set; } = string.Empty;
