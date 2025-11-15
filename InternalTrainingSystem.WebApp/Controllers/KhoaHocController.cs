@@ -1146,14 +1146,14 @@ namespace InternalTrainingSystem.WebApp.Controllers
         /// <summary>
         /// Hiển thị chứng chỉ hoàn thành khóa học
         /// </summary>
-        [HttpGet("chung-chi/{certificateId}")]
+        [HttpGet("chung-chi/{courseId}")]
         [Authorize(Roles = UserRoles.Staff)]
-        public async Task<IActionResult> ChungChi(int certificateId)
+        public async Task<IActionResult> ChungChi(int courseId)
         {
             try
             {
                 // Get certificate details from API
-                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/certificate/{certificateId}"));
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/certificate/{courseId}"));
                 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -1175,7 +1175,8 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var certificate = JsonSerializer.Deserialize<CertificateDto>(responseContent, new JsonSerializerOptions
                 {
-                    PropertyNameCaseInsensitive = true
+                    PropertyNameCaseInsensitive = true,
+                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
                 });
 
                 if (certificate == null)
@@ -1188,7 +1189,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while loading certificate {CertificateId}", certificateId);
+                _logger.LogError(ex, "Error occurred while loading certificate {courseId}", courseId);
                 TempData["Error"] = "Đã xảy ra lỗi khi tải chứng chỉ.";
                 return RedirectToAction("DanhSachKhoaHocCuaToi");
             }
