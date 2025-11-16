@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace InternalTrainingSystem.WebApp.Controllers
 {
-    [Route("quiz")]
+    [Route("bai-thi")]
     public class BaiThiController : Controller
     {
         private readonly HttpClient _httpClient;

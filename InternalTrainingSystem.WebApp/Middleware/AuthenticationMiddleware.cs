@@ -198,7 +198,7 @@ namespace InternalTrainingSystem.WebApp.Middleware
                 "/user/",
                 "/profile/",
                 "/course/",
-                "/quiz/",
+                "/bai-thi/",
                 "/khoa-hoc/danh-sach-khoa-hoc-cua-toi"
             };
 

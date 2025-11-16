@@ -331,7 +331,7 @@ else
             document.getElementById('quizContent').style.display = 'none';
 
             try {
-                const response = await fetch(`/quiz/get-quiz-detail/${quizId}`);
+                const response = await fetch(`/bai-thi/get-quiz-detail/${quizId}`);
                 
                 if (!response.ok) {
                     let errorMessage = 'Không thể tải thông tin quiz';

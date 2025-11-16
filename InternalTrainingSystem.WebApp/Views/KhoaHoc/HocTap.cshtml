@@ -593,8 +593,8 @@
             `;
 
             try {
-                // Call API 1: Get Quiz Info - /quiz/get-quiz-info/{quizId}
-                const infoResponse = await fetch(`/quiz/get-quiz-info/${currentQuizId}`);
+                // Call API 1: Get Quiz Info - /bai-thi/get-quiz-info/{quizId}
+                const infoResponse = await fetch(`/bai-thi/get-quiz-info/${currentQuizId}`);
                 if (!infoResponse.ok) {
                     throw new Error(`Không thể tải thông tin quiz (Status: ${infoResponse.status})`);
                 }
@@ -633,8 +633,8 @@
                     btnStartQuiz.innerHTML = '<i class="fas fa-play me-2"></i>Bắt đầu làm bài';
                 }
 
-                // Call API 2: Get Quiz History - /quiz/get-quiz-history/{courseId}/{quizId}
-                const historyResponse = await fetch(`/quiz/get-quiz-history/${courseId}/${currentQuizId}`);
+                // Call API 2: Get Quiz History - /bai-thi/get-quiz-history/{courseId}/{quizId}
+                const historyResponse = await fetch(`/bai-thi/get-quiz-history/${courseId}/${currentQuizId}`);
                 if (!historyResponse.ok) {
                     throw new Error(`Không thể tải lịch sử làm bài (Status: ${historyResponse.status})`);
                 }
@@ -733,7 +733,7 @@
             }
             
             // Redirect to quiz page
-            window.location.href = `/quiz/lam-bai/${currentQuizId}`;
+            window.location.href = `/bai-thi/lam-bai/${currentQuizId}`;
         }
 
         // Update progress bar without reloading page
