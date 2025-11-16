@@ -19,7 +19,6 @@
     <!-- Quiz Header -->
     <div id="quiz-header" class="quiz-header" style="display: none;">
         <h1 class="quiz-title" id="quiz-title">Bài kiểm tra</h1>
-        <p id="quiz-description"></p>
         <div class="quiz-meta">
             <div class="quiz-meta-item">
                 <i class="fas fa-clock"></i>
@@ -32,36 +31,41 @@
         </div>
     </div>
 
-    <!-- Timer Section -->
-    <div id="timer-section" class="timer-section" style="display: none;">
-        <div class="timer" id="timer">
-            <i class="fas fa-clock"></i>
-            <span id="timer-display">00:00:00</span>
-        </div>
-        <button type="button" class="btn btn-danger" onclick="submitQuizEarly()">
-            <i class="fas fa-paper-plane me-2"></i>Nộp bài sớm
-        </button>
-    </div>
+    <!-- Main Content Wrapper -->
+    <div class="quiz-content-wrapper" style="display: none;" id="quiz-content-wrapper">
+        <!-- Sidebar -->
+        <div class="quiz-sidebar" id="quiz-sidebar">
+            <!-- Timer -->
+            <div class="sidebar-section" id="timer-section-sidebar">
+                <h4 class="sidebar-title"><i class="fas fa-clock me-2"></i>Thời gian còn lại</h4>
+                <div class="timer" id="timer">
+                    <span id="timer-display">00:00:00</span>
+                </div>
+            </div>
 
-    <!-- Progress Indicator -->
-    <div id="progress-indicator" class="progress-indicator" style="display: none;">
-        <div class="progress-bar-custom">
-            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
-        </div>
-        <div class="progress-text">
-            Đã trả lời <strong><span id="answered-count">0</span>/<span id="total-count">0</span></strong> câu hỏi
-        </div>
-    </div>
+            <!-- Progress -->
+            <div class="sidebar-section">
+                <h4 class="sidebar-title"><i class="fas fa-tasks me-2"></i>Tiến độ</h4>
+                <div class="progress-bar-custom">
+                    <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                </div>
+                <div class="progress-text">
+                    <span id="answered-count">0</span>/<span id="total-count">0</span> câu hỏi
+                </div>
+            </div>
 
-    <!-- Questions Container -->
-    <div id="questions-container"></div>
+            <!-- Submit Button -->
+            <div class="sidebar-section">
+                <button type="button" class="btn-submit-quiz" onclick="submitQuiz()">
+                    <i class="fas fa-paper-plane me-2"></i>Nộp bài
+                </button>
+            </div>
+        </div>
 
-    <!-- Submit Section -->
-    <div id="submit-section" class="submit-section" style="display: none;">
-        <p class="mb-3">Bạn đã hoàn thành bài kiểm tra. Vui lòng kiểm tra lại trước khi nộp bài.</p>
-        <button type="button" class="btn-submit-quiz" onclick="submitQuiz()">
-            <i class="fas fa-paper-plane me-2"></i>Nộp bài
-        </button>
+        <!-- Questions Container -->
+        <div class="quiz-main-content">
+            <div id="questions-container"></div>
+        </div>
     </div>
 </div>
 
@@ -75,6 +79,7 @@
         let timeLimit = 0; // in seconds
         let endTime = null;
         let userAnswers = {}; // { questionId: [answerId1, answerId2, ...] }
+        let isSubmitting = false; // prevent double submit and race with timer
 
         // Initialize quiz
         document.addEventListener('DOMContentLoaded', async function() {
@@ -178,16 +183,16 @@
         function displayQuiz() {
             // Show quiz sections
             document.getElementById('quiz-header').style.display = 'block';
-            document.getElementById('progress-indicator').style.display = 'block';
-            document.getElementById('submit-section').style.display = 'block';
+            document.getElementById('quiz-content-wrapper').style.display = 'flex';
             
             if (timeLimit > 0) {
-                document.getElementById('timer-section').style.display = 'flex';
+                document.getElementById('timer-section-sidebar').style.display = 'block';
+            } else {
+                document.getElementById('timer-section-sidebar').style.display = 'none';
             }
 
             // Set quiz info
             document.getElementById('quiz-title').textContent = quizData.title || 'Bài kiểm tra';
-            document.getElementById('quiz-description').textContent = quizData.description || '';
             document.getElementById('quiz-time-limit').textContent = timeLimit > 0 ? `${timeLimit} phút` : 'Không giới hạn';
             document.getElementById('quiz-question-count').textContent = quizData.questions.length;
             document.getElementById('total-count').textContent = quizData.questions.length;
@@ -282,8 +287,12 @@
         }
 
         function updateProgress() {
-            const answeredCount = Object.keys(userAnswers).filter(qId => userAnswers[qId].length > 0).length;
+            if (!quizData || !quizData.questions) return;
             const totalCount = quizData.questions.length;
+            const answeredCount = quizData.questions.filter(q => {
+                const a = userAnswers[q.questionId];
+                return Array.isArray(a) && a.length > 0;
+            }).length;
             const percentage = totalCount > 0 ? Math.round((answeredCount / totalCount) * 100) : 0;
 
             document.getElementById('answered-count').textContent = answeredCount;
@@ -321,8 +330,10 @@
 
                 if (remainingSeconds <= 0) {
                     clearInterval(timerInterval);
+                    timerInterval = null;
                     alert('Hết thời gian làm bài!');
-                    submitQuiz();
+                    // Auto-submit when time is up without confirmation
+                    submitQuiz({ skipConfirm: true });
                 }
             }, 1000);
         }
@@ -336,26 +347,38 @@
             document.getElementById('timer-display').textContent = display;
         }
 
-        function submitQuizEarly() {
-            if (confirm('Bạn có chắc chắn muốn nộp bài sớm?')) {
-                submitQuiz();
+        async function submitQuiz(options = {}) {
+            const { skipConfirm = false } = options;
+            if (isSubmitting) {
+                return; // prevent double submit from button + timer
             }
-        }
-
-        async function submitQuiz() {
             // Check if all questions are answered
-            const answeredCount = Object.keys(userAnswers).filter(qId => userAnswers[qId].length > 0).length;
             const totalCount = quizData.questions.length;
+            const unansweredQuestions = quizData.questions.filter(q => {
+                const answers = userAnswers[q.questionId];
+                return !Array.isArray(answers) || answers.length === 0;
+            });
+            const answeredQuestions = quizData.questions.filter(q => !unansweredQuestions.includes(q));
+            const answeredCount = answeredQuestions.length;
 
-            if (answeredCount < totalCount) {
-                if (!confirm(`Bạn chưa trả lời ${totalCount - answeredCount} câu hỏi. Bạn có chắc chắn muốn nộp bài?`)) {
+            console.log('Answered:', answeredCount, 'Total:', totalCount, 'User Answers:', userAnswers);
+            if (unansweredQuestions.length > 0) {
+                console.log('Unanswered questionIds:', unansweredQuestions.map(q => q.questionId));
+            }
+
+            if (!skipConfirm && answeredCount < totalCount) {
+                const unansweredCount = totalCount - answeredCount;
+                if (!confirm(`Bạn chưa trả lời ${unansweredCount} câu hỏi. Bạn có chắc chắn muốn nộp bài?`)) {
                     return;
                 }
             }
 
+            isSubmitting = true;
+
             // Stop timer
             if (timerInterval) {
                 clearInterval(timerInterval);
+                timerInterval = null;
             }
 
             // Disable submit button
@@ -411,11 +434,14 @@
                 if (timeLimit > 0) {
                     startTimer();
                 }
+                isSubmitting = false;
             }
         }
 
         // Prevent accidental page refresh/close
         window.addEventListener('beforeunload', function (e) {
+            // Do not block navigation during intentional submission
+            if (isSubmitting) return;
             if (attemptId && timerInterval) {
                 e.preventDefault();
                 e.returnValue = '';
