@@ -141,7 +141,6 @@
                 // Load quiz questions
                 await loadQuiz();
             } catch (error) {
-                console.error('Error initializing quiz:', error);
                 alert('Có lỗi xảy ra khi khởi tạo bài kiểm tra: ' + error.message);
                 window.history.back();
             }
@@ -174,7 +173,6 @@
                     startTimer();
                 }
             } catch (error) {
-                console.error('Error loading quiz:', error);
                 alert('Có lỗi xảy ra khi tải bài kiểm tra: ' + error.message);
                 window.history.back();
             }
@@ -361,11 +359,6 @@
             const answeredQuestions = quizData.questions.filter(q => !unansweredQuestions.includes(q));
             const answeredCount = answeredQuestions.length;
 
-            console.log('Answered:', answeredCount, 'Total:', totalCount, 'User Answers:', userAnswers);
-            if (unansweredQuestions.length > 0) {
-                console.log('Unanswered questionIds:', unansweredQuestions.map(q => q.questionId));
-            }
-
             if (!skipConfirm && answeredCount < totalCount) {
                 const unansweredCount = totalCount - answeredCount;
                 if (!confirm(`Bạn chưa trả lời ${unansweredCount} câu hỏi. Bạn có chắc chắn muốn nộp bài?`)) {
@@ -420,7 +413,6 @@
                 // Redirect to result page
                 window.location.href = `/bai-thi/ket-qua/${attemptId}`;
             } catch (error) {
-                console.error('Error submitting quiz:', error);
                 alert('Có lỗi xảy ra khi nộp bài: ' + error.message);
                 
                 // Re-enable submit button
