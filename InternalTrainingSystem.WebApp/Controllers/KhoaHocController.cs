@@ -1030,7 +1030,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
                 {
                     TempData["Error"] = "Phiên đăng nhập đã hết hạn";
-                    return RedirectToAction("DangNhap", "Auth");
+                    return RedirectToAction("DangNhap", "XacThuc");
                 }
 
                 // Call API to finalize enrollments

@@ -33,7 +33,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 // Kiểm tra đăng nhập
                 if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
                 {
-                    return RedirectToAction("DangNhap", "Auth");
+                    return RedirectToAction("DangNhap", "XacThuc");
                 }
 
                 // Lấy danh sách phòng ban
@@ -60,7 +60,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 // Kiểm tra đăng nhập
                 if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
                 {
-                    return RedirectToAction("DangNhap", "Auth");
+                    return RedirectToAction("DangNhap", "XacThuc");
                 }
 
                 if (!ModelState.IsValid)
@@ -139,7 +139,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 // Kiểm tra đăng nhập
                 if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
                 {
-                    return RedirectToAction("DangNhap", "Auth");
+                    return RedirectToAction("DangNhap", "XacThuc");
                 }
 
                 // Lấy thông tin user từ API
@@ -277,7 +277,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 // Kiểm tra đăng nhập
                 if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
                 {
-                    return RedirectToAction("DangNhap", "Auth");
+                    return RedirectToAction("DangNhap", "XacThuc");
                 }
 
                 // Lấy danh sách chứng chỉ từ API

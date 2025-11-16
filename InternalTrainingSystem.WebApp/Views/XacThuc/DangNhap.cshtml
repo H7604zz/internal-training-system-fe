@@ -58,7 +58,7 @@
                 <h1 class="login-title text-center">Đăng Nhập</h1>
                 <p class="login-subtitle text-center">Vui lòng đăng nhập để truy cập vào hệ thống</p>
 
-                <form asp-controller="Auth" asp-action="DangNhap" method="post" class="needs-validation" novalidate id="loginForm">
+                <form asp-controller="XacThuc" asp-action="DangNhap" method="post" class="needs-validation" novalidate id="loginForm">
                     <input type="hidden" name="ReturnUrl" value="@ViewBag.ReturnUrl" />
 
                     <div class="mb-4">
@@ -89,7 +89,7 @@
                                 Ghi nhớ đăng nhập
                             </label>
                         </div>
-                        <a asp-controller="Auth" asp-action="QuenMatKhau" class="forgot-password">Quên mật khẩu?</a>
+                        <a asp-controller="XacThuc" asp-action="QuenMatKhau" class="forgot-password">Quên mật khẩu?</a>
                     </div>
 
                     <div class="d-grid gap-2">

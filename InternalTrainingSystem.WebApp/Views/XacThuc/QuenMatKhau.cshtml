@@ -78,7 +78,7 @@
                         </div>
 
                         <div class="text-center">
-                            <a asp-controller="Auth" asp-action="DangNhap" class="btn btn-link">
+                            <a asp-controller="XacThuc" asp-action="DangNhap" class="btn btn-link">
                                 <i class="bi bi-arrow-left me-2"></i>Quay lại đăng nhập
                             </a>
                         </div>
@@ -141,7 +141,7 @@
                         </div>
 
                         <div class="d-grid gap-2 mb-3">
-                            <a asp-controller="Auth" asp-action="DangNhap" class="btn btn-primary btn-login">
+                            <a asp-controller="XacThuc" asp-action="DangNhap" class="btn btn-primary btn-login">
                                 <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập ngay
                             </a>
                         </div>
@@ -198,7 +198,7 @@
             sendOtpBtn.disabled = true;
 
             // Call API
-            fetch('/api/auth/forgot-password', {
+            fetch('/xac-thuc/gui-otp', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -248,7 +248,7 @@
             verifyOtpBtn.disabled = true;
 
             // Call reset password API directly
-            fetch('/api/auth/reset-password', {
+            fetch('/xac-thuc/dat-lai-mat-khau', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -281,7 +281,7 @@
 
         // Resend OTP
         document.getElementById('resendOtpBtn').addEventListener('click', function() {
-            fetch('/api/auth/forgot-password', {
+            fetch('/xac-thuc/gui-otp', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

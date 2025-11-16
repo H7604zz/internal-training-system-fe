@@ -7,12 +7,12 @@ using System.Text;
 
 namespace InternalTrainingSystem.WebApp.Controllers
 {
-    public class AuthController : Controller
+    public class XacThucController : Controller
     {
         private readonly HttpClient _httpClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AuthController(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
+        public XacThucController(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
         {
             _httpClient = httpClientFactory.CreateClient("ApiClient");
             _httpContextAccessor = httpContextAccessor;
@@ -226,8 +226,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         /// <summary>
         /// API endpoint gửi OTP cho quên mật khẩu
         /// </summary>
-        [HttpPost]
-        [Route("api/auth/forgot-password")]
+        [HttpPost("/xac-thuc/gui-otp")]
         public async Task<IActionResult> SendOtp([FromBody] ForgotPasswordRequestDto model)
         {
             try
@@ -249,8 +248,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         /// <summary>
         /// API endpoint xác minh OTP và đặt lại mật khẩu
         /// </summary>
-        [HttpPost]
-        [Route("api/auth/reset-password")]
+        [HttpPost("/xac-thuc/dat-lai-mat-khau")]
         public async Task<IActionResult> ResetPasswordWithOtp([FromBody] ResetPasswordRequestDto model)
         {
             try
