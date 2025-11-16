@@ -8,15 +8,15 @@ using System.Text.Json;
 namespace InternalTrainingSystem.WebApp.Controllers
 {
     [Route("quiz")]
-    public class QuizController : Controller
+    public class BaiThiController : Controller
     {
         private readonly HttpClient _httpClient;
-        private readonly ILogger<QuizController> _logger;
+        private readonly ILogger<BaiThiController> _logger;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public QuizController(
+        public BaiThiController(
             IHttpClientFactory httpClientFactory,
-            ILogger<QuizController> logger,
+            ILogger<BaiThiController> logger,
             IHttpContextAccessor httpContextAccessor)
         {
             _httpClient = httpClientFactory.CreateClient("ApiClient");
