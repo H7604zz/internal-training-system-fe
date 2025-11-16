@@ -23,68 +23,18 @@
         </div>
         <h1 id="result-title" class="result-title">Chúc mừng!</h1>
         <p id="result-subtitle" class="result-subtitle">Bạn đã hoàn thành bài kiểm tra</p>
-    </div>
-
-    <!-- Score Card -->
-    <div id="score-card" class="score-card" style="display: none;">
-        <div class="text-center mb-3">
-            <h3 style="margin: 0; opacity: 0.9;">Điểm số của bạn</h3>
-        </div>
-        <div class="score-display">
+        
+        <!-- Score Display -->
+        <div class="score-display" style="margin-top: 2rem;">
             <span id="score-value">0</span>
             <span style="font-size: 2rem;">/</span>
             <span id="max-score-value">0</span>
         </div>
-        <div class="score-percentage text-center">
-            (<span id="percentage-value">0</span>%)
-        </div>
-    </div>
-
-    <!-- Result Details -->
-    <div id="result-details" class="result-details" style="display: none;">
-        <h3 class="mb-3">Thông tin chi tiết</h3>
         
-        <div class="detail-row">
-            <span class="detail-label">Bài kiểm tra:</span>
-            <span class="detail-value" id="quiz-title">--</span>
+        <!-- Status Badge -->
+        <div style="margin-top: 1.5rem; text-center;">
+            <span id="status-badge" class="status-badge" style="font-size: 1.2rem; padding: 0.5rem 1.5rem;">--</span>
         </div>
-        
-        <div class="detail-row">
-            <span class="detail-label">Trạng thái:</span>
-            <span id="status-badge" class="status-badge">--</span>
-        </div>
-        
-        <div class="detail-row">
-            <span class="detail-label">Điểm đạt yêu cầu:</span>
-            <span class="detail-value"><span id="passing-score">--</span>%</span>
-        </div>
-        
-        <div class="detail-row">
-            <span class="detail-label">Thời gian bắt đầu:</span>
-            <span class="detail-value" id="start-time">--</span>
-        </div>
-        
-        <div class="detail-row">
-            <span class="detail-label">Thời gian nộp bài:</span>
-            <span class="detail-value" id="end-time">--</span>
-        </div>
-        
-        <div class="detail-row">
-            <span class="detail-label">Thời gian làm bài:</span>
-            <span class="detail-value" id="duration">--</span>
-        </div>
-    </div>
-
-    <!-- Action Buttons -->
-    <div id="action-buttons" class="action-buttons" style="display: none;">
-        <button type="button" class="btn-action btn-primary-custom" onclick="backToCourse()">
-            <i class="fas fa-arrow-left"></i>
-            Quay lại khóa học
-        </button>
-        <button type="button" class="btn-action btn-secondary-custom" onclick="viewHistory()">
-            <i class="fas fa-history"></i>
-            Xem lịch sử làm bài
-        </button>
     </div>
 </div>
 
@@ -123,9 +73,9 @@
         function displayResult() {
             // Show sections
             document.getElementById('result-header').style.display = 'block';
-            document.getElementById('score-card').style.display = 'block';
-            document.getElementById('result-details').style.display = 'block';
-            document.getElementById('action-buttons').style.display = 'flex';
+            // If an action buttons section exists in future, reveal it safely
+            const actions = document.getElementById('action-buttons');
+            if (actions) actions.style.display = 'flex';
 
             // Set icon and title based on pass/fail
             const resultIcon = document.getElementById('result-icon');
@@ -152,43 +102,15 @@
             // Set score
             document.getElementById('score-value').textContent = resultData.score || 0;
             document.getElementById('max-score-value').textContent = resultData.maxScore || 0;
-            document.getElementById('percentage-value').textContent = Math.round(resultData.percentage || 0);
-
-            // Set details
-            document.getElementById('quiz-title').textContent = resultData.quizTitle || 'Bài kiểm tra';
-            document.getElementById('passing-score').textContent = resultData.passingScore || 0;
 
             // Set status badge
             const statusBadge = document.getElementById('status-badge');
             if (resultData.isPassed) {
-                statusBadge.textContent = 'Đạt yêu cầu';
+                statusBadge.textContent = 'Đạt';
                 statusBadge.classList.add('passed');
             } else {
-                statusBadge.textContent = 'Chưa đạt';
+                statusBadge.textContent = 'Không đạt';
                 statusBadge.classList.add('failed');
-            }
-
-            // Format dates
-            if (resultData.startTime) {
-                const startDate = new Date(resultData.startTime);
-                document.getElementById('start-time').textContent = startDate.toLocaleString('vi-VN');
-            }
-
-            if (resultData.endTime) {
-                const endDate = new Date(resultData.endTime);
-                document.getElementById('end-time').textContent = endDate.toLocaleString('vi-VN');
-                
-                // Calculate duration
-                if (resultData.startTime) {
-                    const startDate = new Date(resultData.startTime);
-                    const duration = Math.floor((endDate - startDate) / 1000); // in seconds
-                    const minutes = Math.floor(duration / 60);
-                    const seconds = duration % 60;
-                    document.getElementById('duration').textContent = `${minutes} phút ${seconds} giây`;
-                }
-            } else {
-                document.getElementById('end-time').textContent = 'Chưa hoàn thành';
-                document.getElementById('duration').textContent = '--';
             }
         }
 
@@ -214,30 +136,5 @@
             }
         }
 
-        function backToCourse() {
-            // Try to go back to the learning page
-            const urlParams = new URLSearchParams(window.location.search);
-            const courseId = urlParams.get('courseId');
-            
-            if (courseId) {
-                window.location.href = `/khoa-hoc/hoc-tap/${courseId}`;
-            } else {
-                // Fallback: go back in history
-                window.history.back();
-            }
-        }
-
-        function viewHistory() {
-            // Go back to course learning page where history is displayed
-            const urlParams = new URLSearchParams(window.location.search);
-            const courseId = urlParams.get('courseId');
-            const lessonId = urlParams.get('lessonId');
-            
-            if (courseId && lessonId) {
-                window.location.href = `/khoa-hoc/hoc-tap/${courseId}?lessonId=${lessonId}`;
-            } else {
-                window.history.back();
-            }
-        }
     </script>
 }
