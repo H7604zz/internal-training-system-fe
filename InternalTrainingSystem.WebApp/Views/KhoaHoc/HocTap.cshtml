@@ -241,10 +241,6 @@
                                                     <i class="fas fa-check-double text-success"></i>
                                                     <span><strong>Điểm đạt:</strong> <span id="quiz-passing-score">--</span></span>
                                                 </div>
-                                                <div class="info-item">
-                                                    <i class="fas fa-trophy text-warning"></i>
-                                                    <span><strong>Điểm cao nhất:</strong> <span id="quiz-best-score">--</span></span>
-                                                </div>
                                             </div>
                                         </div>
                                         <div class="text-center mt-3">
@@ -582,7 +578,6 @@
             document.getElementById('quiz-time-limit').textContent = '--';
             document.getElementById('quiz-attempts').textContent = '--';
             document.getElementById('quiz-passing-score').textContent = '--';
-            document.getElementById('quiz-best-score').textContent = '--';
             
             document.getElementById('quiz-history-list').innerHTML = `
                 <div class="text-center py-3">
@@ -602,10 +597,10 @@
 
                 // Display quiz info
                 document.getElementById('quiz-time-limit').textContent = quizInfo.timeLimit > 0 ? `${quizInfo.timeLimit} phút` : 'Không giới hạn';
-                document.getElementById('quiz-passing-score').textContent = `${quizInfo.passingScore}%`;
-                document.getElementById('quiz-best-score').textContent = quizInfo.bestScore !== null && quizInfo.bestScore !== undefined 
-                    ? `${quizInfo.bestScore}%` 
-                    : 'Chưa làm bài';
+                // Convert percentage (0-100) to score (0-10)
+                const scoreText = quizInfo.passingScore ? (quizInfo.passingScore / 10).toFixed(1) : '0';
+                document.getElementById('quiz-passing-score').textContent = scoreText;
+              
 
                 // Display attempts info
                 const remainingAttempts = quizInfo.remainingAttempts;
@@ -619,7 +614,7 @@
                 }
 
                 // Update button state based on quiz info
-                if (quizInfo.isLocked) {
+                if (!quizInfo.isActive) {
                     btnStartQuiz.disabled = true;
                     btnStartQuiz.innerHTML = '<i class="fas fa-lock me-2"></i>Quiz đã bị khóa';
                 } else if (remainingAttempts === 0 && maxAttempts > 0) {
@@ -684,28 +679,23 @@
             historyData.forEach((attempt, index) => {
                 // Format dates
                 const startTime = attempt.startTime ? new Date(attempt.startTime).toLocaleString('vi-VN') : '--';
-                const endTime = attempt.endTime ? new Date(attempt.endTime).toLocaleString('vi-VN') : 'Chưa hoàn thành';
+                const endTime = attempt.submissionTime ? new Date(attempt.submissionTime).toLocaleString('vi-VN') : 'Chưa hoàn thành';
                 
                 // Format score
-                const score = attempt.score !== null && attempt.score !== undefined 
-                    ? `${attempt.score}/${attempt.maxScore || 0}` 
+                const score = attempt.score !== null && attempt.score !== undefined
+                    ? attempt.score
                     : '--';
                 
-                // Determine status badge
+                // Determine status badge based on isPassed boolean
                 let statusBadge = 'bg-secondary';
-                let statusText = 'Chưa hoàn thành';
+                let statusText = '--';
                 
-                if (attempt.status === 'Completed' || attempt.status === 'Submitted') {
-                    if (attempt.isPassed) {
-                        statusBadge = 'bg-success';
-                        statusText = 'Đạt';
-                    } else {
-                        statusBadge = 'bg-danger';
-                        statusText = 'Không đạt';
-                    }
-                } else if (attempt.status === 'InProgress') {
-                    statusBadge = 'bg-warning text-dark';
-                    statusText = 'Đang làm';
+                if (attempt.isPassed === true) {
+                    statusBadge = 'bg-success';
+                    statusText = 'Đạt';
+                } else if (attempt.isPassed === false) {
+                    statusBadge = 'bg-danger';
+                    statusText = 'Không đạt';
                 }
                 
                 html += '<tr>';
@@ -719,11 +709,6 @@
 
             html += '</tbody></table></div>';
             historyList.innerHTML = html;
-        }
-
-        function loadQuizHistory(quizId, attempts) {
-            // This function is kept for backward compatibility but now uses displayQuizHistory
-            displayQuizHistory(attempts);
         }
 
         function startQuiz() {
