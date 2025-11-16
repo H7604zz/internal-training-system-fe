@@ -727,13 +727,13 @@
         }
 
         function startQuiz() {
-            if (!currentQuizId) {
+            if (!currentQuizId || !currentLessonId) {
                 alert('Không tìm thấy thông tin bài kiểm tra!');
                 return;
             }
             
-            // Redirect to quiz page
-            window.location.href = `/bai-thi/lam-bai/${currentQuizId}`;
+            // Redirect to quiz page with lessonId and courseId
+            window.location.href = `/bai-thi/lam-bai/${currentQuizId}?lessonId=${currentLessonId}&courseId=${courseId}`;
         }
 
         // Update progress bar without reloading page
