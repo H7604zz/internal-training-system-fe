@@ -102,12 +102,6 @@
             
             try {
                 localStorage.setItem(getQuizStateKey(), JSON.stringify(state));
-                console.log('Quiz state saved:', { 
-                    attemptId: state.attemptId, 
-                    endTime: state.endTime, 
-                    timeLimit: state.timeLimit,
-                    answersCount: Object.keys(userAnswers).length 
-                });
             } catch (e) {
                 console.error('Failed to save quiz state:', e);
             }
@@ -194,7 +188,6 @@
                 if (savedState && savedState.attemptId) {
                     // Check if saved attempt is expired
                     if (savedState.endTime && isAttemptExpired(savedState.endTime)) {
-                        console.log('Saved attempt has expired, creating new attempt');
                         clearQuizState();
                     } else {
                         // Try to verify if the saved attempt is still valid
@@ -202,8 +195,6 @@
                             const verifyResponse = await fetch(`/bai-thi/get-quiz-for-attempt/${quizId}/${savedState.attemptId}?shuffleQuestions=false&shuffleAnswers=false`);
                             if (verifyResponse.ok) {
                                 // Attempt is still valid, use it
-                                console.log('Resuming from saved attempt:', savedState.attemptId);
-                                console.log('Saved state:', savedState);
                                 attemptId = savedState.attemptId;
                                 shouldCreateNewAttempt = false;
                                 
@@ -213,38 +204,26 @@
                                 // Restore time info
                                 if (savedState.startTime) {
                                     startTime = new Date(savedState.startTime);
-                                    console.log('Restored startTime:', startTime);
                                 }
                                 
                                 if (savedState.endTime) {
                                     endTime = new Date(savedState.endTime);
-                                    console.log('Restored endTime:', endTime);
                                 } else if (savedState.timeLimit && savedState.timeLimit > 0 && startTime) {
                                     // Calculate endTime from startTime + timeLimit
                                     endTime = new Date(startTime.getTime() + savedState.timeLimit * 60 * 1000);
-                                    console.log('Calculated endTime from startTime + timeLimit:', endTime);
-                                }
-                                
-                                if (endTime) {
-                                    console.log('Current time:', new Date());
-                                    console.log('Time remaining (seconds):', Math.floor((endTime - new Date()) / 1000));
                                 }
                                 
                                 // Restore original timeLimit for display
                                 if (savedState.timeLimit !== undefined) {
                                     timeLimit = savedState.timeLimit;
-                                    console.log('Restored timeLimit:', timeLimit, 'minutes');
                                 }
                             } else if (verifyResponse.status === 409) {
                                 // Attempt timed out
-                                console.log('Saved attempt timed out, creating new attempt');
                                 clearQuizState();
                             } else {
-                                console.log('Saved attempt is invalid, creating new attempt');
                                 clearQuizState();
                             }
                         } catch (e) {
-                            console.log('Could not verify saved attempt, creating new attempt:', e);
                             clearQuizState();
                         }
                     }
@@ -261,7 +240,6 @@
                     }
 
                     const startData = await startResponse.json();
-                    console.log('Started new attempt:', startData);
                     attemptId = startData.attemptId;
                     
                     // Server returns startTimeUtc and endTimeUtc
@@ -270,18 +248,13 @@
                     
                     if (startData.endTimeUtc || startData.endTime) {
                         endTime = new Date(startData.endTimeUtc || startData.endTime);
-                        console.log('New attempt endTime from server:', endTime);
                     } else if (timeLimit > 0 && startTime) {
                         // Calculate endTime if not provided by server
                         endTime = new Date(startTime.getTime() + timeLimit * 60 * 1000);
-                        console.log('Calculated endTime (startTime + timeLimit):', endTime);
-                    } else {
-                        console.log('No time limit for this quiz');
                     }
                     
                     // Save initial state
                     saveQuizState();
-                    console.log('Initial state saved to localStorage');
                 }
 
                 // Load quiz questions
@@ -489,22 +462,11 @@
             if (endTime) {
                 const now = new Date();
                 remainingSeconds = Math.max(0, Math.floor((endTime - now) / 1000));
-                console.log('Timer starting with endTime:', {
-                    endTime: endTime.toISOString(),
-                    now: now.toISOString(),
-                    remainingSeconds: remainingSeconds,
-                    remainingMinutes: Math.floor(remainingSeconds / 60)
-                });
             } else {
                 // Fresh start - use timeLimit
                 remainingSeconds = timeLimit * 60;
-                console.log('Timer starting with timeLimit:', {
-                    timeLimit: timeLimit,
-                    remainingSeconds: remainingSeconds
-                });
             }
 
-            console.log('Starting timer with remaining seconds:', remainingSeconds);
             updateTimerDisplay(remainingSeconds);
 
             timerInterval = setInterval(() => {
