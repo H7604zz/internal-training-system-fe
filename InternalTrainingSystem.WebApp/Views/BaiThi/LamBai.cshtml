@@ -80,6 +80,70 @@
         let endTime = null;
         let userAnswers = {}; // { questionId: [answerId1, answerId2, ...] }
         let isSubmitting = false; // prevent double submit and race with timer
+        let autoSaveInterval = null;
+
+        // LocalStorage helper functions
+        function getQuizStateKey() {
+            return `quiz_state_${quizId}`;
+        }
+
+        function saveQuizState() {
+            if (!attemptId) return;
+            
+            const state = {
+                attemptId: attemptId,
+                quizId: quizId,
+                userAnswers: userAnswers,
+                timestamp: new Date().toISOString(),
+                startTime: startTime ? startTime.toISOString() : null,
+                endTime: endTime ? endTime.toISOString() : null,
+                timeLimit: timeLimit // Save original time limit in minutes
+            };
+            
+            try {
+                localStorage.setItem(getQuizStateKey(), JSON.stringify(state));
+                console.log('Quiz state saved:', { 
+                    attemptId: state.attemptId, 
+                    endTime: state.endTime, 
+                    timeLimit: state.timeLimit,
+                    answersCount: Object.keys(userAnswers).length 
+                });
+            } catch (e) {
+                console.error('Failed to save quiz state:', e);
+            }
+        }
+
+        function loadQuizState() {
+            try {
+                const stateStr = localStorage.getItem(getQuizStateKey());
+                if (!stateStr) return null;
+                
+                const state = JSON.parse(stateStr);
+                
+                // Check if state is for current quiz
+                if (state.quizId !== quizId) return null;
+                
+                return state;
+            } catch (e) {
+                console.error('Failed to load quiz state:', e);
+                return null;
+            }
+        }
+
+        function clearQuizState() {
+            try {
+                localStorage.removeItem(getQuizStateKey());
+            } catch (e) {
+                console.error('Failed to clear quiz state:', e);
+            }
+        }
+
+        function isAttemptExpired(savedEndTime) {
+            if (!savedEndTime) return false;
+            const end = new Date(savedEndTime);
+            const now = new Date();
+            return now >= end;
+        }
 
         // Initialize quiz
         document.addEventListener('DOMContentLoaded', async function() {
@@ -88,6 +152,9 @@
 
         async function initializeQuiz() {
             try {
+                // Check if there's a saved quiz state
+                const savedState = loadQuizState();
+                
                 // Get quiz info first to check if we need to start a new attempt
                 const infoResponse = await fetch(`/bai-thi/get-quiz-info/${quizId}`);
                 if (!infoResponse.ok) {
@@ -97,12 +164,14 @@
 
                 // Check if quiz is locked or no attempts remaining
                 if (quizInfo.isLocked) {
+                    clearQuizState();
                     alert('Bài kiểm tra này đã bị khóa!');
                     window.location.href = '/khoa-hoc';
                     return;
                 }
 
                 if (quizInfo.remainingAttempts === 0 && quizInfo.maxAttempts > 0) {
+                    clearQuizState();
                     alert('Bạn đã hết lượt làm bài!');
                     window.history.back();
                     return;
@@ -120,22 +189,99 @@
                     return;
                 }
 
-                // Start new attempt
-                const startResponse = await fetch(`/bai-thi/start-quiz/${lessonId}`, {
-                    method: 'POST'
-                });
-
-                if (!startResponse.ok) {
-                    throw new Error('Không thể bắt đầu làm bài');
+                // Check if we can resume from saved state
+                let shouldCreateNewAttempt = true;
+                if (savedState && savedState.attemptId) {
+                    // Check if saved attempt is expired
+                    if (savedState.endTime && isAttemptExpired(savedState.endTime)) {
+                        console.log('Saved attempt has expired, creating new attempt');
+                        clearQuizState();
+                    } else {
+                        // Try to verify if the saved attempt is still valid
+                        try {
+                            const verifyResponse = await fetch(`/bai-thi/get-quiz-for-attempt/${quizId}/${savedState.attemptId}?shuffleQuestions=false&shuffleAnswers=false`);
+                            if (verifyResponse.ok) {
+                                // Attempt is still valid, use it
+                                console.log('Resuming from saved attempt:', savedState.attemptId);
+                                console.log('Saved state:', savedState);
+                                attemptId = savedState.attemptId;
+                                shouldCreateNewAttempt = false;
+                                
+                                // Restore saved answers
+                                userAnswers = savedState.userAnswers || {};
+                                
+                                // Restore time info
+                                if (savedState.startTime) {
+                                    startTime = new Date(savedState.startTime);
+                                    console.log('Restored startTime:', startTime);
+                                }
+                                
+                                if (savedState.endTime) {
+                                    endTime = new Date(savedState.endTime);
+                                    console.log('Restored endTime:', endTime);
+                                } else if (savedState.timeLimit && savedState.timeLimit > 0 && startTime) {
+                                    // Calculate endTime from startTime + timeLimit
+                                    endTime = new Date(startTime.getTime() + savedState.timeLimit * 60 * 1000);
+                                    console.log('Calculated endTime from startTime + timeLimit:', endTime);
+                                }
+                                
+                                if (endTime) {
+                                    console.log('Current time:', new Date());
+                                    console.log('Time remaining (seconds):', Math.floor((endTime - new Date()) / 1000));
+                                }
+                                
+                                // Restore original timeLimit for display
+                                if (savedState.timeLimit !== undefined) {
+                                    timeLimit = savedState.timeLimit;
+                                    console.log('Restored timeLimit:', timeLimit, 'minutes');
+                                }
+                            } else if (verifyResponse.status === 409) {
+                                // Attempt timed out
+                                console.log('Saved attempt timed out, creating new attempt');
+                                clearQuizState();
+                            } else {
+                                console.log('Saved attempt is invalid, creating new attempt');
+                                clearQuizState();
+                            }
+                        } catch (e) {
+                            console.log('Could not verify saved attempt, creating new attempt:', e);
+                            clearQuizState();
+                        }
+                    }
                 }
 
-                const startData = await startResponse.json();
-                attemptId = startData.attemptId;
-                startTime = new Date(startData.startTime);
-                timeLimit = startData.timeLimit || 0; // in minutes
-                
-                if (startData.endTime) {
-                    endTime = new Date(startData.endTime);
+                // Start new attempt if needed
+                if (shouldCreateNewAttempt) {
+                    const startResponse = await fetch(`/bai-thi/start-quiz/${lessonId}`, {
+                        method: 'POST'
+                    });
+
+                    if (!startResponse.ok) {
+                        throw new Error('Không thể bắt đầu làm bài');
+                    }
+
+                    const startData = await startResponse.json();
+                    console.log('Started new attempt:', startData);
+                    attemptId = startData.attemptId;
+                    
+                    // Server returns startTimeUtc and endTimeUtc
+                    startTime = new Date(startData.startTimeUtc || startData.startTime);
+                    timeLimit = startData.timeLimit || 0; // in minutes
+                    
+                    if (startData.endTimeUtc || startData.endTime) {
+                        endTime = new Date(startData.endTimeUtc || startData.endTime);
+                        console.log('New attempt endTime from server:', endTime);
+                    } else if (timeLimit > 0 && startTime) {
+                        // Calculate endTime if not provided by server
+                        endTime = new Date(startTime.getTime() + timeLimit * 60 * 1000);
+                        console.log('Calculated endTime (startTime + timeLimit):', endTime);
+                    } else {
+                        console.log('No time limit for this quiz');
+                    }
+                    
+                    // Save initial state
+                    saveQuizState();
+                    console.log('Initial state saved to localStorage');
                 }
 
                 // Load quiz questions
@@ -148,12 +294,14 @@
 
         async function loadQuiz() {
             try {
-                const response = await fetch(`/bai-thi/get-quiz-for-attempt/${quizId}/${attemptId}?shuffleQuestions=true&shuffleAnswers=true`);
+                // Check if we're resuming - if so, don't shuffle to maintain answer mapping
+                const isResuming = Object.keys(userAnswers).length > 0;
+                const response = await fetch(`/bai-thi/get-quiz-for-attempt/${quizId}/${attemptId}?shuffleQuestions=${!isResuming}&shuffleAnswers=${!isResuming}`);
                 
                 if (!response.ok) {
                     if (response.status === 409) {
-                        const errorData = await response.json();
-                        alert(errorData.message || 'Bài làm đã hết thời gian');
+                        clearQuizState();
+                        alert('Bài làm đã hết thời gian');
                         window.history.back();
                         return;
                     }
@@ -172,6 +320,14 @@
                 if (timeLimit > 0) {
                     startTimer();
                 }
+                
+                // Start auto-save interval (save every 10 seconds)
+                if (autoSaveInterval) {
+                    clearInterval(autoSaveInterval);
+                }
+                autoSaveInterval = setInterval(() => {
+                    saveQuizState();
+                }, 10000);
             } catch (error) {
                 alert('Có lỗi xảy ra khi tải bài kiểm tra: ' + error.message);
                 window.history.back();
@@ -214,7 +370,34 @@
                 container.appendChild(questionCard);
             });
 
+            // Restore saved answers if any
+            restoreSavedAnswers();
+
             updateProgress();
+        }
+
+        function restoreSavedAnswers() {
+            if (!userAnswers || Object.keys(userAnswers).length === 0) return;
+            
+            Object.keys(userAnswers).forEach(questionId => {
+                const answerIds = userAnswers[questionId];
+                if (!Array.isArray(answerIds) || answerIds.length === 0) return;
+                
+                const card = document.querySelector(`.question-card[data-question-id="${questionId}"]`);
+                if (!card) return;
+                
+                // Check/select the saved answers
+                answerIds.forEach(answerId => {
+                    const option = card.querySelector(`.answer-option[data-answer-id="${answerId}"]`);
+                    if (!option) return;
+                    
+                    const input = option.querySelector('input');
+                    if (input) {
+                        input.checked = true;
+                        option.classList.add('selected');
+                    }
+                });
+            });
         }
 
         function createQuestionCard(question, number) {
@@ -282,6 +465,9 @@
             });
 
             updateProgress();
+            
+            // Save state immediately when answer changes
+            saveQuizState();
         }
 
         function updateProgress() {
@@ -298,15 +484,27 @@
         }
 
         function startTimer() {
-            const limitInSeconds = timeLimit * 60;
-            let remainingSeconds = limitInSeconds;
-
-            // If endTime is set, calculate remaining time
+            // Always calculate from endTime if it exists (for resume scenarios)
+            let remainingSeconds;
             if (endTime) {
                 const now = new Date();
                 remainingSeconds = Math.max(0, Math.floor((endTime - now) / 1000));
+                console.log('Timer starting with endTime:', {
+                    endTime: endTime.toISOString(),
+                    now: now.toISOString(),
+                    remainingSeconds: remainingSeconds,
+                    remainingMinutes: Math.floor(remainingSeconds / 60)
+                });
+            } else {
+                // Fresh start - use timeLimit
+                remainingSeconds = timeLimit * 60;
+                console.log('Timer starting with timeLimit:', {
+                    timeLimit: timeLimit,
+                    remainingSeconds: remainingSeconds
+                });
             }
 
+            console.log('Starting timer with remaining seconds:', remainingSeconds);
             updateTimerDisplay(remainingSeconds);
 
             timerInterval = setInterval(() => {
@@ -329,6 +527,13 @@
                 if (remainingSeconds <= 0) {
                     clearInterval(timerInterval);
                     timerInterval = null;
+                    
+                    // Clear auto-save interval
+                    if (autoSaveInterval) {
+                        clearInterval(autoSaveInterval);
+                        autoSaveInterval = null;
+                    }
+                    
                     alert('Hết thời gian làm bài!');
                     // Auto-submit when time is up without confirmation
                     submitQuiz({ skipConfirm: true });
@@ -409,6 +614,15 @@
                 }
 
                 const result = await response.json();
+
+                // Clear saved state after successful submission
+                clearQuizState();
+                
+                // Clear auto-save interval
+                if (autoSaveInterval) {
+                    clearInterval(autoSaveInterval);
+                    autoSaveInterval = null;
+                }
 
                 // Redirect to result page
                 window.location.href = `/bai-thi/ket-qua/${attemptId}`;
