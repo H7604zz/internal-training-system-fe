@@ -683,7 +683,7 @@
                 
                 // Format score
                 const score = attempt.score !== null && attempt.score !== undefined
-                    ? attempt.score
+                    ? attempt.score.toFixed(1)
                     : '--';
                 
                 // Determine status badge based on isPassed boolean
