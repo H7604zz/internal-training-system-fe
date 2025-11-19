@@ -141,5 +141,93 @@ namespace InternalTrainingSystem.WebApp.Controllers
             return View(model);
         }
 
+        // GET: PhongBan/ChinhSua
+        [HttpGet("chinh-sua")]
+        public async Task<IActionResult> ChinhSua(int id)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/department/{id}"));
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    TempData["Error"] = "Không tìm thấy phòng ban.";
+                    return RedirectToAction("Index");
+                }
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var department = JsonSerializer.Deserialize<DepartmentDetailDto>(responseContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (department == null)
+                {
+                    TempData["Error"] = "Không tìm thấy phòng ban.";
+                    return RedirectToAction("Index");
+                }
+
+                // Map to UpdateDepartmentDto
+                var updateDto = new UpdateDepartmentDto
+                {
+                    DepartmentId = department.DepartmentId,
+                    Name = department.DepartmentName ?? string.Empty,
+                    Description = department.Description
+                };
+
+                return View(updateDto);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Có lỗi xảy ra: {ex.Message}";
+                return RedirectToAction("Index");
+            }
+        }
+
+        // POST: PhongBan/ChinhSua
+        [HttpPost("chinh-sua")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChinhSua(int id, UpdateDepartmentDto model)
+        {
+            if (id != model.DepartmentId)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var json = JsonSerializer.Serialize(model);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    var response = await _httpClient.PutAsync(Utilities.GetAbsoluteUrl($"api/department/{id}"), content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        TempData["SuccessMessage"] = "Cập nhật phòng ban thành công!";
+                        return RedirectToAction("ChiTiet", new { id = id });
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        TempData["Error"] = "Không tìm thấy phòng ban.";
+                        return RedirectToAction("Index");
+                    }
+                    else
+                    {
+                        var errorContent = await response.Content.ReadAsStringAsync();
+                        ModelState.AddModelError("", $"Có lỗi xảy ra: {response.StatusCode}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", $"Có lỗi xảy ra: {ex.Message}");
+                }
+            }
+
+            return View(model);
+        }
+
+
     }
 }
