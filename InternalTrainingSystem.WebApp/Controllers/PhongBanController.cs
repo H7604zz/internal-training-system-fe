@@ -228,6 +228,34 @@ namespace InternalTrainingSystem.WebApp.Controllers
             return View(model);
         }
 
+        // POST: PhongBan/Xoa/5
+        [HttpPost("xoa/{id}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Xoa(int id)
+        {
+            try
+            {
+                var response = await _httpClient.DeleteAsync(Utilities.GetAbsoluteUrl($"api/department/{id}"));
 
+                if (response.IsSuccessStatusCode)
+                {
+                    TempData["SuccessMessage"] = "Xóa phòng ban thành công!";
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy phòng ban.";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Có lỗi xảy ra khi xóa phòng ban.";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Có lỗi xảy ra khi xóa: {ex.Message}";
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
