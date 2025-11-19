@@ -99,5 +99,47 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
         }
 
+
+        // GET: PhongBan/TaoMoi
+        [HttpGet("tao-moi")]
+        public IActionResult TaoMoi()
+        {
+            return View();
+        }
+
+        // POST: PhongBan/TaoMoi
+        [HttpPost("tao-moi")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> TaoMoi(CreateDepartmentDto model)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var json = JsonSerializer.Serialize(model);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    var response = await _httpClient.PostAsync(Utilities.GetAbsoluteUrl("api/department"), content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        TempData["SuccessMessage"] = "Tạo phòng ban thành công!";
+                        return RedirectToAction(nameof(Index));
+                    }
+                    else
+                    {
+                        var errorContent = await response.Content.ReadAsStringAsync();
+                        ModelState.AddModelError("", $"Có lỗi xảy ra: {response.StatusCode}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", $"Có lỗi xảy ra: {ex.Message}");
+                }
+            }
+
+            return View(model);
+        }
+
     }
 }

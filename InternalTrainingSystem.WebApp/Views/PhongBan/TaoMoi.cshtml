@@ -59,15 +59,15 @@
 
                             <div class="row">
                                 <div class="col-12 mb-4">
-                                    <label asp-for="DepartmentName" class="form-label required">
+                                    <label asp-for="Name" class="form-label required">
                                         <i class="fas fa-building me-1"></i>Tên Phòng Ban
                                     </label>
-                                    <input asp-for="DepartmentName" class="form-control form-control-lg" 
+                                    <input asp-for="Name" class="form-control form-control-lg" 
                                            placeholder="Nhập tên phòng ban (ví dụ: Phòng Công Nghệ Thông Tin)">
-                                    <span asp-validation-for="DepartmentName" class="text-danger"></span>
+                                    <span asp-validation-for="Name" class="text-danger"></span>
                                     <div class="form-text">
                                         <i class="fas fa-info-circle me-1"></i>
-                                        Tên phòng ban nên rõ ràng và dễ hiểu, không quá 100 ký tự
+                                        Tên phòng ban nên rõ ràng và dễ hiểu, không quá 200 ký tự
                                     </div>
                                 </div>
 
@@ -80,7 +80,7 @@
                                     <span asp-validation-for="Description" class="text-danger"></span>
                                     <div class="form-text">
                                         <i class="fas fa-info-circle me-1"></i>
-                                        Mô tả giúp làm rõ chức năng và nhiệm vụ của phòng ban (tối đa 500 ký tự)
+                                        Mô tả giúp làm rõ chức năng và nhiệm vụ của phòng ban (tối đa 1000 ký tự)
                                     </div>
                                 </div>
                             </div>
@@ -141,8 +141,8 @@
     <script>
         $(document).ready(function() {
             // Character counter for department name
-            $('#DepartmentName').on('input', function() {
-                const maxLength = 100;
+            $('#Name').on('input', function() {
+                const maxLength = 200;
                 const currentLength = $(this).val().length;
                 const remaining = maxLength - currentLength;
                 
@@ -173,13 +173,13 @@
 
             // Form validation enhancement
             $('form').on('submit', function(e) {
-                const departmentName = $('#DepartmentName').val().trim();
+                const departmentName = $('#Name').val().trim();
                 
                 if (departmentName.length < 3) {
                     e.preventDefault();
-                    $('#DepartmentName').addClass('is-invalid');
-                    if ($('#DepartmentName').next('.invalid-feedback').length === 0) {
-                        $('#DepartmentName').after('<div class="invalid-feedback">Tên phòng ban phải có ít nhất 3 ký tự</div>');
+                    $('#Name').addClass('is-invalid');
+                    if ($('#Name').next('.invalid-feedback').length === 0) {
+                        $('#Name').after('<div class="invalid-feedback">Tên phòng ban phải có ít nhất 3 ký tự</div>');
                     }
                     return false;
                 }
