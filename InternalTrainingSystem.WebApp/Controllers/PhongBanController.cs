@@ -57,7 +57,47 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 return View(new List<DepartmnentViewDto>());
             }
         }
-        
-        
+
+        [HttpGet("chi-tiet")]
+        public async Task<IActionResult> ChiTiet(int id)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/department/{id}"));
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        TempData["Error"] = "Không tìm thấy phòng ban.";
+                    }
+                    else
+                    {
+                        TempData["Error"] = "Đã xảy ra lỗi khi tải chi tiết phòng ban.";
+                    }
+                    return RedirectToAction("Index");
+                }
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var dept = JsonSerializer.Deserialize<DepartmentDetailDto>(responseContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (dept == null)
+                {
+                    TempData["Error"] = "Không tìm thấy phòng ban.";
+                    return RedirectToAction("Index");
+                }
+
+                return View(dept);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Có lỗi xảy ra: {ex.Message}";
+                return RedirectToAction("Index");
+            }
+        }
+
     }
 }
