@@ -94,14 +94,14 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var message = responseContent.Trim().Trim('"');
+                    var message = responseContent.Trim('"');
                     TempData["Success"] = message;
                     
                     return RedirectToAction("ThemMoi");
                 }
                 else
                 {
-                    var errorMessage = responseContent.Trim().Trim('"');
+                    var errorMessage = responseContent.Trim('"');
                     TempData["Error"] = errorMessage;
 
                     var departments = await GetDepartmentsAsync();
