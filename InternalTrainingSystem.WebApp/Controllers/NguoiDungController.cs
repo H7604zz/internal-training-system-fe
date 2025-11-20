@@ -94,25 +94,14 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
-                    // Backend trả về object với Message và Email
-                    try
-                    {
-                        var result = JsonSerializer.Deserialize<JsonElement>(responseContent);
-                        var message = result.GetProperty("Message").GetString() ?? "Tạo nhân viên thành công!";
-                        TempData["Success"] = message;
-                    }
-                    catch
-                    {
-                        TempData["Success"] = "Tạo nhân viên thành công! Email kích hoạt đã được gửi.";
-                    }
+                    var message = responseContent.Trim().Trim('"');
+                    TempData["Success"] = message;
                     
-                    // Reset form bằng cách redirect
                     return RedirectToAction("ThemMoi");
                 }
                 else
                 {
-                    // Xử lý lỗi từ API - Backend trả về plain text message
-                    var errorMessage = responseContent.Trim('"');
+                    var errorMessage = responseContent.Trim().Trim('"');
                     TempData["Error"] = errorMessage;
 
                     var departments = await GetDepartmentsAsync();

@@ -21,15 +21,6 @@
                         <form asp-action="ThemMoi" method="post" novalidate>
                             @Html.AntiForgeryToken()
                             
-                            @if (!ViewData.ModelState.IsValid)
-                            {
-                                <div class="alert alert-danger alert-dismissible fade show">
-                                    <h6><i class="fas fa-exclamation-circle me-2"></i>Có lỗi xảy ra:</h6>
-                                    <div asp-validation-summary="All" class="mb-0"></div>
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            }
-
                             <div class="row">
                                 <div class="col-md-6 mb-4">
                                     <label asp-for="EmployeeId" class="form-label required">
@@ -252,17 +243,6 @@
                         scrollTop: $('.is-invalid:first').offset().top - 100
                     }, 500);
                     
-                    // Show error message
-                    if ($('.validation-summary-error').length === 0) {
-                        $('.card-body form').prepend(`
-                            <div class="alert alert-danger alert-dismissible fade show validation-summary-error">
-                                <i class="fas fa-exclamation-circle me-2"></i>
-                                <strong>Vui lòng điền đầy đủ các trường bắt buộc!</strong>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        `);
-                    }
-                    
                     return false;
                 }
             });
@@ -271,7 +251,6 @@
             $('.form-control, .form-select').on('input change', function() {
                 $(this).removeClass('is-invalid');
                 $('.invalid-feedback-phone').remove();
-                $('.validation-summary-error').remove();
             });
 
             // Reset form handler
@@ -279,7 +258,6 @@
                 setTimeout(function() {
                     $('.form-control, .form-select').removeClass('is-invalid');
                     $('.invalid-feedback-phone, .emp-counter, .name-counter').remove();
-                    $('.validation-summary-error').remove();
                 }, 10);
             });
         });
