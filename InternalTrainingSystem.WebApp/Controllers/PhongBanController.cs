@@ -59,14 +59,8 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-                    {
-                        TempData["Error"] = "Không tìm thấy phòng ban.";
-                    }
-                    else
-                    {
-                        TempData["Error"] = "Đã xảy ra lỗi khi tải chi tiết phòng ban.";
-                    }
+                    TempData["Error"] = "Không tìm thấy phòng ban.";
+
                     return RedirectToAction("Index");
                 }
 
@@ -197,7 +191,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
                     if (response.IsSuccessStatusCode)
                     {
-                        TempData["SuccessMessage"] = "Cập nhật phòng ban thành công!";
+                        TempData["Success"] = "Cập nhật phòng ban thành công!";
                         return RedirectToAction("ChiTiet", new { id = id });
                     }
                     else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
