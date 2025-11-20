@@ -225,15 +225,33 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
-                    TempData["SuccessMessage"] = "Xóa phòng ban thành công!";
-                }
-                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    TempData["ErrorMessage"] = "Không tìm thấy phòng ban.";
+                    TempData["Success"] = "Xóa phòng ban thành công!";
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = "Có lỗi xảy ra khi xóa phòng ban.";
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    try
+                    {
+                        var errorResult = JsonSerializer.Deserialize<JsonElement>(errorContent, new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        });
+                        
+                        if (errorResult.TryGetProperty("message", out var messageProperty))
+                        {
+                            TempData["Error"] = messageProperty.GetString();
+                        }
+                        else
+                        {
+                            TempData["Error"] = "Có lỗi xảy ra khi xóa phòng ban.";
+                        }
+                    }
+                    catch
+                    {
+                        TempData["Error"] = response.StatusCode == System.Net.HttpStatusCode.NotFound 
+                            ? "Không tìm thấy phòng ban." 
+                            : "Có lỗi xảy ra khi xóa phòng ban.";
+                    }
                 }
             }
             catch (Exception ex)
