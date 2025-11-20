@@ -23,10 +23,10 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string? Description { get; set; }
         
         /// <summary>
-        /// Danh sách nhân viên trong phòng ban
+        /// Danh sách nhân viên trong phòng ban với phân trang
         /// UserProfileDto đã được định nghĩa trong UserDto.cs
         /// </summary>
-        public List<UserProfileDto>? UserDetail { get; set; }
+        public PagedResult<UserProfileDto>? UserDetail { get; set; }
     }
         
     /// <summary>

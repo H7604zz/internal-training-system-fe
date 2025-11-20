@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using InternalTrainingSystem.WebApp.Models.DTOs;
 using InternalTrainingSystem.WebApp.Helpers;
+using InternalTrainingSystem.WebApp.Constants;
 using System.Text.Json;
 using System.Text;
 
@@ -49,11 +50,12 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpGet("chi-tiet")]
-        public async Task<IActionResult> ChiTiet(int id)
+        public async Task<IActionResult> ChiTiet(int id, int page = 1)
         {
             try
             {
-                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/department/{id}"));
+                var pageSize = PaginationConstants.StaffPageSize;
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/department/{id}?page={page}&pageSize={pageSize}"));
 
                 if (!response.IsSuccessStatusCode)
                 {

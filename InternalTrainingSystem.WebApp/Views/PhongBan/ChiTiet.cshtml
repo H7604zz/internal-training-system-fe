@@ -1,5 +1,6 @@
 ﻿@model InternalTrainingSystem.WebApp.Models.DTOs.DepartmentDetailDto
 @using InternalTrainingSystem.WebApp.Models.DTOs
+@using InternalTrainingSystem.WebApp.Models.ViewModels
 @{
     ViewData["Title"] = "Chi Tiết Phòng Ban - " + Model.DepartmentName;
 }
@@ -14,16 +15,6 @@
         <div class="page-header">
             <div class="row align-items-center">
                 <div class="col-md-8">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item">
-                                <a href="@Url.Action("Index")">
-                                    <i class="fas fa-building me-1"></i>Phòng Ban
-                                </a>
-                            </li>
-                            <li class="breadcrumb-item active">Chi Tiết</li>
-                        </ol>
-                    </nav>
                     <h1 class="page-title">
                         <i class="fas fa-info-circle me-3"></i>@Model.DepartmentName
                     </h1>
@@ -71,7 +62,7 @@
                             <label>Thống kê:</label>
                             <div class="stat-item">
                                 <i class="fas fa-users text-primary"></i>
-                                <span><strong>@(Model.UserDetail?.Count ?? 0)</strong> Nhân viên</span>
+                                <span><strong>@(Model.UserDetail?.TotalCount ?? 0)</strong> Nhân viên</span>
                             </div>
                         </div>
                     </div>
@@ -86,26 +77,25 @@
                             <h5 class="mb-0">
                                 <i class="fas fa-users me-2"></i>Danh Sách Nhân Viên
                             </h5>
-                            <span class="badge bg-info">@(Model.UserDetail?.Count ?? 0) người</span>
+                            <span class="badge bg-info">@(Model.UserDetail?.TotalCount ?? 0) người</span>
                         </div>
                     </div>
                     <div class="card-body">
-                        @if (Model.UserDetail != null && Model.UserDetail.Any())
+                        @if (Model.UserDetail != null && Model.UserDetail.Items != null && Model.UserDetail.Items.Any())
                         {
                             <div class="table-responsive">
                                 <table class="table table-hover">
                                     <thead class="table-light">
                                         <tr>
-                                            <th style="width: 10%;">Mã NV</th>
-                                            <th style="width: 20%;">Họ và Tên</th>
-                                            <th style="width: 25%;">Email</th>
+                                            <th style="width: 15%;">Mã NV</th>
+                                            <th style="width: 25%;">Họ và Tên</th>
+                                            <th style="width: 30%;">Email</th>
                                             <th style="width: 15%;">Chức vụ</th>
-                                            <th style="width: 15%;">Vai trò</th>
                                             <th style="width: 15%;" class="text-center">Trạng thái</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach (var user in Model.UserDetail)
+                                        @foreach (var user in Model.UserDetail.Items)
                                         {
                                             <tr>
                                                 <td>
@@ -119,10 +109,7 @@
                                                         <i class="fas fa-envelope me-1"></i>@user.Email
                                                     </small>
                                                 </td>
-                                                <td>@(user.Position ?? "Chưa xác định")</td>
-                                                <td>
-                                                    <span class="badge bg-info">@(user.CurrentRole ?? "User")</span>
-                                                </td>
+                                                <td>@(user.Position ?? "N/A")</td>
                                                 <td class="text-center">
                                                     @if (user.IsActive)
                                                     {
@@ -142,6 +129,21 @@
                                     </tbody>
                                 </table>
                             </div>
+
+                            @* Pagination *@
+                            @if (Model.UserDetail.TotalPages > 1)
+                            {
+                                @await Html.PartialAsync("_Pagination", new PaginationViewModel
+                                {
+                                    CurrentPage = Model.UserDetail.Page,
+                                    TotalPages = Model.UserDetail.TotalPages,
+                                    PageSize = Model.UserDetail.PageSize,
+                                    TotalItems = Model.UserDetail.TotalCount,
+                                    ActionName = "ChiTiet",
+                                    ControllerName = "PhongBan",
+                                    RouteValues = new Dictionary<string, object> { { "id", Model.DepartmentId } }
+                                })
+                            }
                         }
                         else
                         {
