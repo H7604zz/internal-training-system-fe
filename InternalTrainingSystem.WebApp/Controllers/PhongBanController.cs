@@ -249,5 +249,61 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        // POST: PhongBan/ChuyenNhanVien
+        [HttpPost("chuyen-nhan-vien")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChuyenNhanVien([FromBody] TransferEmployeeDto model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { success = false, message = "Dữ liệu không hợp lệ." });
+            }
+
+            try
+            {
+                var json = JsonSerializer.Serialize(model);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync(
+                    Utilities.GetAbsoluteUrl("api/department/transfer-employee"), 
+                    content
+                );
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var result = JsonSerializer.Deserialize<JsonElement>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                    
+                    return Ok(new { success = true, message = "Chuyển nhân viên thành công!" });
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    try
+                    {
+                        var errorResult = JsonSerializer.Deserialize<JsonElement>(errorContent, new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        });
+                        
+                        if (errorResult.TryGetProperty("message", out var messageProperty))
+                        {
+                            return BadRequest(new { success = false, message = messageProperty.GetString() });
+                        }
+                    }
+                    catch { }
+                    
+                    return BadRequest(new { success = false, message = "Có lỗi xảy ra khi chuyển nhân viên." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = $"Có lỗi xảy ra: {ex.Message}" });
+            }
+        }
     }
 }

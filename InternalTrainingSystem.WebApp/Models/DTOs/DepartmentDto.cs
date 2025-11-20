@@ -56,4 +56,16 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         [StringLength(1000, ErrorMessage = "Mô tả không được vượt quá 1000 ký tự")]
         public string? Description { get; set; }
     }
+
+    /// <summary>
+    /// DTO for transferring employee between departments
+    /// </summary>
+    public class TransferEmployeeDto
+    {
+        [Required(ErrorMessage = "User ID là bắt buộc")]
+        public string UserId { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Phòng ban đích là bắt buộc")]
+        public int TargetDepartmentId { get; set; }
+    }
 }

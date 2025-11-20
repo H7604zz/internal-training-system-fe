@@ -1,4 +1,5 @@
 ﻿@model InternalTrainingSystem.WebApp.Models.DTOs.DepartmentDetailDto
+@using InternalTrainingSystem.WebApp.Helpers
 @using InternalTrainingSystem.WebApp.Models.DTOs
 @using InternalTrainingSystem.WebApp.Models.ViewModels
 @{
@@ -7,7 +8,10 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/department.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
 }
+
+@Html.AntiForgeryToken()
 
 <div class="department-detail-container">
     <div class="container-fluid">
@@ -33,7 +37,7 @@
 
         <div class="row">
             <!-- Department Info Card -->
-            <div class="col-lg-4 mb-4">
+            <div class="col-lg-3 mb-4">
                 <div class="card department-info-card">
                     <div class="card-header">
                         <h5 class="mb-0">
@@ -70,7 +74,7 @@
             </div>
 
             <!-- Employees Section -->
-            <div class="col-lg-8 mb-4">
+            <div class="col-lg-9 mb-4">
                 <div class="card">
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center">
@@ -89,9 +93,10 @@
                                         <tr>
                                             <th style="width: 15%;">Mã NV</th>
                                             <th style="width: 25%;">Họ và Tên</th>
-                                            <th style="width: 30%;">Email</th>
+                                            <th style="width: 25%;">Email</th>
                                             <th style="width: 15%;">Chức vụ</th>
-                                            <th style="width: 15%;" class="text-center">Trạng thái</th>
+                                            <th style="width: 10%;" class="text-center">Trạng thái</th>
+                                            <th style="width: 10%;" class="text-center">Thao tác</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -106,7 +111,7 @@
                                                 </td>
                                                 <td>
                                                     <small class="text-muted">
-                                                        <i class="fas fa-envelope me-1"></i>@user.Email
+                                                        @user.Email
                                                     </small>
                                                 </td>
                                                 <td>@(user.Position ?? "N/A")</td>
@@ -123,6 +128,13 @@
                                                             <i class="fas fa-times-circle"></i> Không hoạt động
                                                         </span>
                                                     }
+                                                </td>
+                                                <td class="text-center">
+                                                    <button type="button" class="btn btn-sm btn-primary" 
+                                                            onclick="openTransferModal('@user.Id', '@user.FullName')"
+                                                            title="Chuyển phòng ban">
+                                                        <i class="fas fa-exchange-alt"></i>
+                                                    </button>
                                                 </td>
                                             </tr>
                                         }
@@ -160,11 +172,169 @@
     </div>
 </div>
 
+<!-- Transfer Employee Modal -->
+<div class="modal fade" id="transferModal" tabindex="-1" aria-labelledby="transferModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="transferModalLabel">
+                    <i class="fas fa-exchange-alt me-2"></i>Chuyển Nhân Viên
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="transferForm">
+                    <input type="hidden" id="transferUserId" />
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nhân viên:</label>
+                        <p id="transferUserName" class="text-muted"></p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Phòng ban hiện tại:</label>
+                        <p class="text-muted">@Model.DepartmentName</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="targetDepartmentSelect" class="form-label fw-bold">
+                            Chuyển đến phòng ban: <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="targetDepartmentSelect" required>
+                            <option value="">-- Chọn phòng ban --</option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Vui lòng chọn phòng ban đích.
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Hủy
+                </button>
+                <button type="button" class="btn btn-primary" onclick="confirmTransfer()">
+                    <i class="fas fa-check me-2"></i>Xác nhận chuyển
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        let allDepartments = [];
+        
         $(document).ready(function() {
             // Tooltip initialization
             $('[data-bs-toggle="tooltip"]').tooltip();
+            
+            // Load departments for transfer
+            loadDepartments();
         });
+        
+        async function loadDepartments() {
+            try {
+                const response = await fetch('@Utilities.GetAbsoluteUrl("api/department")', {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                if (response.ok) {
+                    allDepartments = await response.json();
+                    console.log('Loaded departments:', allDepartments);
+                } else {
+                    console.error('Failed to load departments:', response.status);
+                }
+            } catch (error) {
+                console.error('Error loading departments:', error);
+            }
+        }
+        
+        function openTransferModal(userId, userName) {
+            document.getElementById('transferUserId').value = userId;
+            document.getElementById('transferUserName').textContent = userName;
+            
+            // Populate department select (exclude current department)
+            const select = document.getElementById('targetDepartmentSelect');
+            select.innerHTML = '<option value="">-- Chọn phòng ban --</option>';
+            
+            const currentDeptId = @Model.DepartmentId;
+            allDepartments.forEach(dept => {
+                if (dept.departmentId !== currentDeptId) {
+                    const option = document.createElement('option');
+                    option.value = dept.departmentId;
+                    option.textContent = dept.departmentName;
+                    select.appendChild(option);
+                }
+            });
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('transferModal'));
+            modal.show();
+        }
+        
+        async function confirmTransfer() {
+            const form = document.getElementById('transferForm');
+            const userId = document.getElementById('transferUserId').value;
+            const targetDepartmentId = document.getElementById('targetDepartmentSelect').value;
+            
+            // Validate
+            if (!targetDepartmentId) {
+                document.getElementById('targetDepartmentSelect').classList.add('is-invalid');
+                return;
+            }
+            
+            document.getElementById('targetDepartmentSelect').classList.remove('is-invalid');
+            
+            try {
+                const response = await fetch('@Url.Action("ChuyenNhanVien", "PhongBan")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        targetDepartmentId: parseInt(targetDepartmentId)
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('transferModal'));
+                    modal.hide();
+                    
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        text: result.message || 'Chuyển nhân viên thành công!',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Reload page
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi!',
+                        text: result.message || 'Có lỗi xảy ra khi chuyển nhân viên.',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi!',
+                    text: 'Có lỗi xảy ra khi chuyển nhân viên.',
+                    confirmButtonText: 'OK'
+                });
+            }
+        }
     </script>
 }
