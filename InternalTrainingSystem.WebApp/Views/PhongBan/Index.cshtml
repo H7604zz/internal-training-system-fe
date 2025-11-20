@@ -26,34 +26,6 @@
             </div>
         </div>
 
-        <!-- Search and Filter Section -->
-        <div class="filter-section">
-            <div class="card">
-                <div class="card-body">
-                    <form method="get" class="row g-3">
-                        <div class="col-md-8">
-                            <div class="input-group">
-                                <span class="input-group-text">
-                                    <i class="fas fa-search"></i>
-                                </span>
-                                <input type="text" name="search" class="form-control" 
-                                       placeholder="Tìm kiếm theo tên phòng ban..." 
-                                       value="@ViewBag.CurrentSearch">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <button type="submit" class="btn btn-outline-primary me-2">
-                                <i class="fas fa-search me-1"></i>Tìm Kiếm
-                            </button>
-                            <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
-                                <i class="fas fa-redo me-1"></i>Reset
-                            </a>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
         <!-- Results Section -->
         <div class="results-section">
             @if (TempData["SuccessMessage"] != null)

@@ -21,7 +21,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpGet()]
-        public async Task<IActionResult> Index(string? search)
+        public async Task<IActionResult> Index()
         {
             try
             {
@@ -39,16 +39,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     PropertyNameCaseInsensitive = true
                 }) ?? new List<DepartmnentViewDto>();
 
-                // Apply search filter if provided
-                if (!string.IsNullOrWhiteSpace(search))
-                {
-                    departments = departments
-                        .Where(d => d.DepartmentName != null && 
-                                   d.DepartmentName.Contains(search, StringComparison.OrdinalIgnoreCase))
-                        .ToList();
-                }
-
-                ViewBag.CurrentSearch = search;
                 return View(departments);
             }
             catch (Exception ex)
