@@ -99,7 +99,7 @@
                                 <label class="form-label">Tùy chọn khóa học</label>
                                 <div class="d-flex flex-column gap-2">
                                     <div class="form-check form-switch">
-                                        <input asp-for="IsOnline" class="form-check-input" type="checkbox" role="switch" checked>
+                                        <input asp-for="IsOnline" class="form-check-input" type="checkbox" role="switch" checked id="IsOnlineCheckbox">
                                         <label asp-for="IsOnline" class="form-check-label">
                                             Khóa học trực tuyến
                                         </label>
@@ -111,6 +111,17 @@
                                         </label>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- PassScore Field (only for offline courses) -->
+                        <div class="row" id="passScoreContainer" style="display: none;">
+                            <div class="col-md-12 mb-3">
+                                <label asp-for="PassScore" class="form-label">Điểm đạt tối thiểu</label>
+                                <input asp-for="PassScore" type="number" class="form-control" min="0" max="10" step="0.1"
+                                       placeholder="Nhập điểm tối thiểu để pass khóa học (0-10)">
+                                <span asp-validation-for="PassScore" class="text-danger"></span>
+                                <small class="text-muted">Điểm tối thiểu mà học viên cần đạt được để hoàn thành khóa học offline (thang điểm 0-10)</small>
                             </div>
                         </div>
                     </div>
@@ -502,6 +513,25 @@
     <script>
         $(document).ready(function() {
             let moduleCount = 0;
+
+            // Toggle PassScore field based on IsOnline checkbox
+            function togglePassScoreField() {
+                const isOnline = $('#IsOnlineCheckbox').is(':checked');
+                if (isOnline) {
+                    $('#passScoreContainer').hide();
+                    $('#PassScore').removeAttr('required');
+                } else {
+                    $('#passScoreContainer').show();
+                }
+            }
+
+            // Initialize PassScore field visibility on page load
+            togglePassScoreField();
+
+            // Toggle PassScore field when IsOnline checkbox changes
+            $('#IsOnlineCheckbox').on('change', function() {
+                togglePassScoreField();
+            });
 
             // Auto-generate course code from course name
             $('#CourseName').on('blur', function() {

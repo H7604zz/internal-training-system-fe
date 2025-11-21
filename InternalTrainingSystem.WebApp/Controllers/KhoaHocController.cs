@@ -261,6 +261,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     IsOnline = model.IsOnline,
                     IsMandatory = model.IsMandatory,
                     Departments = model.SelectedDepartmentIds, // Backend expect "Departments", not "SelectedDepartmentIds"
+                    PassScore = model.PassScore,
                     Modules = model.Modules.Select(m => new
                     {
                         Title = m.Title,

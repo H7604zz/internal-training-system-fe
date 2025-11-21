@@ -40,6 +40,10 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         [Display(Name = "Khóa học bắt buộc")]
         public bool IsMandatory { get; set; } = false;
 
+        [Range(0, 10, ErrorMessage = "Điểm đạt phải từ 0 đến 10.")]
+        [Display(Name = "Điểm đạt tối thiểu")]
+        public double? PassScore { get; set; }
+
         [Display(Name = "Phòng ban áp dụng")]
         public List<int> SelectedDepartmentIds { get; set; } = new();
 
