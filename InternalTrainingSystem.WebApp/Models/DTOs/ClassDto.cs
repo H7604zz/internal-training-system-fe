@@ -89,4 +89,20 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
 
         public string? Room { get; set; }
     }
+
+    public class ScheduleItemResponseDto
+    {
+        public int ScheduleId { get; set; }
+        public int? ClassId { get; set; }
+        public string? ClassName { get; set; }
+        public string? MentorId { get; set; }
+        public string Mentor { get; set; } = string.Empty;
+        public string CourseCode { get; set; } = string.Empty;
+        public string CourseName { get; set; } = string.Empty;
+        public DateTime DayOfWeek { get; set; }
+        public TimeSpan StartTime { get; set; }
+        public TimeSpan EndTime { get; set; }
+        public string? Location { get; set; }
+        public string? OnlineLink { get; set; }
+    }
 }

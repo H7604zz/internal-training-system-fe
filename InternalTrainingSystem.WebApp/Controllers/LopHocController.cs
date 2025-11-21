@@ -101,6 +101,21 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     return RedirectToAction("Index");
                 }
 
+                // Lấy lịch học của lớp
+                var scheduleResponse = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/class/{id}/schedule"));
+                List<ScheduleItemResponseDto> schedules = new();
+                
+                if (scheduleResponse.IsSuccessStatusCode)
+                {
+                    var scheduleContent = await scheduleResponse.Content.ReadAsStringAsync();
+                    schedules = JsonSerializer.Deserialize<List<ScheduleItemResponseDto>>(scheduleContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    }) ?? new List<ScheduleItemResponseDto>();
+                }
+
+                ViewBag.Schedules = schedules;
+
                 return View(classDetail);
 
             }
