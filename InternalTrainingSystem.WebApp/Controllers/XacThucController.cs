@@ -56,12 +56,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
                 if (result.Success)
                 {
-                    // Lưu thông tin user vào session nếu cần
-                    if (result.User != null)
-                    {
-                        Extensions.SessionExtensions.SetUserInfo(HttpContext.Session, result.User.FullName, result.User.Email, result.User.Id);
-                    }
-
                     if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                     {
                         return Redirect(returnUrl);
@@ -286,8 +280,11 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
                     if (loginResponse != null && loginResponse.Success)
                     {
-                        // Lưu token vào session hoặc cookie
+                        // Lưu token vào session
                         TokenHelpers.SaveTokensToSession(_httpContextAccessor, loginResponse.AccessToken, loginResponse.RefreshToken);
+                        
+                        // Extract và lưu thông tin user từ JWT token vào session
+                        TokenHelpers.ExtractAndSaveUserInfo(_httpContextAccessor, loginResponse.AccessToken);
                     }
 
                     return loginResponse ?? new LoginResponseDto { Success = false, Message = "Đã xảy ra lỗi khi xử lý phản hồi" };
@@ -428,6 +425,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     if (refreshResponse != null && refreshResponse.Success)
                     {
                         TokenHelpers.SaveTokensToSession(_httpContextAccessor, refreshResponse.AccessToken, refreshResponse.RefreshToken);
+                        TokenHelpers.ExtractAndSaveUserInfo(_httpContextAccessor, refreshResponse.AccessToken);
                     }
 
                     return refreshResponse ?? new LoginResponseDto { Success = false, Message = "Không thể làm mới token" };

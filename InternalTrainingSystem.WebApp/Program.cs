@@ -73,11 +73,9 @@ app.UseSession();
 
 app.UseRouting();
 
+app.UseMiddleware<AuthenticationMiddleware>();
 // Add authentication and authorization
 app.UseAuthentication();
-
-// Use custom authentication middleware
-app.UseMiddleware<AuthenticationMiddleware>();
 
 app.UseAuthorization();
 

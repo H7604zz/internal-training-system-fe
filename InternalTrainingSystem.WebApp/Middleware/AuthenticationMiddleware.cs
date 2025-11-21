@@ -30,21 +30,17 @@ namespace InternalTrainingSystem.WebApp.Middleware
             var path = context.Request.Path.Value?.ToLower();
             var isPublicPath = IsPublicPath(path);
 
-            _logger.LogInformation("Processing path: {Path}, IsPublic: {IsPublic}", path, isPublicPath);
+            _logger.LogInformation("AuthMiddleware - Path: {Path}, IsPublic: {IsPublic}", path, isPublicPath);
 
-            // Chỉ xử lý authentication cho các protected path, để Authorization attribute tự handle
-            if (!isPublicPath)
+            var accessToken = TokenHelpers.GetAccessToken(httpContextAccessor);
+            _logger.LogInformation("AuthMiddleware - HasToken: {HasToken}", !string.IsNullOrEmpty(accessToken));
+            
+            if (!string.IsNullOrEmpty(accessToken))
             {
-                // Kiểm tra token và refresh nếu cần
-                var accessToken = TokenHelpers.GetAccessToken(httpContextAccessor);
-                _logger.LogInformation("Access token exists: {HasToken}", !string.IsNullOrEmpty(accessToken));
+                var isTokenExpired = TokenHelpers.IsTokenExpired(accessToken);
+                _logger.LogInformation("AuthMiddleware - TokenExpired: {IsExpired}", isTokenExpired);
 
-                if (!string.IsNullOrEmpty(accessToken))
-                {
-                    var isTokenExpired = TokenHelpers.IsTokenExpired(accessToken);
-                    _logger.LogInformation("Token expired: {IsExpired}", isTokenExpired);
-
-                    if (isTokenExpired)
+                if (isTokenExpired)
                     {
                         // Thử refresh token
                         var refreshToken = TokenHelpers.GetRefreshToken(httpContextAccessor);
@@ -94,9 +90,10 @@ namespace InternalTrainingSystem.WebApp.Middleware
                             {
                                 // Set user principal cho request hiện tại
                                 context.User = claimsPrincipal;
-                                _logger.LogInformation("User claims set successfully. User: {UserName}, Role: {Role}", 
+                                _logger.LogInformation("AuthMiddleware - User set! Name: {UserName}, Role: {Role}, IsAuth: {IsAuth}", 
                                     claimsPrincipal.Identity?.Name, 
-                                    claimsPrincipal.FindFirst(ClaimTypes.Role)?.Value);
+                                    claimsPrincipal.FindFirst(ClaimTypes.Role)?.Value,
+                                    claimsPrincipal.Identity?.IsAuthenticated);
                             }
                             else
                             {
@@ -108,11 +105,10 @@ namespace InternalTrainingSystem.WebApp.Middleware
                             _logger.LogError(ex, "Lỗi khi tạo claims principal từ token");
                         }
                     }
-                }
-                else
-                {
-                    _logger.LogInformation("No access token found for protected path: {Path}", path);
-                }
+            }
+            else
+            {
+                _logger.LogInformation("AuthMiddleware - No token found for path: {Path}", path);
             }
 
             await _next(context);
@@ -140,6 +136,7 @@ namespace InternalTrainingSystem.WebApp.Middleware
                     if (refreshResponse != null && refreshResponse.Success)
                     {
                         TokenHelpers.SaveTokensToSession(httpContextAccessor, refreshResponse.AccessToken, refreshResponse.RefreshToken);
+                        TokenHelpers.ExtractAndSaveUserInfo(httpContextAccessor, refreshResponse.AccessToken);
                         return new RefreshTokenResult { Success = true };
                     }
 
@@ -264,8 +261,16 @@ namespace InternalTrainingSystem.WebApp.Middleware
                     claims.Add(new Claim(ClaimTypes.Name, userName));
                 }
 
-                var identity = new ClaimsIdentity(claims, "CustomCookie");
-                return new ClaimsPrincipal(identity);
+                // IMPORTANT: Use "CustomCookie" as authenticationType AND set IsAuthenticated
+                var identity = new ClaimsIdentity(claims, "CustomCookie", ClaimTypes.Name, ClaimTypes.Role);
+                var principal = new ClaimsPrincipal(identity);
+                
+                _logger.LogInformation("Created ClaimsPrincipal with {ClaimCount} claims. IsAuthenticated: {IsAuth}, Role: {Role}", 
+                    claims.Count, 
+                    identity.IsAuthenticated,
+                    claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? "none");
+                
+                return principal;
             }
             catch (Exception ex)
             {
