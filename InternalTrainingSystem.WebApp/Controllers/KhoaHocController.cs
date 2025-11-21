@@ -690,7 +690,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     return Json(new CourseApprovalResponse
                     {
                         Success = false,
-                        Message = errorMessage,
+                        Message = "Bạn không có quyền để thực hiện hành động này",
                         ErrorCode = ErrorCode.InternalError
                     });
                 }
