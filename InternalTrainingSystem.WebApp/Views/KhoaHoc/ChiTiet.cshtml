@@ -117,6 +117,15 @@
                                     @(Model.IsMandatory ? "Bắt buộc" : "Tùy chọn")
                                 </span>
                             </div>
+                            @if (!Model.IsOnline && Model.PassScore.HasValue)
+                            {
+                                <div class="info-item">
+                                    <label><i class="fas fa-star me-1"></i>Điểm đạt:</label>
+                                    <span class="level-badge level-intermediate">
+                                        @Model.PassScore.Value.ToString("0.0")/10
+                                    </span>
+                                </div>
+                            }
                             @if (Model.Status == "Approved")
                             {
                                 <div class="info-item">

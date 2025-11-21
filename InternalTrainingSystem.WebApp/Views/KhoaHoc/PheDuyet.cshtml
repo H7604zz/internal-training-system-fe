@@ -103,6 +103,19 @@
                             </div>
                             <div class="value">@(Model.CreatedDate.ToString("dd/MM/yyyy HH:mm"))</div>
                         </div>
+                        @if (!Model.IsOnline && Model.PassScore.HasValue)
+                        {
+                            <div class="info-item">
+                                <div class="info-label">
+                                    <i class="fas fa-star"></i>Điểm đạt tối thiểu
+                                </div>
+                                <div class="value">
+                                    <span class="level-badge level-intermediate">
+                                        @Model.PassScore.Value.ToString("0.0")/10
+                                    </span>
+                                </div>
+                            </div>
+                        }
                     </div>
 
                     @if (!string.IsNullOrEmpty(Model.Description))
