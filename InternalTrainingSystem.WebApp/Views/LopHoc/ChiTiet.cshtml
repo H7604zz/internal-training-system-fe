@@ -73,7 +73,7 @@
                             <td class="info-label">Mentor:</td>
                             <td class="info-value">
                                 <i class="fas fa-user-tie me-2 text-secondary"></i>
-                                <span class="fw-semibold">@Model.MentorName</span>
+                                <span class="fw-semibold">@Model.MentorName (@Model.MentorId)</span>
                             </td>
                         </tr>
                     </table>
@@ -312,10 +312,6 @@
                 nextMonday.setDate(today.getDate() + daysUntilMonday);
                 startWeekInput.value = nextMonday.toISOString().split('T')[0];
                 startWeekInput.min = today.toISOString().split('T')[0];
-
-                // Add default schedule days
-                addScheduleDay('Monday', '08:00', '12:00', 'Phòng A101');
-                addScheduleDay('Wednesday', '13:00', '17:00', 'Phòng A101');
 
                 loadingEl.classList.add('d-none');
                 formEl.classList.remove('d-none');

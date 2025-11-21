@@ -23,6 +23,7 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string ClassName { get; set; } = string.Empty;
         public int CourseId { get; set; }
         public string CourseName { get; set; } = string.Empty;
+        public string MentorId { get; set; } = string.Empty;
         public string MentorName { get; set; } = string.Empty;
         public List<ClassEmployeeDto> Employees { get; set; } = new();
     }
