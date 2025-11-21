@@ -1,0 +1,45 @@
+.report-card {
+    transition: transform 0.2s;
+}
+
+.report-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.stat-label {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+}
+
+.progress-bar-custom {
+    height: 25px;
+    font-size: 0.85rem;
+}
+
+.table-report {
+    font-size: 0.9rem;
+}
+
+.badge-rate {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+}
+
+.chart-container {
+    position: relative;
+    height: 400px;
+}
+
+.filter-section {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+}

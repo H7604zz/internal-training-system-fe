@@ -317,5 +317,95 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 return StatusCode(500, new { success = false, message = $"Có lỗi xảy ra: {ex.Message}" });
             }
         }
+
+        // GET: PhongBan/BaoCao
+        [HttpGet("bao-cao")]
+        public IActionResult BaoCao()
+        {
+            return View();
+        }
+
+        // API: Lấy báo cáo tỉ lệ hoàn thành
+        [HttpGet("ti-le-hoan-thanh")]
+        public async Task<IActionResult> GetCourseCompletionReport([FromQuery] DepartmentReportRequestDto request)
+        {
+            try
+            {
+                var queryString = BuildReportQueryString(request);
+                var response = await _httpClient.GetAsync(
+                    Utilities.GetAbsoluteUrl($"api/department/report/course-completion{queryString}")
+                );
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var report = JsonSerializer.Deserialize<List<DepartmentCourseCompletionDto>>(
+                        responseContent, 
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                    );
+                    return Ok(report);
+                }
+                else
+                {
+                    return BadRequest(new { message = "Không thể tải báo cáo." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Có lỗi xảy ra: {ex.Message}" });
+            }
+        }
+
+        // API: Lấy top phòng ban học tập tích cực
+        [HttpGet("top-phong-ban")]
+        public async Task<IActionResult> GetTopActiveDepartments([FromQuery] int top = 10, [FromQuery] DepartmentReportRequestDto? request = null)
+        {
+            try
+            {
+                request ??= new DepartmentReportRequestDto();
+                var queryString = BuildReportQueryString(request);
+                queryString = string.IsNullOrEmpty(queryString) 
+                    ? $"?top={top}" 
+                    : $"{queryString}&top={top}";
+
+                var response = await _httpClient.GetAsync(
+                    Utilities.GetAbsoluteUrl($"api/department/report/top-active{queryString}")
+                );
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var report = JsonSerializer.Deserialize<List<TopActiveDepartmentDto>>(
+                        responseContent, 
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                    );
+                    return Ok(report);
+                }
+                else
+                {
+                    return BadRequest(new { message = "Không thể tải báo cáo." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Có lỗi xảy ra: {ex.Message}" });
+            }
+        }
+
+        private string BuildReportQueryString(DepartmentReportRequestDto request)
+        {
+            var queryParams = new List<string>();
+
+            if (request.StartDate.HasValue)
+                queryParams.Add($"StartDate={request.StartDate.Value:yyyy-MM-dd}");
+
+            if (request.EndDate.HasValue)
+                queryParams.Add($"EndDate={request.EndDate.Value:yyyy-MM-dd}");
+
+            if (request.CourseId.HasValue)
+                queryParams.Add($"CourseId={request.CourseId.Value}");
+
+            return queryParams.Any() ? "?" + string.Join("&", queryParams) : string.Empty;
+        }
     }
 }

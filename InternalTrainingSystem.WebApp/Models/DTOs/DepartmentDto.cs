@@ -68,4 +68,44 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         [Required(ErrorMessage = "Phòng ban đích là bắt buộc")]
         public int TargetDepartmentId { get; set; }
     }
+
+    /// <summary>
+    /// DTO cho báo cáo tỉ lệ hoàn thành khóa học theo phòng ban
+    /// </summary>
+    public class DepartmentCourseCompletionDto
+    {
+        public int DepartmentId { get; set; }
+        public string DepartmentName { get; set; } = string.Empty;
+        public int TotalEmployees { get; set; }
+        public int TotalEnrollments { get; set; }
+        public int CompletedCourses { get; set; }
+        public int InProgressCourses { get; set; }
+        public int FailedCourses { get; set; }
+        public double CompletionRate { get; set; }
+    }
+
+    /// <summary>
+    /// DTO cho báo cáo top phòng ban học tập tích cực
+    /// </summary>
+    public class TopActiveDepartmentDto
+    {
+        public int DepartmentId { get; set; }
+        public string DepartmentName { get; set; } = string.Empty;
+        public int TotalEmployees { get; set; }
+        public int TotalEnrollments { get; set; }
+        public int CompletedCourses { get; set; }
+        public double CompletionRate { get; set; }
+        public double AverageScore { get; set; }
+        public int ActiveLearners { get; set; }
+    }
+
+    /// <summary>
+    /// DTO cho request báo cáo phòng ban
+    /// </summary>
+    public class DepartmentReportRequestDto
+    {
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public int? CourseId { get; set; }
+    }
 }

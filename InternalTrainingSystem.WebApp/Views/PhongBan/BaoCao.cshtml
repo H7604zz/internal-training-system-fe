@@ -1,0 +1,469 @@
+@{
+    ViewData["Title"] = "Báo Cáo - Thống Kê Phòng Ban";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/department-report.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+}
+
+<div class="container-fluid">
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <div class="row">
+            <div class="col-md-4">
+                <label class="form-label">
+                    <i class="fas fa-calendar-alt me-2"></i>Khoảng thời gian
+                </label>
+                <input type="text" id="dateRange" class="form-control" placeholder="Chọn khoảng thời gian">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">
+                    <i class="fas fa-book me-2"></i>Khóa học (Tùy chọn)
+                </label>
+                <select id="courseFilter" class="form-select">
+                    <option value="">-- Tất cả khóa học --</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button id="btnApplyFilter" class="btn btn-primary me-2">
+                    <i class="fas fa-filter me-2"></i>Áp dụng bộ lọc
+                </button>
+                <button id="btnResetFilter" class="btn btn-secondary">
+                    <i class="fas fa-redo me-2"></i>Đặt lại
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs mb-4" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="completion-tab" data-bs-toggle="tab" data-bs-target="#completion" type="button" role="tab">
+                <i class="fas fa-chart-pie me-2"></i>Tỉ Lệ Hoàn Thành
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="top-active-tab" data-bs-toggle="tab" data-bs-target="#top-active" type="button" role="tab">
+                <i class="fas fa-trophy me-2"></i>Top Phòng Ban Tích Cực
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+        <!-- Tỉ Lệ Hoàn Thành Tab -->
+        <div class="tab-pane fade show active" id="completion" role="tabpanel">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-percentage me-2"></i>Tỉ Lệ Hoàn Thành Khóa Học Theo Phòng Ban
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="completionLoading" class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Đang tải...</span>
+                                </div>
+                                <p class="mt-2">Đang tải dữ liệu...</p>
+                            </div>
+                            <div id="completionContent" style="display: none;">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-report">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>STT</th>
+                                                <th>Phòng Ban</th>
+                                                <th>Số Nhân Viên</th>
+                                                <th>Tổng Đăng Ký</th>
+                                                <th>Hoàn Thành</th>
+                                                <th>Đang Học</th>
+                                                <th>Thất Bại</th>
+                                                <th>Tỉ Lệ Hoàn Thành</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="completionTableBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="chart-container mt-4">
+                                    <canvas id="completionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Phòng Ban Tab -->
+        <div class="tab-pane fade" id="top-active" role="tabpanel">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">
+                        <i class="fas fa-list-ol me-2"></i>Hiển thị top
+                    </label>
+                    <select id="topCount" class="form-select">
+                        <option value="5">Top 5</option>
+                        <option value="10" selected>Top 10</option>
+                        <option value="15">Top 15</option>
+                        <option value="20">Top 20</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-medal me-2"></i>Top Phòng Ban Học Tập Tích Cực Nhất
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="topActiveLoading" class="text-center py-5">
+                                <div class="spinner-border text-success" role="status">
+                                    <span class="visually-hidden">Đang tải...</span>
+                                </div>
+                                <p class="mt-2">Đang tải dữ liệu...</p>
+                            </div>
+                            <div id="topActiveContent" style="display: none;">
+                                <div id="topActiveCards" class="row mb-4">
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-report">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Hạng</th>
+                                                <th>Phòng Ban</th>
+                                                <th>Số Nhân Viên</th>
+                                                <th>Người Học Tích Cực</th>
+                                                <th>Tổng Đăng Ký</th>
+                                                <th>Hoàn Thành</th>
+                                                <th>Tỉ Lệ Hoàn Thành</th>
+                                                <th>Điểm TB</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="topActiveTableBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<partial name="_Notification" />
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <script>
+        let completionChart = null;
+        let currentFilters = {
+            startDate: null,
+            endDate: null,
+            courseId: null
+        };
+
+        $(document).ready(function() {
+            // Initialize date range picker
+            $('#dateRange').daterangepicker({
+                autoUpdateInput: false,
+                locale: {
+                    cancelLabel: 'Xóa',
+                    applyLabel: 'Áp dụng',
+                    format: 'DD/MM/YYYY'
+                }
+            });
+
+            $('#dateRange').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+                currentFilters.startDate = picker.startDate.format('YYYY-MM-DD');
+                currentFilters.endDate = picker.endDate.format('YYYY-MM-DD');
+            });
+
+            $('#dateRange').on('cancel.daterangepicker', function(ev, picker) {
+                $(this).val('');
+                currentFilters.startDate = null;
+                currentFilters.endDate = null;
+            });
+
+            // Load initial data
+            loadCompletionReport();
+            loadTopActiveReport();
+
+            // Event handlers
+            $('#btnApplyFilter').on('click', function() {
+                currentFilters.courseId = $('#courseFilter').val() || null;
+                
+                if ($('.nav-link.active').attr('id') === 'completion-tab') {
+                    loadCompletionReport();
+                } else {
+                    loadTopActiveReport();
+                }
+            });
+
+            $('#btnResetFilter').on('click', function() {
+                $('#dateRange').val('');
+                $('#courseFilter').val('');
+                currentFilters = {
+                    startDate: null,
+                    endDate: null,
+                    courseId: null
+                };
+                
+                if ($('.nav-link.active').attr('id') === 'completion-tab') {
+                    loadCompletionReport();
+                } else {
+                    loadTopActiveReport();
+                }
+            });
+
+            $('#topCount').on('change', function() {
+                loadTopActiveReport();
+            });
+
+            // Reload data when switching tabs
+            $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+                if (e.target.id === 'completion-tab') {
+                    loadCompletionReport();
+                } else if (e.target.id === 'top-active-tab') {
+                    loadTopActiveReport();
+                }
+            });
+        });
+
+        function buildQueryString() {
+            const params = [];
+            if (currentFilters.startDate) params.push(`StartDate=${currentFilters.startDate}`);
+            if (currentFilters.endDate) params.push(`EndDate=${currentFilters.endDate}`);
+            if (currentFilters.courseId) params.push(`CourseId=${currentFilters.courseId}`);
+            return params.length > 0 ? '?' + params.join('&') : '';
+        }
+
+        function loadCompletionReport() {
+            $('#completionLoading').show();
+            $('#completionContent').hide();
+
+            $.ajax({
+                url: '@Url.Action("GetCourseCompletionReport", "PhongBan")' + buildQueryString(),
+                method: 'GET',
+                success: function(data) {
+                    renderCompletionTable(data);
+                    renderCompletionChart(data);
+                    $('#completionLoading').hide();
+                    $('#completionContent').show();
+                },
+                error: function() {
+                    toastr.error('Không thể tải báo cáo tỉ lệ hoàn thành');
+                    $('#completionLoading').hide();
+                }
+            });
+        }
+
+        function renderCompletionTable(data) {
+            const tbody = $('#completionTableBody');
+            tbody.empty();
+
+            if (!data || data.length === 0) {
+                tbody.append('<tr><td colspan="8" class="text-center">Không có dữ liệu</td></tr>');
+                return;
+            }
+
+            data.forEach((item, index) => {
+                const rateClass = item.completionRate >= 80 ? 'success' : 
+                                 item.completionRate >= 50 ? 'warning' : 'danger';
+                
+                tbody.append(`
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td><strong>${item.departmentName}</strong></td>
+                        <td>${item.totalEmployees}</td>
+                        <td>${item.totalEnrollments}</td>
+                        <td><span class="badge bg-success">${item.completedCourses}</span></td>
+                        <td><span class="badge bg-info">${item.inProgressCourses}</span></td>
+                        <td><span class="badge bg-danger">${item.failedCourses}</span></td>
+                        <td>
+                            <div class="progress" style="height: 25px;">
+                                <div class="progress-bar bg-${rateClass}" role="progressbar" 
+                                     style="width: ${item.completionRate}%" 
+                                     aria-valuenow="${item.completionRate}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    ${item.completionRate.toFixed(2)}%
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+
+        function renderCompletionChart(data) {
+            const ctx = document.getElementById('completionChart');
+            
+            if (completionChart) {
+                completionChart.destroy();
+            }
+
+            const labels = data.map(d => d.departmentName);
+            const completionRates = data.map(d => d.completionRate);
+
+            completionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Tỉ lệ hoàn thành (%)',
+                        data: completionRates,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Biểu đồ tỉ lệ hoàn thành khóa học theo phòng ban'
+                        }
+                    }
+                }
+            });
+        }
+
+        function loadTopActiveReport() {
+            $('#topActiveLoading').show();
+            $('#topActiveContent').hide();
+
+            const top = $('#topCount').val() || 10;
+            const queryString = buildQueryString();
+            const separator = queryString ? '&' : '?';
+
+            $.ajax({
+                url: '@Url.Action("GetTopActiveDepartments", "PhongBan")' + queryString + separator + `top=${top}`,
+                method: 'GET',
+                success: function(data) {
+                    renderTopActiveCards(data);
+                    renderTopActiveTable(data);
+                    $('#topActiveLoading').hide();
+                    $('#topActiveContent').show();
+                },
+                error: function() {
+                    toastr.error('Không thể tải báo cáo top phòng ban');
+                    $('#topActiveLoading').hide();
+                }
+            });
+        }
+
+        function renderTopActiveCards(data) {
+            const container = $('#topActiveCards');
+            container.empty();
+
+            if (!data || data.length === 0) {
+                container.append('<div class="col-12 text-center">Không có dữ liệu</div>');
+                return;
+            }
+
+            const top3 = data.slice(0, 3);
+            const medals = ['🥇', '🥈', '🥉'];
+            const colors = ['warning', 'secondary', 'danger'];
+
+            top3.forEach((item, index) => {
+                container.append(`
+                    <div class="col-md-4">
+                        <div class="card report-card border-${colors[index]} h-100">
+                            <div class="card-body text-center">
+                                <div style="font-size: 3rem;">${medals[index]}</div>
+                                <h5 class="card-title mt-2">${item.departmentName}</h5>
+                                <div class="stat-value text-${colors[index]}">${item.totalEnrollments}</div>
+                                <div class="stat-label">Tổng đăng ký</div>
+                                <hr>
+                                <div class="row text-start mt-3">
+                                    <div class="col-6">
+                                        <small class="text-muted">Hoàn thành:</small>
+                                        <div><strong>${item.completedCourses}</strong></div>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Tỉ lệ:</small>
+                                        <div><strong>${item.completionRate.toFixed(2)}%</strong></div>
+                                    </div>
+                                    <div class="col-6 mt-2">
+                                        <small class="text-muted">Điểm TB:</small>
+                                        <div><strong>${item.averageScore.toFixed(2)}</strong></div>
+                                    </div>
+                                    <div class="col-6 mt-2">
+                                        <small class="text-muted">Người học:</small>
+                                        <div><strong>${item.activeLearners}</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            });
+        }
+
+        function renderTopActiveTable(data) {
+            const tbody = $('#topActiveTableBody');
+            tbody.empty();
+
+            if (!data || data.length === 0) {
+                tbody.append('<tr><td colspan="8" class="text-center">Không có dữ liệu</td></tr>');
+                return;
+            }
+
+            data.forEach((item, index) => {
+                const rankBadge = index < 3 ? 
+                    `<span class="badge bg-warning">${index + 1}</span>` : 
+                    `<span class="badge bg-secondary">${index + 1}</span>`;
+
+                tbody.append(`
+                    <tr>
+                        <td>${rankBadge}</td>
+                        <td><strong>${item.departmentName}</strong></td>
+                        <td>${item.totalEmployees}</td>
+                        <td><span class="badge bg-primary">${item.activeLearners}</span></td>
+                        <td>${item.totalEnrollments}</td>
+                        <td><span class="badge bg-success">${item.completedCourses}</span></td>
+                        <td>
+                            <div class="progress" style="height: 25px;">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: ${item.completionRate}%" 
+                                     aria-valuenow="${item.completionRate}">
+                                    ${item.completionRate.toFixed(2)}%
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge bg-info">${item.averageScore.toFixed(2)}</span></td>
+                    </tr>
+                `);
+            });
+        }
+    </script>
+}
