@@ -21,9 +21,23 @@
                     </h2>
                     <p class="text-muted mb-0">Thông tin chi tiết và danh sách nhân viên</p>
                 </div>
-                <a href="@Url.Action("Index")" class="btn btn-secondary back-btn">
-                    <i class="fas fa-arrow-left me-2"></i>Quay Lại
-                </a>
+                <div>
+                    <a href="@Url.Action("Index")" class="btn btn-secondary back-btn me-2">
+                        <i class="fas fa-arrow-left me-2"></i>Quay Lại
+                    </a>
+                    @if (string.IsNullOrEmpty(Model.MentorName))
+                    {
+                        <button type="button" class="btn btn-primary" onclick="openSetupClassModal()">
+                            <i class="fas fa-cog me-2"></i>Thiết Lập Lớp Học
+                        </button>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success fs-6">
+                            <i class="fas fa-check-circle me-1"></i>Đã thiết lập
+                        </span>
+                    }
+                </div>
             </div>
         </div>
     </div>
@@ -164,3 +178,331 @@
         </div>
     </div>
 </div>
+
+<!-- Modal: Thiết Lập Lớp Học -->
+<div class="modal fade" id="setupClassModal" tabindex="-1" aria-labelledby="setupClassModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="setupClassModalLabel">
+                    <i class="fas fa-cog me-2"></i>Thiết Lập Lớp Học
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="setupLoading" class="text-center py-4">
+                    <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                    <div class="mt-2">Đang tải thông tin...</div>
+                </div>
+                <div id="setupError" class="alert alert-danger d-none"></div>
+                
+                <form id="setupClassForm" class="d-none">
+                    <!-- Bước 1: Chọn Mentor -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">
+                                <i class="fas fa-user-tie me-2"></i>Bước 1: Chọn Mentor
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="mentorSelect" class="form-label">Chọn Mentor <span class="text-danger">*</span></label>
+                                <select class="form-select" id="mentorSelect" required>
+                                    <option value="">-- Chọn mentor --</option>
+                                </select>
+                            </div>
+                            <div id="mentorInfo" class="bg-info bg-opacity-10 border border-info rounded p-3 d-none">
+                                <h6 class="text-info mb-2">Thông tin Mentor:</h6>
+                                <p class="mb-1"><strong>Email:</strong> <span id="mentorEmail"></span></p>
+                                <p class="mb-0"><strong>Phòng ban:</strong> <span id="mentorDept"></span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bước 2: Cấu hình Lịch Học -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">
+                                <i class="fas fa-calendar-alt me-2"></i>Bước 2: Cấu hình Lịch Học Hàng Tuần
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="startWeek" class="form-label">Ngày bắt đầu tuần đầu <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="startWeek" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="numberOfWeeks" class="form-label">Số tuần học <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="numberOfWeeks" min="1" max="52" value="12" required>
+                                </div>
+                            </div>
+
+                            <label class="form-label">Lịch học trong tuần <span class="text-danger">*</span></label>
+                            <div id="weeklyScheduleContainer">
+                                <!-- Days will be added here -->
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="addScheduleDay()">
+                                <i class="fas fa-plus me-1"></i>Thêm ngày học
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="saveSetupBtn" disabled>
+                    <i class="fas fa-save me-2"></i>Lưu thiết lập
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Html.AntiForgeryToken()
+    <script>
+        const classId = @Model.ClassId;
+        const courseId = @Model.CourseId;
+        let mentorsList = [];
+        let scheduleCounter = 0;
+
+        async function openSetupClassModal() {
+            const modal = new bootstrap.Modal(document.getElementById('setupClassModal'));
+            modal.show();
+            await loadSetupData();
+        }
+
+        async function loadSetupData() {
+            const loadingEl = document.getElementById('setupLoading');
+            const errorEl = document.getElementById('setupError');
+            const formEl = document.getElementById('setupClassForm');
+            const selectEl = document.getElementById('mentorSelect');
+
+            try {
+                loadingEl.classList.remove('d-none');
+                errorEl.classList.add('d-none');
+                formEl.classList.add('d-none');
+
+                const response = await fetch('/lop-hoc/danh-sach-mentor');
+                
+                if (!response.ok) {
+                    throw new Error('Không thể tải danh sách mentor');
+                }
+
+                mentorsList = await response.json();
+                
+                // Clear and populate select
+                selectEl.innerHTML = '<option value="">-- Chọn mentor --</option>';
+                mentorsList.forEach(mentor => {
+                    const option = document.createElement('option');
+                    option.value = mentor.id;
+                    option.textContent = `${mentor.fullName} (${mentor.employeeId})`;
+                    option.dataset.email = mentor.email;
+                    option.dataset.dept = mentor.department || 'N/A';
+                    selectEl.appendChild(option);
+                });
+
+                // Set default start week to next Monday
+                const startWeekInput = document.getElementById('startWeek');
+                const today = new Date();
+                const nextMonday = new Date(today);
+                const dayOfWeek = today.getDay();
+                const daysUntilMonday = dayOfWeek === 0 ? 1 : (8 - dayOfWeek);
+                nextMonday.setDate(today.getDate() + daysUntilMonday);
+                startWeekInput.value = nextMonday.toISOString().split('T')[0];
+                startWeekInput.min = today.toISOString().split('T')[0];
+
+                // Add default schedule days
+                addScheduleDay('Monday', '08:00', '12:00', 'Phòng A101');
+                addScheduleDay('Wednesday', '13:00', '17:00', 'Phòng A101');
+
+                loadingEl.classList.add('d-none');
+                formEl.classList.remove('d-none');
+                validateForm();
+            } catch (error) {
+                loadingEl.classList.add('d-none');
+                errorEl.textContent = error.message;
+                errorEl.classList.remove('d-none');
+            }
+        }
+
+        function addScheduleDay(dayOfWeek = 'Monday', startTime = '08:00', endTime = '17:00', location = '') {
+            scheduleCounter++;
+            const container = document.getElementById('weeklyScheduleContainer');
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'card mb-2';
+            dayDiv.id = `scheduleDay${scheduleCounter}`;
+            dayDiv.innerHTML = `
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <select class="form-control schedule-day" required onchange="validateForm()">
+                                <option value="">-- Chọn ngày --</option>
+                                <option value="Monday" ${dayOfWeek === 'Monday' ? 'selected' : ''}>Thứ Hai</option>
+                                <option value="Tuesday" ${dayOfWeek === 'Tuesday' ? 'selected' : ''}>Thứ Ba</option>
+                                <option value="Wednesday" ${dayOfWeek === 'Wednesday' ? 'selected' : ''}>Thứ Tư</option>
+                                <option value="Thursday" ${dayOfWeek === 'Thursday' ? 'selected' : ''}>Thứ Năm</option>
+                                <option value="Friday" ${dayOfWeek === 'Friday' ? 'selected' : ''}>Thứ Sáu</option>
+                                <option value="Saturday" ${dayOfWeek === 'Saturday' ? 'selected' : ''}>Thứ Bảy</option>
+                                <option value="Sunday" ${dayOfWeek === 'Sunday' ? 'selected' : ''}>Chủ Nhật</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="time" class="form-control schedule-start" value="${startTime}" required onchange="validateForm()">
+                        </div>
+                        <div class="col-md-3">
+                            <input type="time" class="form-control schedule-end" value="${endTime}" required onchange="validateForm()">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="text" class="form-control schedule-location" value="${location}" placeholder="Phòng học">
+                        </div>
+                        <div class="col-md-1">
+                            <button type="button" class="btn btn-sm btn-danger" onclick="removeScheduleDay(${scheduleCounter})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(dayDiv);
+            validateForm();
+        }
+
+        function removeScheduleDay(id) {
+            const dayDiv = document.getElementById(`scheduleDay${id}`);
+            if (dayDiv) {
+                dayDiv.remove();
+                validateForm();
+            }
+        }
+
+        document.getElementById('mentorSelect')?.addEventListener('change', function() {
+            const infoDiv = document.getElementById('mentorInfo');
+            
+            if (this.value) {
+                const selectedOption = this.options[this.selectedIndex];
+                document.getElementById('mentorEmail').textContent = selectedOption.dataset.email;
+                document.getElementById('mentorDept').textContent = selectedOption.dataset.dept;
+                infoDiv.classList.remove('d-none');
+            } else {
+                infoDiv.classList.add('d-none');
+            }
+            validateForm();
+        });
+
+        function validateForm() {
+            const mentorId = document.getElementById('mentorSelect')?.value;
+            const startWeek = document.getElementById('startWeek')?.value;
+            const numberOfWeeks = document.getElementById('numberOfWeeks')?.value;
+            const scheduleDays = document.querySelectorAll('.schedule-day');
+            
+            let isValid = mentorId && startWeek && numberOfWeeks && scheduleDays.length > 0;
+            
+            // Check all schedule days are filled
+            if (isValid) {
+                scheduleDays.forEach(day => {
+                    const row = day.closest('.row');
+                    const startTime = row.querySelector('.schedule-start').value;
+                    const endTime = row.querySelector('.schedule-end').value;
+                    if (!day.value || !startTime || !endTime) {
+                        isValid = false;
+                    }
+                });
+            }
+            
+            const saveBtn = document.getElementById('saveSetupBtn');
+            if (saveBtn) {
+                saveBtn.disabled = !isValid;
+            }
+        }
+
+        document.getElementById('saveSetupBtn')?.addEventListener('click', async function() {
+            const mentorId = document.getElementById('mentorSelect').value;
+            const startWeek = document.getElementById('startWeek').value;
+            const numberOfWeeks = parseInt(document.getElementById('numberOfWeeks').value);
+            
+            // Collect weekly schedules
+            const weeklySchedules = [];
+            const scheduleDays = document.querySelectorAll('.schedule-day');
+            
+            scheduleDays.forEach(daySelect => {
+                const row = daySelect.closest('.row');
+                const dayOfWeek = daySelect.value;
+                const startTime = row.querySelector('.schedule-start').value;
+                const endTime = row.querySelector('.schedule-end').value;
+                const location = row.querySelector('.schedule-location').value;
+                
+                if (dayOfWeek && startTime && endTime) {
+                    weeklySchedules.push({
+                        dayOfWeek: dayOfWeek,
+                        startTime: startTime + ':00',
+                        endTime: endTime + ':00',
+                        location: location || null
+                    });
+                }
+            });
+
+            if (weeklySchedules.length === 0) {
+                alert('Vui lòng thêm ít nhất một ngày học!');
+                return;
+            }
+
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang lưu...';
+            btn.disabled = true;
+
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                
+                const requestData = {
+                    classId: classId,
+                    courseId: courseId,
+                    mentorId: mentorId,
+                    startWeek: startWeek,
+                    numberOfWeeks: numberOfWeeks,
+                    weeklySchedules: weeklySchedules
+                };
+                
+                console.log('Request data:', requestData);
+                
+                const response = await fetch('/lop-hoc/thiet-lap', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                console.log('Response status:', response.status);
+
+                if (response.ok) {
+                    alert('Thiết lập lớp học thành công!');
+                    location.reload();
+                } else {
+                    const contentType = response.headers.get('content-type');
+                    let errorMessage = '';
+                    
+                    if (contentType && contentType.includes('application/json')) {
+                        const errorData = await response.json();
+                        errorMessage = errorData.message || JSON.stringify(errorData);
+                    } else {
+                        errorMessage = await response.text();
+                    }
+                    
+                    console.error('Error response:', errorMessage);
+                    alert('Lỗi (' + response.status + '): ' + errorMessage);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Exception:', error);
+                alert('Đã xảy ra lỗi: ' + error.message);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+    </script>
+}

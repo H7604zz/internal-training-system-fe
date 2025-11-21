@@ -217,5 +217,223 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 });
             }
         }
+
+        [HttpGet("chon-lich/{classId}")]
+        public IActionResult ChonLich(int classId)
+        {
+            if (classId <= 0)
+            {
+                TempData["Error"] = "ID lớp học không hợp lệ.";
+                return RedirectToAction("Index");
+            }
+
+            return View("CalendarSchedule", classId);
+        }
+
+        [HttpGet("danh-sach-mentor")]
+        public async Task<IActionResult> DanhSachMentor()
+        {
+            try
+            {
+                // Check authentication
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
+                {
+                    return Unauthorized("Phiên đăng nhập đã hết hạn.");
+                }
+
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/user/by-role?role=Mentor"));
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode, errorContent);
+                }
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var mentors = JsonSerializer.Deserialize<List<UserDetailResponse>>(responseContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                return Ok(mentors);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting mentors list");
+                return StatusCode(500, "Đã xảy ra lỗi khi tải danh sách mentor.");
+            }
+        }
+
+        [HttpPost("them-mentor")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ThemMentor([FromBody] AddMentorRequest request)
+        {
+            try
+            {
+                if (request == null || request.ClassId <= 0 || string.IsNullOrEmpty(request.MentorId))
+                {
+                    return BadRequest("Dữ liệu không hợp lệ.");
+                }
+
+                // Check authentication
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
+                {
+                    return Unauthorized("Phiên đăng nhập đã hết hạn.");
+                }
+
+                var json = JsonSerializer.Serialize(new { mentorId = request.MentorId });
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PutAsync(
+                    Utilities.GetAbsoluteUrl($"api/class/{request.ClassId}/mentor"),
+                    content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return Ok("Thêm mentor thành công.");
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode, errorContent);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while adding mentor to class {ClassId}", request?.ClassId);
+                return StatusCode(500, "Đã xảy ra lỗi khi thêm mentor.");
+            }
+        }
+
+        [HttpPost("luu-lich-hoc")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LuuLichHoc([FromBody] SaveScheduleRequest request)
+        {
+            try
+            {
+                if (request == null || request.ClassId <= 0 || request.Schedules == null || !request.Schedules.Any())
+                {
+                    return BadRequest("Dữ liệu không hợp lệ.");
+                }
+
+                // Check authentication
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
+                {
+                    return Unauthorized("Phiên đăng nhập đã hết hạn.");
+                }
+
+                var json = JsonSerializer.Serialize(request.Schedules);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync(
+                    Utilities.GetAbsoluteUrl($"api/class/{request.ClassId}/schedule"),
+                    content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return Ok("Lưu lịch học thành công.");
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode, errorContent);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while saving schedule for class {ClassId}", request?.ClassId);
+                return StatusCode(500, "Đã xảy ra lỗi khi lưu lịch học.");
+            }
+        }
+
+        [HttpPost("thiet-lap")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ThietLap([FromBody] SetupClassRequest request)
+        {
+            try
+            {
+                if (request == null || request.ClassId <= 0 || string.IsNullOrEmpty(request.MentorId) ||
+                    request.WeeklySchedules == null || !request.WeeklySchedules.Any())
+                {
+                    return BadRequest("Dữ liệu không hợp lệ.");
+                }
+
+                // Check authentication
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
+                {
+                    return Unauthorized("Phiên đăng nhập đã hết hạn.");
+                }
+
+                var json = JsonSerializer.Serialize(request);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync(
+                    Utilities.GetAbsoluteUrl("api/class/create-weekly"),
+                    content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return Ok("Thiết lập lớp học thành công.");
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode, errorContent);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while setting up class {ClassId}", request?.ClassId);
+                return StatusCode(500, "Đã xảy ra lỗi khi thiết lập lớp học.");
+            }
+        }
+    }
+
+    public class AddMentorRequest
+    {
+        public int ClassId { get; set; }
+        public string MentorId { get; set; } = string.Empty;
+    }
+
+    public class SaveScheduleRequest
+    {
+        public int ClassId { get; set; }
+        public List<ScheduleItemRequest> Schedules { get; set; } = new();
+    }
+
+    public class ScheduleItemRequest
+    {
+        public string ClassDate { get; set; } = string.Empty;
+        public string StartTime { get; set; } = string.Empty;
+        public string EndTime { get; set; } = string.Empty;
+        public string? Room { get; set; }
+    }
+
+    public class SetupClassRequest
+    {
+        public int ClassId { get; set; }
+        public int CourseId { get; set; }
+        public string MentorId { get; set; } = string.Empty;
+        public string StartWeek { get; set; } = string.Empty;
+        public int NumberOfWeeks { get; set; }
+        public List<WeeklyScheduleItem> WeeklySchedules { get; set; } = new();
+    }
+
+    public class WeeklyScheduleItem
+    {
+        public string DayOfWeek { get; set; } = string.Empty;
+        public string StartTime { get; set; } = string.Empty;
+        public string EndTime { get; set; } = string.Empty;
+        public string? Location { get; set; }
+    }
+
+    public class UserDetailResponse
+    {
+        public string Id { get; set; } = string.Empty;
+        public string? EmployeeId { get; set; }
+        public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string? Department { get; set; }
+        public string? Position { get; set; }
     }
 }

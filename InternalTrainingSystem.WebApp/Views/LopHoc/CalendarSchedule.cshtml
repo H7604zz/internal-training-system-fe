@@ -1,5 +1,7 @@
+@model int
 @{
     ViewData["Title"] = "Chọn Lịch Học";
+    var classId = Model;
 }
 
 @section Styles {
@@ -203,5 +205,86 @@
 </div>
 
 @section Scripts {
+    @Html.AntiForgeryToken()
+    <script>
+        const classId = @classId;
+    </script>
     <script src="~/js/calendar-schedule.js"></script>
+    <script>
+        // Override confirmSchedule function to save to database
+        const originalConfirmBtn = document.getElementById('confirmScheduleBtn');
+        if (originalConfirmBtn) {
+            originalConfirmBtn.addEventListener('click', async function() {
+                // Get schedule data from calendar-schedule.js
+                const scheduleData = getScheduleData();
+                
+                if (!scheduleData || scheduleData.length === 0) {
+                    alert('Vui lòng tạo lịch học trước khi xác nhận!');
+                    return;
+                }
+
+                if (!confirm(`Bạn có chắc chắn muốn lưu ${scheduleData.length} buổi học?`)) {
+                    return;
+                }
+
+                const btn = this;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang lưu...';
+                btn.disabled = true;
+
+                try {
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                    const response = await fetch('/lop-hoc/luu-lich-hoc', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': token
+                        },
+                        body: JSON.stringify({
+                            classId: classId,
+                            schedules: scheduleData
+                        })
+                    });
+
+                    if (response.ok) {
+                        alert('Lưu lịch học thành công!');
+                        window.location.href = `/lop-hoc/chi-tiet/${classId}`;
+                    } else {
+                        const error = await response.text();
+                        alert('Lỗi: ' + error);
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }
+                } catch (error) {
+                    alert('Đã xảy ra lỗi: ' + error.message);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            });
+        }
+
+        // Helper function to get schedule data
+        function getScheduleData() {
+            const scheduleDays = document.querySelectorAll('.calendar-day.selected');
+            const schedules = [];
+
+            scheduleDays.forEach(day => {
+                const date = day.dataset.date;
+                const startTime = day.dataset.startTime || '08:00';
+                const endTime = day.dataset.endTime || '17:00';
+                const room = day.dataset.room || 'A101';
+
+                if (date) {
+                    schedules.push({
+                        classDate: date,
+                        startTime: startTime,
+                        endTime: endTime,
+                        room: room
+                    });
+                }
+            });
+
+            return schedules;
+        }
+    </script>
 }

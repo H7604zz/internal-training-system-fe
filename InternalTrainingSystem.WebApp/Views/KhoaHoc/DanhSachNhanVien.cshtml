@@ -42,28 +42,35 @@
                     <i class="fas fa-search me-2"></i>Tìm Kiếm & Lọc
                 </h5>
 
-                <!-- Finalize Button - Only visible for DirectManager -->
-                @if (ViewBag.UserRole?.ToString() == UserRoles.DirectManager)
+                @if (!course.IsOnline)
                 {
-                    
+                    var isTrainingDept = User.IsInRole(UserRoles.TrainingDepartment);
+                    var isDirectManager = User.IsInRole(UserRoles.DirectManager);
+                    var isFinalized = ViewBag.IsFinalized;
+
+                    <div id="finalizeButtonContainer">
+                        @if (isDirectManager && !isFinalized)
+                        {
+                            <button type="button" class="btn btn-success btn-finalize" onclick="finalizeEnrollments()">
+                                <i class="fas fa-check-circle me-1"></i>Chốt Danh Sách
+                            </button>
+                        }
+
+                        @if (isTrainingDept && isFinalized)
+                        {
+                            <button type="button" class="btn btn-primary" onclick="openCreateClassModal()" title="Tạo lớp học và gửi thông báo đến nhân viên">
+                                <i class="fas fa-plus-circle me-1"></i>Tạo Lớp Học
+                            </button>
+                        }
+
+                        @if (isTrainingDept || isDirectManager)
+                        {
+                            <button type="button" class="btn btn-outline-primary ms-2" onclick="openCourseClassesModal()" title="Xem các lớp thuộc khóa học này">
+                                <i class="fas fa-chalkboard-teacher me-1"></i>Xem Lớp Học
+                            </button>
+                        }
+                    </div>
                 }
-                <div id="finalizeButtonContainer">
-                    @if (ViewBag.IsFinalized != true)
-                    {
-                        <button type="button" class="btn btn-success btn-finalize" onclick="finalizeEnrollments()">
-                            <i class="fas fa-check-circle me-1"></i>Chốt Danh Sách
-                        </button>
-                    }
-                    else
-                    {
-                        <button type="button" class="btn btn-primary" onclick="openCreateClassModal()" title="Tạo lớp học và gửi thông báo đến nhân viên">
-                            <i class="fas fa-plus-circle me-1"></i>Tạo Lớp Học
-                        </button>
-                    }
-                    <button type="button" class="btn btn-outline-primary ms-2" onclick="openCourseClassesModal()" title="Xem các lớp thuộc khóa học này">
-                        <i class="fas fa-chalkboard-teacher me-1"></i>Xem Lớp Học
-                    </button>
-                </div>
             </div>
 
             <form method="get" class="search-form">
