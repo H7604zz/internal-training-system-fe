@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using System.Text;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InternalTrainingSystem.WebApp.Controllers
 {
@@ -367,6 +368,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpPost("thiet-lap")]
+        [Authorize(Roles = UserRoles.TrainingDepartment)]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ThietLap([FromBody] SetupClassRequest request)
         {

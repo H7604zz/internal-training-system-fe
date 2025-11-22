@@ -1,3 +1,4 @@
+@using InternalTrainingSystem.WebApp.Constants
 @model InternalTrainingSystem.WebApp.Models.DTOs.ClassDetailDto
 
 @{
@@ -25,17 +26,20 @@
                     <a href="@Url.Action("Index")" class="btn btn-secondary back-btn me-2">
                         <i class="fas fa-arrow-left me-2"></i>Quay Lại
                     </a>
-                    @if (string.IsNullOrEmpty(Model.MentorName))
+                    @if (User.IsInRole(UserRoles.TrainingDepartment))
                     {
-                        <button type="button" class="btn btn-primary" onclick="openSetupClassModal()">
-                            <i class="fas fa-cog me-2"></i>Thiết Lập Lớp Học
-                        </button>
-                    }
-                    else
-                    {
-                        <span class="badge bg-success fs-6">
-                            <i class="fas fa-check-circle me-1"></i>Đã thiết lập
-                        </span>
+                        @if (string.IsNullOrEmpty(Model.MentorName))
+                        {
+                            <button type="button" class="btn btn-primary" onclick="openSetupClassModal()">
+                                <i class="fas fa-cog me-2"></i>Thiết Lập Lớp Học
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success fs-6">
+                                <i class="fas fa-check-circle me-1"></i>Đã thiết lập
+                            </span>
+                        }
                     }
                 </div>
             </div>
