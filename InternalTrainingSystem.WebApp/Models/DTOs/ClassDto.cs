@@ -33,6 +33,8 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string EmployeeId { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
+        public int AbsentNumberDay {  get; set; }
+        public double ScoreFinal { get; set; }
     }
 
     public class ClassListDto
