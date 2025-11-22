@@ -139,7 +139,7 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
     public class StatisticsCourseDto
     {
         public int ClassCount { get; set; }
-        public int StudentCount { get; set; }
+        public int StaffCount { get; set; }
     }
 
     public class CourseHistoryDto
