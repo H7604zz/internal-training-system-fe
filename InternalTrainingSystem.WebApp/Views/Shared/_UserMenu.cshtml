@@ -70,8 +70,17 @@
                         <i class="fas fa-calendar-alt me-2"></i>Thời khóa biểu
                     </a>
                 </li>
-                <li><hr class="dropdown-divider"></li>
+                
             }
+            @if (User.IsInRole(UserRoles.Mentor))
+            {
+                <li>
+                    <a class="dropdown-item" asp-controller="NguoiDung" asp-action="ThoiKhoaBieu">
+                        <i class="fas fa-calendar-alt me-2"></i>Thời khóa biểu
+                    </a>
+                </li>
+            }
+            <li><hr class="dropdown-divider"></li>
             <li>
                 <a class="dropdown-item" href="#" onclick="logout()">
                     <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
