@@ -1,0 +1,147 @@
+@model List<InternalTrainingSystem.WebApp.Models.DTOs.UserCourseSummaryDto>
+@{
+    ViewData["Title"] = "Báo Cáo Tình Hình Học Tập";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/report.css" asp-append-version="true" />
+}
+
+<div class="report-container">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1><i class="fas fa-chart-line me-2"></i>Báo Cáo Tình Hình Học Tập</h1>
+            <p>Xem chi tiết điểm danh, điểm số và trạng thái học tập của bạn</p>
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var course in Model)
+            {
+                var statusClass = course.Status switch
+                {
+                    "Completed" => "status-completed",
+                    "Failed" => "status-failed",
+                    _ => "status-inprogress"
+                };
+
+                var statusText = course.Status switch
+                {
+                    "Completed" => "Hoàn thành",
+                    "Failed" => "Chưa hoàn thành",
+                    _ => "Đang học"
+                };
+
+                var attendanceColor = course.AttendanceRate >= 80 ? "#388e3c" :
+                                     course.AttendanceRate >= 60 ? "#f57c00" : "#d32f2f";
+
+                var attendanceClass = course.AttendanceRate >= 80 ? "good" :
+                                     course.AttendanceRate >= 60 ? "warning" : "bad";
+
+                <div class="course-card">
+                    <div class="course-header">
+                        <div class="course-title">
+                            <div class="course-name">
+                                <i class="fas fa-book me-2"></i>@course.CourseName
+                            </div>
+                            <div class="course-code">
+                                <i class="fas fa-code me-1"></i>@course.CourseCode
+                            </div>
+                            <div class="class-name">
+                                <i class="fas fa-users me-1"></i>Lớp: @course.ClassName
+                            </div>
+                        </div>
+                        <div>
+                            <span class="status-badge @statusClass">@statusText</span>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <!-- Điểm danh -->
+                        <div class="stat-item">
+                            <div class="stat-label">
+                                <i class="fas fa-calendar-check me-1"></i>Tổng số buổi
+                            </div>
+                            <div class="stat-value">@course.TotalSessions</div>
+                        </div>
+
+                        <div class="stat-item">
+                            <div class="stat-label">
+                                <i class="fas fa-calendar-times me-1"></i>Số buổi vắng
+                            </div>
+                            <div class="stat-value @(course.AbsentDays > 0 ? "bad" : "good")">
+                                @course.AbsentDays
+                            </div>
+                        </div>
+
+                        <div class="stat-item">
+                            <div class="stat-label">
+                                <i class="fas fa-percent me-1"></i>Tỷ lệ điểm danh
+                            </div>
+                            <div class="stat-value @attendanceClass">
+                                @course.AttendanceRate.ToString("F1")%
+                            </div>
+                            <div class="attendance-bar">
+                                <div class="attendance-fill" style="width: @(course.AttendanceRate)%; background-color: @attendanceColor;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Điểm số -->
+                        <div class="stat-item">
+                            <div class="stat-label">
+                                <i class="fas fa-trophy me-1"></i>Điểm tổng kết
+                            </div>
+                            @if (course.Score.HasValue)
+                            {
+                                var scoreClass = course.Score.Value >= 80 ? "good" :
+                                               course.Score.Value >= 50 ? "warning" : "bad";
+                                <div class="stat-value @scoreClass">
+                                    @course.Score.Value.ToString("F1")
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="stat-value text-muted">
+                                    Chưa có
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fas fa-chart-line"></i>
+                <h3>Chưa có dữ liệu báo cáo</h3>
+                <p>Bạn chưa có thông tin học tập nào để hiển thị.</p>
+                <a asp-controller="KhoaHoc" asp-action="DanhSachKhoaHocCuaToi" class="btn-back">
+                    <i class="fas fa-arrow-left me-2"></i>Về khóa học của tôi
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Animation on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.course-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    card.style.transition = 'opacity 0.5s, transform 0.5s';
+                    
+                    requestAnimationFrame(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    });
+                }, index * 100);
+            });
+        });
+    </script>
+}

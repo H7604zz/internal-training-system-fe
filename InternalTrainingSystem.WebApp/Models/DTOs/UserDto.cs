@@ -154,4 +154,24 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         // RoleName mặc định là Staff, khớp với backend
         public string RoleName { get; set; } = "Staff";
     }
+
+    /// <summary>
+    /// DTO cho báo cáo tình hình khóa học của nhân viên
+    /// </summary>
+    public class UserCourseSummaryDto
+    {
+        public int ClassId { get; set; }
+        public string ClassName { get; set; } = string.Empty;
+        public string CourseCode { get; set; } = string.Empty;
+        public string CourseName { get; set; } = string.Empty;
+
+        // Thông tin điểm danh
+        public int TotalSessions { get; set; }
+        public int AbsentDays { get; set; }
+        public double AttendanceRate { get; set; }
+
+        // Thông tin khóa học
+        public string Status { get; set; } = "InProgress";
+        public double? Score { get; set; }
+    }
 }

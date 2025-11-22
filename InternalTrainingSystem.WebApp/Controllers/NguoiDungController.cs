@@ -551,5 +551,79 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 return new List<AttendanceResponse>();
             }
         }
+
+        /// <summary>
+        /// Xem báo cáo tình hình học tập
+        /// </summary>
+        [HttpGet("bao-cao-tinh-hinh")]
+        [Authorize(Roles = UserRoles.Staff)]
+        public async Task<IActionResult> BaoCaoTinhHinh()
+        {
+            try
+            {
+                // Kiểm tra đăng nhập
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
+                {
+                    return RedirectToAction("DangNhap", "XacThuc");
+                }
+
+                // Lấy báo cáo từ API
+                var courseSummaries = await GetCourseSummaryAsync();
+                
+                if (courseSummaries == null)
+                {
+                    TempData["Error"] = "Không thể lấy báo cáo tình hình học tập.";
+                    return View(new List<UserCourseSummaryDto>());
+                }
+
+                return View(courseSummaries);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Đã xảy ra lỗi: {ex.Message}";
+                return View(new List<UserCourseSummaryDto>());
+            }
+        }
+
+        /// <summary>
+        /// Helper method để lấy báo cáo tình hình học tập
+        /// </summary>
+        private async Task<List<UserCourseSummaryDto>?> GetCourseSummaryAsync()
+        {
+            try
+            {
+                var token = TokenHelpers.GetAccessToken(_httpContextAccessor);
+                if (string.IsNullOrEmpty(token))
+                {
+                    return null;
+                }
+
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/user/course-summary"));
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var summaries = JsonSerializer.Deserialize<List<UserCourseSummaryDto>>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    return summaries ?? new List<UserCourseSummaryDto>();
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    TokenHelpers.ClearTokens(_httpContextAccessor);
+                    return null;
+                }
+                else
+                {
+                    return new List<UserCourseSummaryDto>();
+                }
+            }
+            catch (Exception)
+            {
+                return new List<UserCourseSummaryDto>();
+            }
+        }
     }
 }
