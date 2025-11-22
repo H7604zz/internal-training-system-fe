@@ -71,6 +71,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpGet("chi-tiet/{id}")]
+        [Authorize(Roles = UserRoles.TrainingDepartment +"," +UserRoles.DirectManager )]
         public async Task<IActionResult> ChiTiet(int id)
         {
             try
@@ -446,7 +447,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         public string DayOfWeek { get; set; } = string.Empty;
         public string StartTime { get; set; } = string.Empty;
         public string EndTime { get; set; } = string.Empty;
-        public string? Location { get; set; }
+        public string Location { get; set; } = string.Empty;
     }
 
     public class UserDetailResponse

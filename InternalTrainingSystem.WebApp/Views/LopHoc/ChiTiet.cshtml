@@ -478,7 +478,7 @@
                             <input type="time" class="form-control schedule-end" value="${endTime}" required onchange="validateForm()">
                         </div>
                         <div class="col-md-2">
-                            <input type="text" class="form-control schedule-location" value="${location}" placeholder="Phòng học">
+                            <input type="text" class="form-control schedule-location" value="${location}" required placeholder="Phòng học" onchange="validateForm()">
                         </div>
                         <div class="col-md-1">
                             <button type="button" class="btn btn-sm btn-danger" onclick="removeScheduleDay(${scheduleCounter})">
@@ -519,7 +519,7 @@
             const startWeek = document.getElementById('startWeek')?.value;
             const numberOfWeeks = document.getElementById('numberOfWeeks')?.value;
             const scheduleDays = document.querySelectorAll('.schedule-day');
-            
+
             let isValid = mentorId && startWeek && numberOfWeeks && scheduleDays.length > 0;
             
             // Check all schedule days are filled
@@ -528,7 +528,8 @@
                     const row = day.closest('.row');
                     const startTime = row.querySelector('.schedule-start').value;
                     const endTime = row.querySelector('.schedule-end').value;
-                    if (!day.value || !startTime || !endTime) {
+                    const location = row.querySelector('.schedule-location').value;
+                    if (!day.value || !startTime || !endTime || !location.trim()) {
                         isValid = false;
                     }
                 });
@@ -561,7 +562,7 @@
                         dayOfWeek: dayOfWeek,
                         startTime: startTime + ':00',
                         endTime: endTime + ':00',
-                        location: location || null
+                        location: location && location.trim() ? location.trim() : null
                     });
                 }
             });
