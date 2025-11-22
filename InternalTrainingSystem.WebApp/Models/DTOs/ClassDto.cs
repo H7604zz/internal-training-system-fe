@@ -104,5 +104,6 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public TimeSpan EndTime { get; set; }
         public string? Location { get; set; }
         public string? OnlineLink { get; set; }
+        public string? AttendanceStatus { get; set; }
     }
 }

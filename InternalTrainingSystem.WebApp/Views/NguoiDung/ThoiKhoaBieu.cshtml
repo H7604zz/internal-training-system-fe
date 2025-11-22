@@ -1,0 +1,146 @@
+@model List<InternalTrainingSystem.WebApp.Models.DTOs.ScheduleItemResponseDto>
+@{
+    ViewData["Title"] = "Thời Khóa Biểu";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/schedule.css" asp-append-version="true" />
+}
+
+<div class="schedule-container">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1><i class="fas fa-calendar-alt me-2"></i>Thời Khóa Biểu</h1>
+            <p>Xem lịch học và trạng thái điểm danh của bạn</p>
+        </div>
+
+        <div class="schedule-wrapper">
+            @if (Model != null && Model.Any())
+            {
+                var minDate = Model.Min(s => s.DayOfWeek.Date);
+                var maxDate = Model.Max(s => s.DayOfWeek.Date);
+                
+                // Tìm tuần đầu tiên (thứ 2)
+                var startOfWeek = minDate;
+                while (startOfWeek.DayOfWeek != DayOfWeek.Monday)
+                {
+                    startOfWeek = startOfWeek.AddDays(-1);
+                }
+                
+                var weeks = new List<DateTime>();
+                var currentWeekStart = startOfWeek;
+                while (currentWeekStart <= maxDate)
+                {
+                    weeks.Add(currentWeekStart);
+                    currentWeekStart = currentWeekStart.AddDays(7);
+                }
+
+                <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                    <table class="table table-bordered mb-0" style="font-size: 0.9rem;">
+                        <thead class="table-light" style="position: sticky; top: 0; z-index: 10;">
+                            <tr>
+                                <th style="width: 100px;">Tuần</th>
+                                <th>Thứ 2</th>
+                                <th>Thứ 3</th>
+                                <th>Thứ 4</th>
+                                <th>Thứ 5</th>
+                                <th>Thứ 6</th>
+                                <th>Thứ 7</th>
+                                <th>Chủ Nhật</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int weekIndex = 0; weekIndex < weeks.Count; weekIndex++)
+                            {
+                                var weekStart = weeks[weekIndex];
+                                var weekEnd = weekStart.AddDays(6);
+                                <tr class="schedule-week-row">
+                                    <td class="text-center fw-bold align-middle">
+                                        @weekStart.ToString("dd/MM", System.Globalization.CultureInfo.InvariantCulture)
+                                        - @weekEnd.ToString("dd/MM", System.Globalization.CultureInfo.InvariantCulture)
+                                    </td>
+                                    @for (int dayOffset = 0; dayOffset < 7; dayOffset++)
+                                    {
+                                        var currentDate = weekStart.AddDays(dayOffset);
+                                        var daySchedules = Model.Where(s => s.DayOfWeek.Date == currentDate).OrderBy(s => s.StartTime).ToList();
+                                        
+                                        <td class="align-top" style="min-width: 120px;">
+                                            <div class="text-center text-muted small mb-1">
+                                                @currentDate.ToString("dd/MM", System.Globalization.CultureInfo.InvariantCulture)
+                                            </div>
+                                            @if (daySchedules.Any())
+                                            {
+                                                @foreach (var schedule in daySchedules)
+                                                {
+                                                    <div class="mb-2 p-2 rounded" style="background-color: #e3f2fd; border-left: 3px solid #2196F3;">
+                                                        <div class="fw-bold" style="color: #1976D2; font-size: 0.85rem;">
+                                                            @schedule.StartTime.ToString(@"hh\:mm") - @schedule.EndTime.ToString(@"hh\:mm")
+                                                        </div>
+                                                        @if (!string.IsNullOrEmpty(schedule.Location))
+                                                        {
+                                                            <div class="text-muted small">
+                                                                <i class="fas fa-map-marker-alt me-1"></i>@schedule.Location
+                                                            </div>
+                                                        }
+                                                        <div class="small mt-1" style="color: #424242;">
+                                                            <i class="fas fa-book me-1"></i>@schedule.CourseCode
+                                                        </div>
+                                                        @if (!string.IsNullOrEmpty(schedule.OnlineLink))
+                                                        {
+                                                            <div class="small mt-1">
+                                                                <a href="@schedule.OnlineLink" target="_blank" class="text-decoration-none">
+                                                                    <i class="fas fa-video me-1"></i>Link học online
+                                                                </a>
+                                                            </div>
+                                                        }
+                                                        @if (!string.IsNullOrEmpty(schedule.AttendanceStatus))
+                                                        {
+                                                            var badgeClass = schedule.AttendanceStatus switch
+                                                            {
+                                                                "Present" => "badge bg-success",
+                                                                "Absent" => "badge bg-danger",
+                                                                "Late" => "badge bg-warning text-dark",
+                                                                _ => "badge bg-secondary"
+                                                            };
+                                                            var statusText = schedule.AttendanceStatus switch
+                                                            {
+                                                                "Present" => "Có mặt",
+                                                                "Absent" => "Vắng",
+                                                                "Late" => "Muộn",
+                                                                _ => "Chưa điểm danh"
+                                                            };
+                                                            <div class="mt-2 text-center">
+                                                                <span class="@badgeClass" style="font-size: 0.7rem;">@statusText</span>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <div class="text-center text-muted small">-</div>
+                                            }
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="fas fa-calendar-times"></i>
+                    <h3>Chưa có lịch học</h3>
+                    <p>Bạn chưa được xếp vào lớp học nào.</p>
+                    <a asp-controller="KhoaHoc" asp-action="DanhSachKhoaHocCuaToi" class="btn-back">
+                        <i class="fas fa-arrow-left"></i>
+                        Về khóa học của tôi
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

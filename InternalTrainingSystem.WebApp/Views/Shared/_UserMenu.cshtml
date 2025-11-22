@@ -1,3 +1,5 @@
+@using InternalTrainingSystem.WebApp.Constants
+
 @{
     var userFullName = Context.Session.GetString("UserFullName");
     var userEmail = Context.Session.GetString("UserEmail");
@@ -42,7 +44,7 @@
             </li>
         </ul>
     </li>
-    
+
     <!-- User Menu -->
     <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -56,12 +58,20 @@
                     <i class="fas fa-user me-2"></i>Thông tin cá nhân
                 </a>
             </li>
-            <li>
-                <a class="dropdown-item" asp-controller="KhoaHoc" asp-action="DanhSachKhoaHocCuaToi">
-                    <i class="fas fa-graduation-cap me-2"></i>Khóa học của tôi
-                </a>
-            </li>
-            <li><hr class="dropdown-divider"></li>
+            @if (User.IsInRole(UserRoles.Staff))
+            {
+                <li>
+                    <a class="dropdown-item" asp-controller="KhoaHoc" asp-action="DanhSachKhoaHocCuaToi">
+                        <i class="fas fa-graduation-cap me-2"></i>Khóa học của tôi
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" asp-controller="NguoiDung" asp-action="ThoiKhoaBieu">
+                        <i class="fas fa-calendar-alt me-2"></i>Thời khóa biểu
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+            }
             <li>
                 <a class="dropdown-item" href="#" onclick="logout()">
                     <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất

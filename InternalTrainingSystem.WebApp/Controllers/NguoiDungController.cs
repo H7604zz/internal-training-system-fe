@@ -352,5 +352,79 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 throw new Exception(message);
             }
         }
+
+        /// <summary>
+        /// Xem thời khóa biểu
+        /// </summary>
+        [HttpGet("thoi-khoa-bieu")]
+        [Authorize(Roles = UserRoles.Staff)]
+        public async Task<IActionResult> ThoiKhoaBieu()
+        {
+            try
+            {
+                // Kiểm tra đăng nhập
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
+                {
+                    return RedirectToAction("DangNhap", "XacThuc");
+                }
+
+                // Lấy danh sách lịch học từ API
+                var schedules = await GetSchedulesAsync();
+                
+                if (schedules == null)
+                {
+                    TempData["Error"] = "Không thể lấy thời khóa biểu.";
+                    return View(new List<ScheduleItemResponseDto>());
+                }
+
+                return View(schedules);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Đã xảy ra lỗi: {ex.Message}";
+                return View(new List<ScheduleItemResponseDto>());
+            }
+        }
+
+        /// <summary>
+        /// Helper method để lấy danh sách lịch học
+        /// </summary>
+        private async Task<List<ScheduleItemResponseDto>?> GetSchedulesAsync()
+        {
+            try
+            {
+                var token = TokenHelpers.GetAccessToken(_httpContextAccessor);
+                if (string.IsNullOrEmpty(token))
+                {
+                    return null;
+                }
+
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/user/schedule"));
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var schedules = JsonSerializer.Deserialize<List<ScheduleItemResponseDto>>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    return schedules ?? new List<ScheduleItemResponseDto>();
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    TokenHelpers.ClearTokens(_httpContextAccessor);
+                    return null;
+                }
+                else
+                {
+                    return new List<ScheduleItemResponseDto>();
+                }
+            }
+            catch (Exception)
+            {
+                return new List<ScheduleItemResponseDto>();
+            }
+        }
     }
 }
