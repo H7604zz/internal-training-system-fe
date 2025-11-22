@@ -52,7 +52,7 @@
                 <form asp-controller="NguoiDung" asp-action="LuuDiemDanh" asp-route-scheduleId="@scheduleId" method="post" id="attendanceForm">
                     @Html.AntiForgeryToken()
                     
-                    <div class="table-responsive">
+                    <div class="">
                         <table class="table table-hover attendance-table-page">
                             <thead>
                                 <tr>
@@ -123,12 +123,6 @@
 
                     <!-- Action Buttons -->
                     <div class="attendance-actions">
-                        <button type="button" class="btn btn-outline-secondary" onclick="markAll('@AttendanceConstants.Status.Present')">
-                            <i class="fas fa-check-double me-2"></i>Đánh dấu tất cả có mặt
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary" onclick="markAll('@AttendanceConstants.Status.Absent')">
-                            <i class="fas fa-times me-2"></i>Đánh dấu tất cả vắng
-                        </button>
                         <button type="submit" class="btn btn-primary btn-lg">
                             <i class="fas fa-save me-2"></i>Lưu điểm danh
                         </button>
@@ -174,20 +168,6 @@
             document.getElementById('presentCount').textContent = presentCount;
             document.getElementById('absentCount').textContent = absentCount;
             document.getElementById('notyetCount').textContent = notyetCount;
-        }
-
-        // Mark all students with same status
-        function markAll(status) {
-            const form = document.getElementById('attendanceForm');
-            const radios = form.querySelectorAll('input[type="radio"]');
-            
-            radios.forEach(radio => {
-                if (radio.value === status) {
-                    radio.checked = true;
-                }
-            });
-
-            updateSummary();
         }
 
         // Confirm before submit

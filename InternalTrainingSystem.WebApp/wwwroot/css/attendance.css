@@ -329,7 +329,7 @@
 
 .attendance-actions {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     padding-top: 20px;
     border-top: 2px solid #dee2e6;
