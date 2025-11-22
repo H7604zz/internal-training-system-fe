@@ -596,12 +596,11 @@
                     }
                     
                     console.error('Error response:', errorMessage);
-                    alert('Lỗi (' + response.status + '): ' + errorMessage);
+                    alert(errorMessage);
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                 }
             } catch (error) {
-                console.error('Exception:', error);
                 alert('Đã xảy ra lỗi: ' + error.message);
                 btn.innerHTML = originalText;
                 btn.disabled = false;
