@@ -35,8 +35,21 @@
                     weeks.Add(currentWeekStart);
                     currentWeekStart = currentWeekStart.AddDays(7);
                 }
+                
+                // Tìm tuần hiện tại
+                var today = DateTime.Now.Date;
+                var currentWeekStartDate = today;
+                while (currentWeekStartDate.DayOfWeek != DayOfWeek.Monday)
+                {
+                    currentWeekStartDate = currentWeekStartDate.AddDays(-1);
+                }
+                var currentWeekIndex = weeks.FindIndex(w => w == currentWeekStartDate);
+                if (currentWeekIndex == -1)
+                {
+                    currentWeekIndex = weeks.FindIndex(w => w <= today && w.AddDays(6) >= today);
+                }
 
-                <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                <div class="table-responsive" id="scheduleTableContainer" style="max-height: 600px; overflow-y: auto;">
                     <table class="table table-bordered mb-0" style="font-size: 0.9rem;">
                         <thead class="table-light" style="position: sticky; top: 0; z-index: 10;">
                             <tr>
@@ -55,8 +68,9 @@
                             {
                                 var weekStart = weeks[weekIndex];
                                 var weekEnd = weekStart.AddDays(6);
-                                <tr class="schedule-week-row">
-                                    <td class="text-center fw-bold align-middle">
+                                var isCurrentWeek = weekIndex == currentWeekIndex;
+                                <tr class="schedule-week-row" id="@(isCurrentWeek ? "currentWeek" : "")">
+                                    <td class="text-center fw-bold align-middle" style="@(isCurrentWeek ? "background-color: #fff3cd;" : "")">
                                         @weekStart.ToString("dd/MM", System.Globalization.CultureInfo.InvariantCulture)
                                         - @weekEnd.ToString("dd/MM", System.Globalization.CultureInfo.InvariantCulture)
                                     </td>
@@ -144,3 +158,23 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var currentWeek = document.getElementById('currentWeek');
+            if (currentWeek) {
+                var container = document.getElementById('scheduleTableContainer');
+                if (container) {
+                    var containerRect = container.getBoundingClientRect();
+                    var currentWeekRect = currentWeek.getBoundingClientRect();
+                    var scrollTop = currentWeekRect.top - containerRect.top + container.scrollTop - 100;
+                    container.scrollTo({
+                        top: scrollTop,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        });
+    </script>
+}
