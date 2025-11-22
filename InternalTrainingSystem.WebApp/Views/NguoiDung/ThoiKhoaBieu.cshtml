@@ -6,6 +6,7 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/schedule.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/attendance.css" asp-append-version="true" />
 }
 
 <div class="schedule-container">
@@ -130,7 +131,12 @@
                                                         }
                                                         @if (User.IsInRole(UserRoles.Mentor))
                                                         {
-                                                            
+                                                            <div class="mt-2">
+                                                                <a asp-controller="NguoiDung" asp-action="DiemDanh" asp-route-scheduleId="@schedule.ScheduleId" 
+                                                                   class="btn btn-sm btn-primary w-100">
+                                                                    <i class="fas fa-clipboard-check me-1"></i>Điểm danh
+                                                                </a>
+                                                            </div>
                                                         }
                                                     </div>
                                                 }
@@ -165,6 +171,7 @@
 
 @section Scripts {
     <script>
+        // Auto scroll to current week
         document.addEventListener('DOMContentLoaded', function() {
             var currentWeek = document.getElementById('currentWeek');
             if (currentWeek) {
@@ -182,3 +189,4 @@
         });
     </script>
 }
+

@@ -1,0 +1,206 @@
+@using InternalTrainingSystem.WebApp.Constants
+@model List<InternalTrainingSystem.WebApp.Models.DTOs.AttendanceResponse>
+@{
+    ViewData["Title"] = "Điểm Danh";
+    var scheduleId = ViewBag.ScheduleId;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/attendance.css" asp-append-version="true" />
+}
+
+<div class="attendance-page-container">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header-attendance">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h1><i class="fas fa-clipboard-check me-2"></i>Điểm Danh Học Viên</h1>
+                    <p class="mb-0">Đánh dấu trạng thái có mặt/vắng cho từng học viên</p>
+                </div>
+                <a asp-controller="NguoiDung" asp-action="ThoiKhoaBieu" class="btn btn-outline-light">
+                    <i class="fas fa-arrow-left me-2"></i>Quay lại thời khóa biểu
+                </a>
+            </div>
+        </div>
+
+        <!-- Attendance Card -->
+        <div class="attendance-card">
+            @if (Model != null && Model.Any())
+            {
+                <!-- Summary Statistics -->
+                <div class="attendance-summary-page mb-4">
+                    <div class="summary-item-page present">
+                        <div class="number" id="presentCount">@Model.Count(a => a.Status == AttendanceConstants.Status.Present)</div>
+                        <div class="label">Có mặt</div>
+                    </div>
+                    <div class="summary-item-page absent">
+                        <div class="number" id="absentCount">@Model.Count(a => a.Status == AttendanceConstants.Status.Absent)</div>
+                        <div class="label">Vắng</div>
+                    </div>
+                    <div class="summary-item-page notyet">
+                        <div class="number" id="notyetCount">@Model.Count(a => a.Status != AttendanceConstants.Status.Present && a.Status != AttendanceConstants.Status.Absent)</div>
+                        <div class="label">Chưa điểm danh</div>
+                    </div>
+                    <div class="summary-item-page total">
+                        <div class="number">@Model.Count</div>
+                        <div class="label">Tổng số</div>
+                    </div>
+                </div>
+
+                <!-- Attendance Form -->
+                <form asp-controller="NguoiDung" asp-action="LuuDiemDanh" asp-route-scheduleId="@scheduleId" method="post" id="attendanceForm">
+                    @Html.AntiForgeryToken()
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover attendance-table-page">
+                            <thead>
+                                <tr>
+                                    <th style="width: 5%;">STT</th>
+                                    <th style="width: 30%;">Họ tên</th>
+                                    <th style="width: 35%;">Email</th>
+                                    <th style="width: 30%;">Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.Count; i++)
+                                {
+                                    var student = Model[i];
+                                    <tr>
+                                        <td class="text-center">@(i + 1)</td>
+                                        <td>
+                                            <strong>@student.FullName</strong>
+                                        </td>
+                                        <td>
+                                            @student.Email
+                                        </td>
+                                        <td>
+                                            <input type="hidden" name="attendanceList[@i].UserId" value="@student.UserId" />
+                                            
+                                            <div class="btn-group attendance-btn-group" role="group">
+                                                <input type="radio" 
+                                                       class="btn-check" 
+                                                       name="attendanceList[@i].Status" 
+                                                       id="present_@i" 
+                                                       value="@AttendanceConstants.Status.Present"
+                                                       autocomplete="off"
+                                                       @(student.Status == AttendanceConstants.Status.Present ? "checked" : "")
+                                                       onchange="updateSummary()">
+                                                <label class="btn btn-outline-success btn-sm" for="present_@i">
+                                                    Có mặt
+                                                </label>
+
+                                                <input type="radio" 
+                                                       class="btn-check" 
+                                                       name="attendanceList[@i].Status" 
+                                                       id="absent_@i" 
+                                                       value="@AttendanceConstants.Status.Absent"
+                                                       autocomplete="off"
+                                                       @(student.Status == AttendanceConstants.Status.Absent ? "checked" : "")
+                                                       onchange="updateSummary()">
+                                                <label class="btn btn-outline-danger btn-sm" for="absent_@i">
+                                                    Vắng
+                                                </label>
+
+                                                <input type="radio" 
+                                                       class="btn-check" 
+                                                       name="attendanceList[@i].Status" 
+                                                       id="notyet_@i" 
+                                                       value="NotYet"
+                                                       autocomplete="off"
+                                                       @(student.Status != AttendanceConstants.Status.Present && student.Status != AttendanceConstants.Status.Absent ? "checked" : "")
+                                                       onchange="updateSummary()">
+                                                <label class="btn btn-outline-secondary btn-sm" for="notyet_@i">
+                                                    Chưa
+                                                </label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="attendance-actions">
+                        <button type="button" class="btn btn-outline-secondary" onclick="markAll('@AttendanceConstants.Status.Present')">
+                            <i class="fas fa-check-double me-2"></i>Đánh dấu tất cả có mặt
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="markAll('@AttendanceConstants.Status.Absent')">
+                            <i class="fas fa-times me-2"></i>Đánh dấu tất cả vắng
+                        </button>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>Lưu điểm danh
+                        </button>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <div class="empty-state-attendance">
+                    <i class="fas fa-users-slash"></i>
+                    <h3>Không có học viên</h3>
+                    <p>Không tìm thấy danh sách học viên cho buổi học này.</p>
+                    <a asp-controller="NguoiDung" asp-action="ThoiKhoaBieu" class="btn btn-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Quay lại thời khóa biểu
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Update summary statistics dynamically
+        function updateSummary() {
+            const form = document.getElementById('attendanceForm');
+            const radios = form.querySelectorAll('input[type="radio"]:checked');
+            
+            let presentCount = 0;
+            let absentCount = 0;
+            let notyetCount = 0;
+
+            radios.forEach(radio => {
+                if (radio.value === '@AttendanceConstants.Status.Present') {
+                    presentCount++;
+                } else if (radio.value === '@AttendanceConstants.Status.Absent') {
+                    absentCount++;
+                } else {
+                    notyetCount++;
+                }
+            });
+
+            document.getElementById('presentCount').textContent = presentCount;
+            document.getElementById('absentCount').textContent = absentCount;
+            document.getElementById('notyetCount').textContent = notyetCount;
+        }
+
+        // Mark all students with same status
+        function markAll(status) {
+            const form = document.getElementById('attendanceForm');
+            const radios = form.querySelectorAll('input[type="radio"]');
+            
+            radios.forEach(radio => {
+                if (radio.value === status) {
+                    radio.checked = true;
+                }
+            });
+
+            updateSummary();
+        }
+
+        // Confirm before submit
+        document.getElementById('attendanceForm').addEventListener('submit', function(e) {
+            const presentCount = document.getElementById('presentCount').textContent;
+            const absentCount = document.getElementById('absentCount').textContent;
+            const notyetCount = document.getElementById('notyetCount').textContent;
+
+            if (parseInt(notyetCount) > 0) {
+                if (!confirm(`Còn ${notyetCount} học viên chưa được điểm danh. Bạn có chắc muốn lưu?`)) {
+                    e.preventDefault();
+                }
+            }
+        });
+    </script>
+}

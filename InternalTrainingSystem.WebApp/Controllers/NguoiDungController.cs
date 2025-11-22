@@ -357,7 +357,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         /// Xem thời khóa biểu
         /// </summary>
         [HttpGet("thoi-khoa-bieu")]
-        [Authorize(Roles = UserRoles.Staff)]
+        [Authorize(Roles = UserRoles.Staff + "," + UserRoles.Mentor)]
         public async Task<IActionResult> ThoiKhoaBieu()
         {
             try
@@ -424,6 +424,131 @@ namespace InternalTrainingSystem.WebApp.Controllers
             catch (Exception)
             {
                 return new List<ScheduleItemResponseDto>();
+            }
+        }
+
+        /// <summary>
+        /// Trang điểm danh cho một buổi học
+        /// </summary>
+        [HttpGet("diem-danh/{scheduleId}")]
+        [Authorize(Roles = UserRoles.Mentor)]
+        public async Task<IActionResult> DiemDanh(int scheduleId)
+        {
+            try
+            {
+                // Kiểm tra đăng nhập
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
+                {
+                    return RedirectToAction("DangNhap", "XacThuc");
+                }
+
+                // Lấy danh sách attendance từ API
+                var attendances = await GetAttendanceByScheduleAsync(scheduleId);
+                
+                if (attendances == null)
+                {
+                    TempData["Error"] = "Không thể lấy danh sách điểm danh.";
+                    return RedirectToAction("ThoiKhoaBieu");
+                }
+
+                ViewBag.ScheduleId = scheduleId;
+                return View(attendances);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Đã xảy ra lỗi: {ex.Message}";
+                return RedirectToAction("ThoiKhoaBieu");
+            }
+        }
+
+        /// <summary>
+        /// Lưu điểm danh
+        /// </summary>
+        [HttpPost("diem-danh/{scheduleId}")]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = UserRoles.Mentor)]
+        public async Task<IActionResult> LuuDiemDanh(int scheduleId, List<AttendanceRequest> attendanceList)
+        {
+            try
+            {
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
+                {
+                    return RedirectToAction("DangNhap", "XacThuc");
+                }
+
+                if (attendanceList == null || !attendanceList.Any())
+                {
+                    TempData["Error"] = "Danh sách điểm danh trống.";
+                    return RedirectToAction("DiemDanh", new { scheduleId });
+                }
+
+                var jsonContent = new StringContent(
+                    JsonSerializer.Serialize(attendanceList),
+                    Encoding.UTF8,
+                    "application/json");
+
+                var response = await _httpClient.PostAsync(
+                    Utilities.GetAbsoluteUrl($"api/Class/{scheduleId}/attendance"),
+                    jsonContent);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    TempData["Success"] = "Lưu điểm danh thành công!";
+                    return RedirectToAction("ThoiKhoaBieu");
+                }
+                else
+                {
+                    var errorMessage = await response.Content.ReadAsStringAsync();
+                    TempData["Error"] = errorMessage.Trim('"');
+                    return RedirectToAction("DiemDanh", new { scheduleId });
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Đã xảy ra lỗi: {ex.Message}";
+                return RedirectToAction("DiemDanh", new { scheduleId });
+            }
+        }
+
+        /// <summary>
+        /// Helper method để lấy danh sách attendance theo scheduleId
+        /// </summary>
+        private async Task<List<AttendanceResponse>?> GetAttendanceByScheduleAsync(int scheduleId)
+        {
+            try
+            {
+                var token = TokenHelpers.GetAccessToken(_httpContextAccessor);
+                if (string.IsNullOrEmpty(token))
+                {
+                    return null;
+                }
+
+                var response = await _httpClient.GetAsync(
+                    Utilities.GetAbsoluteUrl($"api/Class/schedules/{scheduleId}/attendance"));
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var attendances = JsonSerializer.Deserialize<List<AttendanceResponse>>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    return attendances ?? new List<AttendanceResponse>();
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    TokenHelpers.ClearTokens(_httpContextAccessor);
+                    return null;
+                }
+                else
+                {
+                    return new List<AttendanceResponse>();
+                }
+            }
+            catch (Exception)
+            {
+                return new List<AttendanceResponse>();
             }
         }
     }
