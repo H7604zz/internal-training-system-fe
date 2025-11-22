@@ -108,10 +108,15 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 if (scheduleResponse.IsSuccessStatusCode)
                 {
                     var scheduleContent = await scheduleResponse.Content.ReadAsStringAsync();
-                    schedules = JsonSerializer.Deserialize<List<ScheduleItemResponseDto>>(scheduleContent, new JsonSerializerOptions
+                    
+                    // Kiểm tra nội dung không rỗng và là JSON hợp lệ
+                    if (!string.IsNullOrWhiteSpace(scheduleContent) && scheduleContent.Trim().StartsWith("["))
                     {
-                        PropertyNameCaseInsensitive = true
-                    }) ?? new List<ScheduleItemResponseDto>();
+                        schedules = JsonSerializer.Deserialize<List<ScheduleItemResponseDto>>(scheduleContent, new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        }) ?? new List<ScheduleItemResponseDto>();
+                    }
                 }
 
                 ViewBag.Schedules = schedules;
