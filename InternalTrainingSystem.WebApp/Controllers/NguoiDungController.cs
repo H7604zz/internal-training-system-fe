@@ -120,7 +120,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
         // GET: nguoi-dung/thong-tin-ca-nhan
         [HttpGet("thong-tin-ca-nhan")]
-        [Authorize(Roles = UserRoles.Staff)]
+        [Authorize]
         public async Task<IActionResult> ThongTinCaNhan()
         {
             try
