@@ -1,3 +1,4 @@
+@using InternalTrainingSystem.WebApp.Constants
 @model List<InternalTrainingSystem.WebApp.Models.DTOs.ScheduleItemResponseDto>
 @{
     ViewData["Title"] = "Thời Khóa Biểu";
@@ -20,14 +21,14 @@
             {
                 var minDate = Model.Min(s => s.DayOfWeek.Date);
                 var maxDate = Model.Max(s => s.DayOfWeek.Date);
-                
+
                 // Tìm tuần đầu tiên (thứ 2)
                 var startOfWeek = minDate;
                 while (startOfWeek.DayOfWeek != DayOfWeek.Monday)
                 {
                     startOfWeek = startOfWeek.AddDays(-1);
                 }
-                
+
                 var weeks = new List<DateTime>();
                 var currentWeekStart = startOfWeek;
                 while (currentWeekStart <= maxDate)
@@ -35,7 +36,7 @@
                     weeks.Add(currentWeekStart);
                     currentWeekStart = currentWeekStart.AddDays(7);
                 }
-                
+
                 // Tìm tuần hiện tại
                 var today = DateTime.Now.Date;
                 var currentWeekStartDate = today;
@@ -78,7 +79,7 @@
                                     {
                                         var currentDate = weekStart.AddDays(dayOffset);
                                         var daySchedules = Model.Where(s => s.DayOfWeek.Date == currentDate).OrderBy(s => s.StartTime).ToList();
-                                        
+
                                         <td class="align-top" style="min-width: 120px;">
                                             <div class="text-center text-muted small mb-1">
                                                 @currentDate.ToString("dd/MM", System.Globalization.CultureInfo.InvariantCulture)
@@ -108,25 +109,28 @@
                                                                 </a>
                                                             </div>
                                                         }
-                                                        @if (!string.IsNullOrEmpty(schedule.AttendanceStatus))
+                                                        @if (User.IsInRole(UserRoles.Staff) &&
+                                                                !string.IsNullOrEmpty(schedule.AttendanceStatus))
                                                         {
                                                             var badgeClass = schedule.AttendanceStatus switch
                                                             {
-                                                                "Present" => "badge bg-success",
-                                                                "Absent" => "badge bg-danger",
-                                                                "Late" => "badge bg-warning text-dark",
+                                                                AttendanceConstants.Status.Present => "badge bg-success",
+                                                                AttendanceConstants.Status.Absent => "badge bg-danger",
                                                                 _ => "badge bg-secondary"
                                                             };
                                                             var statusText = schedule.AttendanceStatus switch
                                                             {
-                                                                "Present" => "Có mặt",
-                                                                "Absent" => "Vắng",
-                                                                "Late" => "Muộn",
+                                                                AttendanceConstants.Status.Present => "Có mặt",
+                                                                AttendanceConstants.Status.Absent => "Vắng",
                                                                 _ => "Chưa điểm danh"
                                                             };
                                                             <div class="mt-2 text-center">
                                                                 <span class="@badgeClass" style="font-size: 0.7rem;">@statusText</span>
                                                             </div>
+                                                        }
+                                                        @if (User.IsInRole(UserRoles.Mentor))
+                                                        {
+                                                            
                                                         }
                                                     </div>
                                                 }
