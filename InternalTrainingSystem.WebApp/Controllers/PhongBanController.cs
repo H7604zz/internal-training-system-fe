@@ -55,7 +55,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             try
             {
                 var pageSize = PaginationConstants.StaffPageSize;
-                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/department/{id}?page={page}&pageSize={pageSize}"));
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/department/detail?departmentId={id}&page={page}&pageSize={pageSize}"));
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -133,7 +133,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         {
             try
             {
-                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/department/{id}"));
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/department/detail?departmentId={id}"));
 
                 if (!response.IsSuccessStatusCode)
                 {
