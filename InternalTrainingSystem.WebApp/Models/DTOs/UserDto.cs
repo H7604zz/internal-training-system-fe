@@ -174,4 +174,17 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string Status { get; set; } = "InProgress";
         public double? Score { get; set; }
     }
+
+    /// <summary>
+    /// DTO cho thông tin chi tiết người dùng
+    /// </summary>
+    public class UserDetailResponse
+    {
+        public string Id { get; set; } = string.Empty;
+        public string? EmployeeId { get; set; }
+        public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string? Department { get; set; }
+        public string? Position { get; set; }
+    }
 }

@@ -108,4 +108,42 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string? OnlineLink { get; set; }
         public string? AttendanceStatus { get; set; }
     }
+
+    public class AddMentorRequest
+    {
+        public int ClassId { get; set; }
+        public string MentorId { get; set; } = string.Empty;
+    }
+
+    public class SaveScheduleRequest
+    {
+        public int ClassId { get; set; }
+        public List<ScheduleItemRequest> Schedules { get; set; } = new();
+    }
+
+    public class ScheduleItemRequest
+    {
+        public string ClassDate { get; set; } = string.Empty;
+        public string StartTime { get; set; } = string.Empty;
+        public string EndTime { get; set; } = string.Empty;
+        public string? Room { get; set; }
+    }
+
+    public class SetupClassRequest
+    {
+        public int ClassId { get; set; }
+        public int CourseId { get; set; }
+        public string MentorId { get; set; } = string.Empty;
+        public string StartWeek { get; set; } = string.Empty;
+        public int NumberOfWeeks { get; set; }
+        public List<WeeklyScheduleItem> WeeklySchedules { get; set; } = new();
+    }
+
+    public class WeeklyScheduleItem
+    {
+        public string DayOfWeek { get; set; } = string.Empty;
+        public string StartTime { get; set; } = string.Empty;
+        public string EndTime { get; set; } = string.Empty;
+        public string Location { get; set; } = string.Empty;
+    }
 }
