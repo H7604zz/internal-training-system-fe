@@ -410,5 +410,53 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 return StatusCode(500, "Đã xảy ra lỗi khi thiết lập lớp học.");
             }
         }
+
+        [HttpPut("doi-lich-hoc/{scheduleId}")]
+        [Authorize(Roles = UserRoles.Mentor)]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DoiLichHoc(int scheduleId, [FromBody] RescheduleRequest request)
+        {
+            try
+            {
+                if (scheduleId <= 0 || request == null)
+                {
+                    return BadRequest("Dữ liệu không hợp lệ.");
+                }
+
+                if (string.IsNullOrWhiteSpace(request.NewLocation))
+                {
+                    return BadRequest("Phòng học không được để trống.");
+                }
+
+                // Check authentication
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
+                {
+                    return Unauthorized("Phiên đăng nhập đã hết hạn.");
+                }
+
+                var json = JsonSerializer.Serialize(request);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PutAsync(
+                    Utilities.GetAbsoluteUrl($"api/class/reschedule/{scheduleId}"),
+                    content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return Ok("Đổi lịch học thành công.");
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    var cleanMessage = !string.IsNullOrEmpty(errorContent) ? errorContent.Trim('"') : "Không thể đổi lịch học.";
+                    return StatusCode((int)response.StatusCode, cleanMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while rescheduling schedule {ScheduleId}", scheduleId);
+                return StatusCode(500, "Đã xảy ra lỗi khi đổi lịch học.");
+            }
+        }
     }
 }

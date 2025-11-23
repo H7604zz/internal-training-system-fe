@@ -10,6 +10,7 @@
 }
 
 <div class="schedule-container">
+    @Html.AntiForgeryToken()
     <div class="container">
         <!-- Page Header -->
         <div class="page-header">
@@ -20,8 +21,8 @@
         <div class="schedule-wrapper">
             @if (Model != null && Model.Any())
             {
-                var minDate = Model.Min(s => s.DayOfWeek.Date);
-                var maxDate = Model.Max(s => s.DayOfWeek.Date);
+                var minDate = Model.Min(s => s.Day.Date);
+                var maxDate = Model.Max(s => s.Day.Date);
 
                 // Tìm tuần đầu tiên (thứ 2)
                 var startOfWeek = minDate;
@@ -79,7 +80,7 @@
                                     @for (int dayOffset = 0; dayOffset < 7; dayOffset++)
                                     {
                                         var currentDate = weekStart.AddDays(dayOffset);
-                                        var daySchedules = Model.Where(s => s.DayOfWeek.Date == currentDate).OrderBy(s => s.StartTime).ToList();
+                                        var daySchedules = Model.Where(s => s.Day.Date == currentDate).OrderBy(s => s.StartTime).ToList();
 
                                         <td class="align-top" style="min-width: 120px;">
                                             <div class="text-center text-muted small mb-1">
@@ -131,11 +132,24 @@
                                                         }
                                                         @if (User.IsInRole(UserRoles.Mentor))
                                                         {
+                                                            var scheduleDateTime = schedule.Day.Date + schedule.StartTime;
+                                                            var isPastSchedule = scheduleDateTime < DateTime.Now;
+                                                            var startTimeStr = schedule.StartTime.ToString(@"hh\:mm");
+                                                            var endTimeStr = schedule.EndTime.ToString(@"hh\:mm");
+                                                            
                                                             <div class="mt-2">
-                                                                <a asp-controller="NguoiDung" asp-action="DiemDanh" asp-route-scheduleId="@schedule.ScheduleId" 
-                                                                   class="btn btn-sm btn-primary w-100">
-                                                                    <i class="fas fa-clipboard-check me-1"></i>Điểm danh
-                                                                </a>
+                                                                @if (!isPastSchedule)
+                                                                {
+                                                                    <a asp-controller="NguoiDung" asp-action="DiemDanh" asp-route-scheduleId="@schedule.ScheduleId" 
+                                                                       class="btn btn-sm btn-primary w-100 mb-1">
+                                                                        <i class="fas fa-clipboard-check me-1"></i>Điểm danh
+                                                                    </a>
+                                                                <button type="button" class="btn btn-sm btn-warning w-100" 
+                                                                        onclick="openRescheduleModal(@schedule.ScheduleId, '@schedule.Day.ToString("yyyy-MM-dd")', '@startTimeStr', '@endTimeStr', '@schedule.Location')">
+                                                                        <i class="fas fa-calendar-alt me-1"></i>Đổi lịch học
+                                                                    </button>
+                                                                }
+                                                                
                                                             </div>
                                                         }
                                                     </div>
@@ -169,6 +183,43 @@
     </div>
 </div>
 
+<!-- Reschedule Modal -->
+<div class="modal fade" id="rescheduleModal" tabindex="-1" aria-labelledby="rescheduleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="rescheduleModalLabel">Đổi lịch học</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="rescheduleForm">
+                    <input type="hidden" id="scheduleId" />
+                    <div class="mb-3">
+                        <label for="newDate" class="form-label">Ngày học mới <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="newDate" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="newStartTime" class="form-label">Giờ bắt đầu <span class="text-danger">*</span></label>
+                        <input type="time" class="form-control" id="newStartTime" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="newEndTime" class="form-label">Giờ kết thúc <span class="text-danger">*</span></label>
+                        <input type="time" class="form-control" id="newEndTime" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="newLocation" class="form-label">Địa điểm <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="newLocation" required />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" onclick="submitReschedule()">Xác nhận đổi lịch</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         // Auto scroll to current week
@@ -187,6 +238,100 @@
                 }
             }
         });
+
+        // Open reschedule modal
+        function openRescheduleModal(scheduleId, currentDate, startTime, endTime, location) {
+            document.getElementById('scheduleId').value = scheduleId;
+            document.getElementById('newDate').value = currentDate;
+            document.getElementById('newStartTime').value = startTime;
+            document.getElementById('newEndTime').value = endTime;
+            document.getElementById('newLocation').value = location || '';
+            
+            var modal = new bootstrap.Modal(document.getElementById('rescheduleModal'));
+            modal.show();
+        }
+
+        // Submit reschedule
+        async function submitReschedule() {
+            const form = document.getElementById('rescheduleForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const scheduleId = document.getElementById('scheduleId').value;
+            const newDate = document.getElementById('newDate').value;
+            const newStartTime = document.getElementById('newStartTime').value;
+            const newEndTime = document.getElementById('newEndTime').value;
+            const newLocation = document.getElementById('newLocation').value.trim();
+
+            if (!newLocation) {
+                alert('Vui lòng điền đầy đủ thông tin.');
+                return;
+            }
+
+            // Convert HH:mm to TimeSpan format (HH:mm:ss.fffffff) for API
+            const formatTimeForApi = (time) => {
+                if (!time) return '';
+                // Convert HH:mm to HH:mm:ss.0000000
+                if (time.includes(':') && time.split(':').length === 2) {
+                    return `${time}:00.0000000`;
+                }
+                // If already has seconds, add milliseconds
+                if (time.split(':').length === 3 && !time.includes('.')) {
+                    return `${time}.0000000`;
+                }
+                return time;
+            };
+
+            const requestData = {
+                newDate: newDate,
+                newStartTime: formatTimeForApi(newStartTime),
+                newEndTime: formatTimeForApi(newEndTime),
+                newLocation: newLocation
+            };
+
+            try {
+                // Get anti-forgery token
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                if (!token) {
+                    // Create a temporary form to get the token
+                    const tempForm = document.createElement('form');
+                    tempForm.innerHTML = '@Html.AntiForgeryToken()';
+                    document.body.appendChild(tempForm);
+                    const newToken = tempForm.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                    document.body.removeChild(tempForm);
+                    
+                    if (!newToken) {
+                        alert('Không thể lấy token xác thực. Vui lòng tải lại trang.');
+                        return;
+                    }
+                }
+
+                const response = await fetch(`/lop-hoc/doi-lich-hoc/${scheduleId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token || document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                if (response.ok) {
+                    const result = await response.text();
+                    alert(result || 'Đổi lịch học thành công.');
+                    var modal = bootstrap.Modal.getInstance(document.getElementById('rescheduleModal'));
+                    modal.hide();
+                    location.reload();
+                } else {
+                    const errorText = await response.text();
+                    alert('Lỗi: ' + (errorText || `Mã lỗi: ${response.status}`));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi đổi lịch học: ' + error.message);
+            }
+        }
     </script>
 }
 

@@ -101,7 +101,7 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string Mentor { get; set; } = string.Empty;
         public string CourseCode { get; set; } = string.Empty;
         public string CourseName { get; set; } = string.Empty;
-        public DateTime DayOfWeek { get; set; }
+        public DateTime Day { get; set; }
         public TimeSpan StartTime { get; set; }
         public TimeSpan EndTime { get; set; }
         public string? Location { get; set; }
@@ -141,9 +141,17 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
 
     public class WeeklyScheduleItem
     {
-        public string DayOfWeek { get; set; } = string.Empty;
+        public string Day { get; set; } = string.Empty;
         public string StartTime { get; set; } = string.Empty;
         public string EndTime { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
+    }
+
+    public class RescheduleRequest
+    {
+        public string NewDate { get; set; } = string.Empty;
+        public string NewStartTime { get; set; } = string.Empty;
+        public string NewEndTime { get; set; } = string.Empty;
+        public string NewLocation { get; set; } = string.Empty;
     }
 }

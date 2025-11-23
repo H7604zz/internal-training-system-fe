@@ -120,8 +120,8 @@
     @if (ViewBag.Schedules != null && ((List<InternalTrainingSystem.WebApp.Models.DTOs.ScheduleItemResponseDto>)ViewBag.Schedules).Any())
     {
         var schedules = (List<InternalTrainingSystem.WebApp.Models.DTOs.ScheduleItemResponseDto>)ViewBag.Schedules;
-        var minDate = schedules.Min(s => s.DayOfWeek.Date);
-        var maxDate = schedules.Max(s => s.DayOfWeek.Date);
+        var minDate = schedules.Min(s => s.Day.Date);
+        var maxDate = schedules.Max(s => s.Day.Date);
         
         // Tìm tuần đầu tiên (thứ 2)
         var startOfWeek = minDate;
@@ -175,7 +175,7 @@
                                             @for (int dayOffset = 0; dayOffset < 7; dayOffset++)
                                             {
                                                 var currentDate = weekStart.AddDays(dayOffset);
-                                                var daySchedules = schedules.Where(s => s.DayOfWeek.Date == currentDate).OrderBy(s => s.StartTime).ToList();
+                                                var daySchedules = schedules.Where(s => s.Day.Date == currentDate).OrderBy(s => s.StartTime).ToList();
                                                 
                                                 <td class="align-top" style="min-width: 120px;">
                                                     <div class="text-center text-muted small mb-1">
