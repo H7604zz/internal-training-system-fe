@@ -71,7 +71,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpGet("chi-tiet/{id}")]
-        [Authorize(Roles = UserRoles.TrainingDepartment +"," +UserRoles.DirectManager )]
+        [Authorize(Roles = UserRoles.TrainingDepartment +"," +UserRoles.DirectManager + "," + UserRoles.Mentor)]
         public async Task<IActionResult> ChiTiet(int id)
         {
             try
@@ -410,53 +410,5 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 return StatusCode(500, "Đã xảy ra lỗi khi thiết lập lớp học.");
             }
         }
-    }
-
-    public class AddMentorRequest
-    {
-        public int ClassId { get; set; }
-        public string MentorId { get; set; } = string.Empty;
-    }
-
-    public class SaveScheduleRequest
-    {
-        public int ClassId { get; set; }
-        public List<ScheduleItemRequest> Schedules { get; set; } = new();
-    }
-
-    public class ScheduleItemRequest
-    {
-        public string ClassDate { get; set; } = string.Empty;
-        public string StartTime { get; set; } = string.Empty;
-        public string EndTime { get; set; } = string.Empty;
-        public string? Room { get; set; }
-    }
-
-    public class SetupClassRequest
-    {
-        public int ClassId { get; set; }
-        public int CourseId { get; set; }
-        public string MentorId { get; set; } = string.Empty;
-        public string StartWeek { get; set; } = string.Empty;
-        public int NumberOfWeeks { get; set; }
-        public List<WeeklyScheduleItem> WeeklySchedules { get; set; } = new();
-    }
-
-    public class WeeklyScheduleItem
-    {
-        public string DayOfWeek { get; set; } = string.Empty;
-        public string StartTime { get; set; } = string.Empty;
-        public string EndTime { get; set; } = string.Empty;
-        public string Location { get; set; } = string.Empty;
-    }
-
-    public class UserDetailResponse
-    {
-        public string Id { get; set; } = string.Empty;
-        public string? EmployeeId { get; set; }
-        public string FullName { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string? Department { get; set; }
-        public string? Position { get; set; }
     }
 }
