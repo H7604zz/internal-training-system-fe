@@ -58,6 +58,19 @@
                     <i class="fas fa-user me-2"></i>Thông tin cá nhân
                 </a>
             </li>
+            @if (User.IsInRole(UserRoles.Staff) || User.IsInRole(UserRoles.Mentor))
+            {
+                <li>
+                    <a class="dropdown-item" asp-controller="LopHoc" asp-action="CuaToi">
+                        <i class="fas fa-chalkboard-teacher me-2"></i>Lớp học của tôi
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" asp-controller="NguoiDung" asp-action="ThoiKhoaBieu">
+                        <i class="fas fa-calendar-alt me-2"></i>Thời khóa biểu
+                    </a>
+                </li>
+            }
             @if (User.IsInRole(UserRoles.Staff))
             {
                 <li>
@@ -66,22 +79,8 @@
                     </a>
                 </li>
                 <li>
-                    <a class="dropdown-item" asp-controller="NguoiDung" asp-action="ThoiKhoaBieu">
-                        <i class="fas fa-calendar-alt me-2"></i>Thời khóa biểu
-                    </a>
-                </li>
-                <li>
                     <a class="dropdown-item" asp-controller="NguoiDung" asp-action="BaoCaoTinhHinh">
                         <i class="fas fa-chart-line me-2"></i>Báo cáo tình hình
-                    </a>
-                </li>
-                
-            }
-            @if (User.IsInRole(UserRoles.Mentor))
-            {
-                <li>
-                    <a class="dropdown-item" asp-controller="NguoiDung" asp-action="ThoiKhoaBieu">
-                        <i class="fas fa-calendar-alt me-2"></i>Thời khóa biểu
                     </a>
                 </li>
             }

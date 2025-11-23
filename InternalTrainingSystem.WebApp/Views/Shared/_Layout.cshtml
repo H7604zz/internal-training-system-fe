@@ -26,62 +26,7 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-white" asp-area="" asp-controller="" asp-action="">
-                                <i class="fas fa-home me-1"></i>Trang Chủ
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-white" asp-area="" asp-controller="GioiThieu">
-                                <i class="fas fa-info-circle me-1"></i>Giới Thiệu
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-white" asp-area="" asp-controller="KhoaHoc" asp-action="Index">
-                                <i class="fas fa-graduation-cap me-1"></i>Khóa Học
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-white" asp-area="" asp-controller="LopHoc" asp-action="Index">
-                                <i class="fas fa-users me-1"></i>Lớp Học
-                            </a>
-                        </li>
-                        @if (User.IsInRole(InternalTrainingSystem.WebApp.Constants.UserRoles.HR))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-white" asp-area="" asp-controller="NguoiDung" asp-action="ThemMoi">
-                                    <i class="fas fa-user-plus me-1"></i>Thêm mới nhân viên
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-white" asp-area="" asp-controller="PhongBan" asp-action="Index">
-                                    <i class="fas fa-building me-1"></i>Phòng Ban
-                                </a>
-                            </li>
-                        }
-                        @if (User.IsInRole(InternalTrainingSystem.WebApp.Constants.UserRoles.Administrator))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-white" asp-area="" asp-controller="PhongBan" asp-action="Index">
-                                    <i class="fas fa-building me-1"></i>Phòng ban
-                                </a>
-                            </li>
-                        }
-                        @if (User.IsInRole(InternalTrainingSystem.WebApp.Constants.UserRoles.TrainingDepartment))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-white" asp-area="" asp-controller="PhongBan" asp-action="Index">
-                                    <i class="fas fa-building me-1"></i>Phòng ban
-                                </a>
-                            </li>
-                        }
-                        <li class="nav-item"> 
-                            <a class="nav-link text-white" asp-area="" asp-controller="LienHe">
-                                <i class="fas fa-envelope me-1"></i>Liên Hệ
-                            </a>
-                        </li>
-                    </ul>
+                    <partial name="_NavigationMenu" />
                     <ul class="navbar-nav">
                         <partial name="_UserMenu" />
                     </ul>
