@@ -4,6 +4,7 @@ using InternalTrainingSystem.WebApp.Helpers;
 using InternalTrainingSystem.WebApp.Constants;
 using System.Text.Json;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InternalTrainingSystem.WebApp.Controllers
 {
@@ -21,7 +22,8 @@ namespace InternalTrainingSystem.WebApp.Controllers
             _httpContextAccessor = httpContextAccessor;
         }
 
-        [HttpGet()]
+        [HttpGet]
+        [Authorize(Roles = UserRoles.Administrator + "," + UserRoles.TrainingDepartment)]
         public async Task<IActionResult> Index()
         {
             try
@@ -50,6 +52,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpGet("chi-tiet")]
+        [Authorize(Roles = UserRoles.Administrator + "," + UserRoles.TrainingDepartment)]
         public async Task<IActionResult> ChiTiet(int id, int page = 1)
         {
             try
@@ -88,6 +91,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
         // GET: PhongBan/TaoMoi
         [HttpGet("tao-moi")]
+        [Authorize(Roles = UserRoles.Administrator)]
         public IActionResult TaoMoi()
         {
             return View();
@@ -95,6 +99,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
         // POST: PhongBan/TaoMoi
         [HttpPost("tao-moi")]
+        [Authorize(Roles = UserRoles.Administrator)]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> TaoMoi(CreateDepartmentDto model)
         {
@@ -129,6 +134,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
         // GET: PhongBan/ChinhSua
         [HttpGet("chinh-sua")]
+        [Authorize(Roles = UserRoles.Administrator)]
         public async Task<IActionResult> ChinhSua(int id)
         {
             try
@@ -172,6 +178,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
         // POST: PhongBan/ChinhSua
         [HttpPost("chinh-sua")]
+        [Authorize(Roles = UserRoles.Administrator)]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChinhSua(int id, UpdateDepartmentDto model)
         {
@@ -216,6 +223,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
         // POST: PhongBan/Xoa/5
         [HttpPost("xoa/{id}")]
+        [Authorize(Roles = UserRoles.Administrator)]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Xoa(int id)
         {
@@ -264,6 +272,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
         // POST: PhongBan/ChuyenNhanVien
         [HttpPost("chuyen-nhan-vien")]
+        [Authorize(Roles = UserRoles.Administrator + "," + UserRoles.TrainingDepartment)]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChuyenNhanVien([FromBody] TransferEmployeeDto model)
         {
@@ -320,6 +329,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
         // GET: PhongBan/BaoCao
         [HttpGet("bao-cao")]
+        [Authorize(Roles = UserRoles.Administrator + "," + UserRoles.TrainingDepartment)]
         public IActionResult BaoCao()
         {
             return View();
@@ -327,6 +337,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
         // API: Lấy báo cáo tỉ lệ hoàn thành
         [HttpGet("ti-le-hoan-thanh")]
+        [Authorize(Roles = UserRoles.Administrator + "," + UserRoles.TrainingDepartment)]
         public async Task<IActionResult> GetCourseCompletionReport([FromQuery] DepartmentReportRequestDto request)
         {
             try
@@ -358,6 +369,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
         // API: Lấy top phòng ban học tập tích cực
         [HttpGet("top-phong-ban")]
+        [Authorize(Roles = UserRoles.Administrator + "," + UserRoles.TrainingDepartment)]
         public async Task<IActionResult> GetTopActiveDepartments([FromQuery] int top = 10, [FromQuery] DepartmentReportRequestDto? request = null)
         {
             try

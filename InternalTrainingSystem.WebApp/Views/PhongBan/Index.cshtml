@@ -1,3 +1,4 @@
+@using InternalTrainingSystem.WebApp.Constants
 @model List<InternalTrainingSystem.WebApp.Models.DTOs.DepartmnentViewDto>
 @{
     ViewData["Title"] = "Quản Lý Phòng Ban";
@@ -22,9 +23,12 @@
                     <a href="@Url.Action("BaoCao")" class="btn btn-success me-2">
                         <i class="fas fa-chart-line me-2"></i>Báo Cáo - Thống Kê
                     </a>
-                    <a href="@Url.Action("TaoMoi")" class="btn btn-primary">
-                        <i class="fas fa-plus me-2"></i>Thêm Phòng Ban
-                    </a>
+                    @if(User.IsInRole(UserRoles.Administrator))
+                    {
+                        <a href="@Url.Action("TaoMoi")" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Thêm Phòng Ban
+                        </a>
+                    }
                 </div>
             </div>
         </div>
@@ -64,7 +68,7 @@
                                                 <div class="department-info">
                                                     <h6 class="mb-0">
                                                         <a href="@Url.Action("ChiTiet", new { id = department.DepartmentId })" 
-                                                           class="text-decoration-none">
+                                                        class="text-decoration-none">
                                                             @department.DepartmentName
                                                         </a>
                                                     </h6>
@@ -73,23 +77,26 @@
                                             <td>
                                                 <span class="description-text">
                                                     @(string.IsNullOrEmpty(department.Description) ? "Chưa có mô tả" : 
-                                                      (department.Description.Length > 100 ? department.Description.Substring(0, 100) + "..." : department.Description))
+                                                          (department.Description.Length > 100 ? department.Description.Substring(0, 100) + "..." : department.Description))
                                                 </span>
                                             </td>
                                             <td class="text-center">
                                                 <div class="btn-group" role="group">
                                                     <a href="@Url.Action("ChiTiet", new { id = department.DepartmentId })" 
-                                                       class="btn btn-sm btn-outline-info" title="Xem chi tiết">
+                                                    class="btn btn-sm btn-outline-info" title="Xem chi tiết">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
-                                                    <a href="@Url.Action("ChinhSua", new { id = department.DepartmentId })" 
-                                                       class="btn btn-sm btn-outline-warning" title="Chỉnh sửa">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                            title="Xóa" onclick="confirmDelete(@department.DepartmentId, '@department.DepartmentName')">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
+                                                    @if (User.IsInRole(UserRoles.Administrator))
+                                                    {
+                                                        <a href="@Url.Action("ChinhSua", new { id = department.DepartmentId })"
+                                                           class="btn btn-sm btn-outline-warning" title="Chỉnh sửa">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                                title="Xóa" onclick="confirmDelete(@department.DepartmentId, '@department.DepartmentName')">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    }
                                                 </div>
                                             </td>
                                         </tr>
