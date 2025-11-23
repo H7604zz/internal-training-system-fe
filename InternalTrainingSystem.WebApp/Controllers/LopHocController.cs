@@ -458,5 +458,46 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 return StatusCode(500, "Đã xảy ra lỗi khi đổi lịch học.");
             }
         }
+
+        [HttpGet("cua-toi")]
+        [Authorize(Roles = UserRoles.Mentor + "," + UserRoles.Staff)]
+        public async Task<IActionResult> CuaToi()
+        {
+            try
+            {
+                // Check authentication
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
+                {
+                    TempData["Error"] = "Phiên đăng nhập đã hết hạn.";
+                    return RedirectToAction("DangNhap", "XacThuc");
+                }
+
+                // Gọi API để lấy danh sách lớp học của user hiện tại
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/class/my"));
+
+                List<MyClassDto> myClasses;
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+
+                    myClasses = JsonSerializer.Deserialize<List<MyClassDto>>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    }) ?? new List<MyClassDto>();
+                }
+                else
+                {
+                    myClasses = new List<MyClassDto>();
+                }
+
+                return View(myClasses);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting my classes");
+                TempData["Error"] = "Đã xảy ra lỗi khi tải danh sách lớp học.";
+                return View(new List<MyClassDto>());
+            }
+        }
     }
 }

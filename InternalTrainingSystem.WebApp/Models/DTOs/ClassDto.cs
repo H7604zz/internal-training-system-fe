@@ -154,4 +154,14 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string NewEndTime { get; set; } = string.Empty;
         public string NewLocation { get; set; } = string.Empty;
     }
+
+    public class MyClassDto
+    {
+        public int ClassId { get; set; }
+        public string ClassName { get; set; } = string.Empty;
+        public int CourseId { get; set; }
+        public string CourseName { get; set; } = string.Empty;
+        public string Mentor { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+    }
 }
