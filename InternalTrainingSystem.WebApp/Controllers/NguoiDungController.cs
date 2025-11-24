@@ -23,6 +23,93 @@ namespace InternalTrainingSystem.WebApp.Controllers
             _httpContextAccessor = httpContextAccessor;
         }
 
+        // GET: nguoi-dung
+        [HttpGet]
+        [Authorize(Roles = UserRoles.Administrator)]
+        public async Task<IActionResult> Index(string? search, int page = 1, int pageSize = 10)
+        {
+            try
+            {
+                // Kiểm tra đăng nhập
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
+                {
+                    return RedirectToAction("DangNhap", "XacThuc");
+                }
+
+                // Build query string
+                var queryParams = new List<string>
+                {
+                    $"page={page}",
+                    $"pageSize={pageSize}"
+                };
+
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    queryParams.Add($"search={Uri.EscapeDataString(search)}");
+                }
+
+                var queryString = string.Join("&", queryParams);
+                var apiUrl = Utilities.GetAbsoluteUrl($"api/user?{queryString}");
+
+                var response = await _httpClient.GetAsync(apiUrl);
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = JsonSerializer.Deserialize<PagedResult<UserListDto>>(
+                        responseContent,
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                    ViewBag.CurrentSearch = search;
+                    ViewBag.CurrentPage = page;
+                    ViewBag.PageSize = pageSize;
+
+                    // Lấy danh sách roles
+                    var roles = await GetRolesAsync();
+                    ViewBag.Roles = roles;
+
+                    return View(result ?? new PagedResult<UserListDto>());
+                }
+                else
+                {
+                    TempData["Error"] = "Không thể tải danh sách người dùng.";
+                    return View(new PagedResult<UserListDto>());
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Đã xảy ra lỗi: {ex.Message}";
+                return View(new PagedResult<UserListDto>());
+            }
+        }
+
+        /// <summary>
+        /// Helper method để lấy danh sách roles
+        /// </summary>
+        private async Task<List<RoleDto>> GetRolesAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/user/roles"));
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new List<RoleDto>();
+                }
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var roles = JsonSerializer.Deserialize<List<RoleDto>>(
+                    responseContent,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                return roles ?? new List<RoleDto>();
+            }
+            catch
+            {
+                return new List<RoleDto>();
+            }
+        }
+
         // GET: nguoi-dung/them-moi
         [HttpGet("them-moi")]
         [Authorize(Roles = "HR")]

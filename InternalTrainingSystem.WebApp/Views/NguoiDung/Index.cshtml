@@ -1,0 +1,317 @@
+@model InternalTrainingSystem.WebApp.Models.PagedResult<InternalTrainingSystem.WebApp.Models.DTOs.UserListDto>
+@using InternalTrainingSystem.WebApp.Models.ViewModels
+@using InternalTrainingSystem.WebApp.Models.DTOs
+@{
+    ViewData["Title"] = "Quản Lý Người Dùng";
+    var roles = ViewBag.Roles as List<RoleDto> ?? new List<RoleDto>();
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/user-management.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+}
+
+@Html.AntiForgeryToken()
+
+<div class="user-management-container">
+    <div class="container-fluid">
+        <!-- Header Section -->
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="page-title">
+                        <i class="fas fa-users-cog me-3"></i>Quản Lý Người Dùng
+                    </h1>
+                    <p class="page-subtitle">Quản lý thông tin và quyền hạn người dùng trong hệ thống</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="@Url.Action("ThemMoi")" class="btn btn-primary">
+                        <i class="fas fa-user-plus me-2"></i>Thêm Người Dùng
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" asp-action="Index" id="searchForm">
+                        <div class="row align-items-end">
+                            <div class="col-md-9">
+                                <label for="search" class="form-label">
+                                    <i class="fas fa-search me-1"></i>Tìm kiếm
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="search" 
+                                       name="search" 
+                                       value="@ViewBag.CurrentSearch"
+                                       placeholder="Tìm theo tên, mã nhân viên hoặc email...">
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-search me-2"></i>Tìm kiếm
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>Danh Sách Người Dùng
+                        </h5>
+                        <span class="badge bg-primary">Tổng: @Model.TotalCount người dùng</span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model != null && Model.Items != null && Model.Items.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 10%;">Mã NV</th>
+                                        <th style="width: 15%;">Họ và Tên</th>
+                                        <th style="width: 15%;">Email</th>
+                                        <th style="width: 10%;">Số ĐT</th>
+                                        <th style="width: 12%;">Phòng ban</th>
+                                        <th style="width: 10%;">Chức vụ</th>
+                                        <th style="width: 10%;">Quyền</th>
+                                        <th style="width: 8%;" class="text-center">Trạng thái</th>
+                                        <th style="width: 10%;" class="text-center">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var user in Model.Items)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <span class="badge bg-secondary">@(user.EmployeeId ?? "N/A")</span>
+                                            </td>
+                                            <td>
+                                                <strong>@user.FullName</strong>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">@user.Email</small>
+                                            </td>
+                                            <td>
+                                                <small>@(user.PhoneNumber ?? "N/A")</small>
+                                            </td>
+                                            <td>@(user.Department ?? "N/A")</td>
+                                            <td>@(user.Position ?? "N/A")</td>
+                                            <td>
+                                                <span class="badge bg-info">@(user.Role ?? "N/A")</span>
+                                            </td>
+                                            <td class="text-center">
+                                                @if (user.IsActive)
+                                                {
+                                                    <span class="badge bg-success">
+                                                        <i class="fas fa-check-circle"></i> Hoạt động
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">
+                                                        <i class="fas fa-times-circle"></i> Không hoạt động
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-warning" 
+                                                        onclick="openRoleModal('@user.Id', '@user.FullName', '@user.Role')"
+                                                        title="Đổi quyền">
+                                                    <i class="fas fa-user-shield"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        @* Pagination *@
+                        @if (Model.TotalPages > 1)
+                        {
+                            @await Html.PartialAsync("_Pagination", new PaginationViewModel
+                            {
+                                CurrentPage = Model.Page,
+                                TotalPages = Model.TotalPages,
+                                PageSize = Model.PageSize,
+                                TotalItems = Model.TotalCount,
+                                ActionName = "Index",
+                                ControllerName = "NguoiDung",
+                                RouteValues = string.IsNullOrEmpty(ViewBag.CurrentSearch?.ToString()) 
+                                    ? new Dictionary<string, object>() 
+                                    : new Dictionary<string, object> { { "search", ViewBag.CurrentSearch } }
+                            })
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h5>Không tìm thấy người dùng nào</h5>
+                            <p class="text-muted">
+                                @if (!string.IsNullOrEmpty(ViewBag.CurrentSearch?.ToString()))
+                                {
+                                    <span>Không có kết quả cho từ khóa "<strong>@ViewBag.CurrentSearch</strong>"</span>
+                                }
+                                else
+                                {
+                                    <span>Hệ thống chưa có người dùng nào</span>
+                                }
+                            </p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Role Modal -->
+<div class="modal fade" id="roleModal" tabindex="-1" aria-labelledby="roleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="roleModalLabel">
+                    <i class="fas fa-user-shield me-2"></i>Đổi Quyền Người Dùng
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="roleForm">
+                    <input type="hidden" id="roleUserId" />
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Người dùng:</label>
+                        <p id="roleUserName" class="text-muted"></p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Quyền hiện tại:</label>
+                        <p id="roleCurrentRole" class="text-muted"></p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="roleSelect" class="form-label fw-bold">
+                            Quyền mới: <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="roleSelect" required>
+                            <option value="">-- Chọn quyền --</option>
+                            @foreach (var role in roles)
+                            {
+                                <option value="@role.Name">@role.Name</option>
+                            }
+                        </select>
+                        <div class="invalid-feedback">
+                            Vui lòng chọn quyền mới.
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Hủy
+                </button>
+                <button type="button" class="btn btn-primary" onclick="confirmChangeRole()">
+                    <i class="fas fa-check me-2"></i>Xác nhận đổi quyền
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+            // Tooltip initialization
+            $('[data-bs-toggle="tooltip"]').tooltip();
+        });
+        
+        function openRoleModal(userId, userName, currentRole) {
+            document.getElementById('roleUserId').value = userId;
+            document.getElementById('roleUserName').textContent = userName;
+            document.getElementById('roleCurrentRole').textContent = currentRole || 'N/A';
+            
+            // Reset select
+            document.getElementById('roleSelect').value = '';
+            document.getElementById('roleSelect').classList.remove('is-invalid');
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('roleModal'));
+            modal.show();
+        }
+        
+        async function confirmChangeRole() {
+            const userId = document.getElementById('roleUserId').value;
+            const newRole = document.getElementById('roleSelect').value;
+            
+            // Validate
+            if (!newRole) {
+                document.getElementById('roleSelect').classList.add('is-invalid');
+                return;
+            }
+            
+            document.getElementById('roleSelect').classList.remove('is-invalid');
+            
+            try {
+                const response = await fetch('@Url.Action("DoiRole", "NguoiDung")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        newRole: newRole
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('roleModal'));
+                    modal.hide();
+                    
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        text: result.message || 'Đổi quyền người dùng thành công!',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Reload page
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi!',
+                        text: result.message || 'Có lỗi xảy ra khi đổi quyền người dùng.',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi!',
+                    text: 'Có lỗi xảy ra khi đổi quyền người dùng.',
+                    confirmButtonText: 'OK'
+                });
+            }
+        }
+    </script>
+}
