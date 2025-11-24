@@ -12,7 +12,6 @@
 
 <div class="course-container">
     <div class="container-fluid">
-        <!-- Header Section -->
         <div class="form-header">
             <div class="row align-items-center">
                 <div class="col-md-8">
@@ -578,7 +577,6 @@
                         checkbox.prop('checked', true);
                     }
                 });
-                console.log('Restored selected departments:', selectedDepartments);
             }
 
             function restoreExistingData(modules) {
@@ -718,24 +716,20 @@
                         clone.querySelector('.quiz-content-section .main-file-index').value = lessonData.mainFileIndex;
                     }
                 } else {
-                    // Video (default)
                     if (videoRadio) videoRadio.checked = true;
                     if (videoSection) videoSection.style.display = 'block';
                     if (readingSection) readingSection.style.display = 'none';
                     if (quizSection) quizSection.style.display = 'none';
                     
-                    // Enable Video type field
                     videoTypeField.disabled = false;
                     readingTypeField.disabled = true;
                     quizTypeField.disabled = true;
                     
-                    // Disable both reading and quiz files
                     const readingFile = clone.querySelector('.reading-file');
                     const quizFile = clone.querySelector('.quiz-file');
                     if (readingFile) readingFile.disabled = true;
                     if (quizFile) quizFile.disabled = true;
                     
-                    // Fill video data
                     if (lessonData.contentUrl) {
                         clone.querySelector('.video-content-section input[name*="ContentUrl"]').value = lessonData.contentUrl;
                     }
@@ -747,13 +741,10 @@
                     }
                 }
                 
-                // Update form field names
                 updateLessonFieldNames(clone, moduleIndex, lessonIndex);
                 
-                // Add event listeners
                 addLessonEventListeners(clone);
                 
-                // Append to lessons container
                 lessonsContainer.appendChild(clone);
             }
 
@@ -761,23 +752,17 @@
                 const template = document.getElementById('module-template');
                 const clone = template.content.cloneNode(true);
                 
-                // Update module index and names
                 const moduleDiv = clone.querySelector('.module-card');
                 moduleDiv.setAttribute('data-module-index', moduleCount);
                 
-                // Update module number
                 clone.querySelector('.module-number').textContent = moduleCount + 1;
                 
-                // Update form field names
                 updateModuleFieldNames(clone, moduleCount);
                 
-                // Add event listeners
                 addModuleEventListeners(clone);
                 
-                // Append to container
                 document.getElementById('modules-container').appendChild(clone);
                 
-                // Add initial lesson
                 addLesson(moduleDiv);
                 
                 moduleCount++;
@@ -796,14 +781,12 @@
             }
 
             function addModuleEventListeners(clone) {
-                // Remove module button
                 clone.querySelector('.remove-module').addEventListener('click', function() {
                     const moduleCard = this.closest('.module-card');
                     moduleCard.remove();
                     updateModuleOrders();
                 });
 
-                // Move module up
                 clone.querySelector('.move-up-module').addEventListener('click', function() {
                     const moduleCard = this.closest('.module-card');
                     const prevModule = moduleCard.previousElementSibling;
@@ -813,7 +796,6 @@
                     }
                 });
 
-                // Move module down
                 clone.querySelector('.move-down-module').addEventListener('click', function() {
                     const moduleCard = this.closest('.module-card');
                     const nextModule = moduleCard.nextElementSibling;
@@ -823,7 +805,6 @@
                     }
                 });
 
-                // Add lesson button
                 clone.querySelector('.add-lesson-btn').addEventListener('click', function() {
                     const moduleCard = this.closest('.module-card');
                     addLesson(moduleCard);
@@ -838,17 +819,13 @@
                 const template = document.getElementById('lesson-template');
                 const clone = template.content.cloneNode(true);
                 
-                // Update lesson index and names
                 const lessonDiv = clone.querySelector('.lesson-item');
                 lessonDiv.setAttribute('data-lesson-index', lessonCount);
                 
-                // Update lesson number
                 clone.querySelector('.lesson-number').textContent = lessonCount + 1;
                 
-                // Update form field names
                 updateLessonFieldNames(clone, moduleIndex, lessonCount);
                 
-                // Disable file inputs for default Video type
                 const readingFile = clone.querySelector('.reading-file');
                 const quizFile = clone.querySelector('.quiz-file');
                 const readingMainFileIndex = clone.querySelector('.reading-content-section .main-file-index');
@@ -856,13 +833,11 @@
                 
                 if (readingFile) readingFile.disabled = true;
                 if (quizFile) quizFile.disabled = true;
-                if (readingMainFileIndex) readingMainFileIndex.disabled = true; // DISABLE both MainFileIndex for Video
+                if (readingMainFileIndex) readingMainFileIndex.disabled = true; 
                 if (quizMainFileIndex) quizMainFileIndex.disabled = true;
                 
-                // Add event listeners
                 addLessonEventListeners(clone);
                 
-                // Append to lessons container
                 lessonsContainer.appendChild(clone);
                 
                 updateLessonOrders(moduleCard);
@@ -879,13 +854,11 @@
                         input.setAttribute('name', newName);
                     }
                     
-                    // Update radio button IDs to make them unique
                     const id = input.getAttribute('id');
                     if (id && id.includes('lesson-type-')) {
                         const newId = id.replace(/-\d+-\d+$/, `-${moduleIndex}-${lessonIndex}`);
                         input.setAttribute('id', newId);
                         
-                        // Update corresponding label's 'for' attribute
                         const label = element.querySelector(`label[for="${id}"]`);
                         if (label) {
                             label.setAttribute('for', newId);
@@ -895,18 +868,15 @@
             }
 
             function addLessonEventListeners(clone) {
-                // Lesson type toggle
                 const lessonTypeRadios = clone.querySelectorAll('input[name*="LessonType"]');
                 
                 lessonTypeRadios.forEach(radio => {
                     radio.addEventListener('change', function() {
-                        // Get current lesson item
                         const lessonItem = this.closest('.lesson-item');
                         const videoSection = lessonItem.querySelector('.video-content-section');
                         const readingSection = lessonItem.querySelector('.reading-content-section');
                         const quizSection = lessonItem.querySelector('.quiz-content-section');
                         
-                        // Get Type hidden fields
                         const videoTypeField = videoSection.querySelector('.lesson-type-value');
                         const readingTypeField = readingSection.querySelector('.lesson-type-value');
                         const quizTypeField = quizSection.querySelector('.lesson-type-value');
@@ -916,12 +886,10 @@
                             readingSection.style.display = 'none';
                             quizSection.style.display = 'none';
                             
-                            // Enable Video type field, disable others
                             videoTypeField.disabled = false;
                             readingTypeField.disabled = true;
                             quizTypeField.disabled = true;
                             
-                            // Clear and disable reading fields
                             const readingFile = lessonItem.querySelector('.reading-file');
                             const readingDesc = lessonItem.querySelector('.reading-content-section textarea[name*="Description"]');
                             const readingAttachmentUrl = lessonItem.querySelector('.reading-content-section input[name*="AttachmentUrl"]');
@@ -936,15 +904,16 @@
                             if (readingAttachmentUrl) readingAttachmentUrl.value = '';
                             if (readingMainFileIndex) {
                                 readingMainFileIndex.value = '';
-                                readingMainFileIndex.disabled = true; // DISABLE to prevent submission
+                                readingMainFileIndex.disabled = true; 
+                                readingMainFileIndex.removeAttribute('name'); 
                             }
                             
-                            // Clear and disable quiz fields
                             const quizFile = lessonItem.querySelector('.quiz-file');
                             const quizMainFileIndex = lessonItem.querySelector('.quiz-content-section .main-file-index');
                             const maxAttempts = lessonItem.querySelector('input[name*="QuizMaxAttempts"]');
                             const passingScore = lessonItem.querySelector('input[name*="QuizPassingScore"]');
                             const timeLimit = lessonItem.querySelector('input[name*="QuizTimeLimit"]');
+                            const isQuizExcel = lessonItem.querySelector('input[name*="IsQuizExcel"]');
                             
                             if (quizFile) {
                                 quizFile.value = '';
@@ -953,13 +922,14 @@
                             }
                             if (quizMainFileIndex) {
                                 quizMainFileIndex.value = '';
-                                quizMainFileIndex.disabled = true; // DISABLE to prevent submission
+                                quizMainFileIndex.disabled = true; 
+                                quizMainFileIndex.removeAttribute('name');
                             }
-                            if (maxAttempts) maxAttempts.value = '3';
-                            if (passingScore) passingScore.value = '70';
-                            if (timeLimit) timeLimit.value = '30';
+                            if (maxAttempts) maxAttempts.removeAttribute('name');
+                            if (passingScore) passingScore.removeAttribute('name');
+                            if (timeLimit) timeLimit.removeAttribute('name');
+                            if (isQuizExcel) isQuizExcel.removeAttribute('name');
                             
-                            // Make video URL required
                             const videoUrl = lessonItem.querySelector('input[name*="ContentUrl"]');
                             if (videoUrl) videoUrl.setAttribute('required', 'required');
                         } else if (this.value === 'Reading') {
@@ -967,12 +937,10 @@
                             readingSection.style.display = 'block';
                             quizSection.style.display = 'none';
                             
-                            // Enable Reading type field, disable others
                             videoTypeField.disabled = true;
                             readingTypeField.disabled = false;
                             quizTypeField.disabled = true;
                             
-                            // Clear video fields
                             const videoUrl = lessonItem.querySelector('.video-content-section input[name*="ContentUrl"]');
                             const videoDesc = lessonItem.querySelector('.video-content-section textarea[name*="Description"]');
                             const videoAttachmentUrl = lessonItem.querySelector('.video-content-section input[name*="AttachmentUrl"]');
@@ -984,12 +952,12 @@
                             if (videoDesc) videoDesc.value = '';
                             if (videoAttachmentUrl) videoAttachmentUrl.value = '';
                             
-                            // Clear and disable quiz fields
                             const quizFile = lessonItem.querySelector('.quiz-file');
                             const quizMainFileIndex = lessonItem.querySelector('.quiz-content-section .main-file-index');
                             const maxAttempts = lessonItem.querySelector('input[name*="QuizMaxAttempts"]');
                             const passingScore = lessonItem.querySelector('input[name*="QuizPassingScore"]');
                             const timeLimit = lessonItem.querySelector('input[name*="QuizTimeLimit"]');
+                            const isQuizExcel = lessonItem.querySelector('input[name*="IsQuizExcel"]');
                             
                             if (quizFile) {
                                 quizFile.value = '';
@@ -998,13 +966,14 @@
                             }
                             if (quizMainFileIndex) {
                                 quizMainFileIndex.value = '';
-                                quizMainFileIndex.disabled = true; // DISABLE to prevent submission
+                                quizMainFileIndex.disabled = true; 
+                                quizMainFileIndex.removeAttribute('name'); 
                             }
-                            if (maxAttempts) maxAttempts.value = '3';
-                            if (passingScore) passingScore.value = '70';
-                            if (timeLimit) timeLimit.value = '30';
+                            if (maxAttempts) maxAttempts.removeAttribute('name');
+                            if (passingScore) passingScore.removeAttribute('name');
+                            if (timeLimit) timeLimit.removeAttribute('name');
+                            if (isQuizExcel) isQuizExcel.removeAttribute('name');
                             
-                            // Enable and make reading file required
                             const readingFile = lessonItem.querySelector('.reading-file');
                             const readingMainFileIndex = lessonItem.querySelector('.reading-content-section .main-file-index');
                             if (readingFile) {
@@ -1012,19 +981,20 @@
                                 readingFile.setAttribute('required', 'required');
                             }
                             if (readingMainFileIndex) {
-                                readingMainFileIndex.disabled = false; // ENABLE for Reading
+                                readingMainFileIndex.disabled = false;
+                                const moduleIndex = lessonItem.closest('.module-card').getAttribute('data-module-index');
+                                const lessonIndex = lessonItem.getAttribute('data-lesson-index');
+                                readingMainFileIndex.setAttribute('name', `Modules[${moduleIndex}].Lessons[${lessonIndex}].MainFileIndex`);
                             }
                         } else if (this.value === 'Quiz') {
                             videoSection.style.display = 'none';
                             readingSection.style.display = 'none';
                             quizSection.style.display = 'block';
                             
-                            // Enable Quiz type field, disable others
                             videoTypeField.disabled = true;
                             readingTypeField.disabled = true;
                             quizTypeField.disabled = false;
                             
-                            // Clear video fields
                             const videoUrl = lessonItem.querySelector('.video-content-section input[name*="ContentUrl"]');
                             const videoDesc = lessonItem.querySelector('.video-content-section textarea[name*="Description"]');
                             const videoAttachmentUrl = lessonItem.querySelector('.video-content-section input[name*="AttachmentUrl"]');
@@ -1036,7 +1006,6 @@
                             if (videoDesc) videoDesc.value = '';
                             if (videoAttachmentUrl) videoAttachmentUrl.value = '';
                             
-                            // Clear and disable reading fields
                             const readingFile = lessonItem.querySelector('.reading-file');
                             const readingDesc = lessonItem.querySelector('.reading-content-section textarea[name*="Description"]');
                             const readingAttachmentUrl = lessonItem.querySelector('.reading-content-section input[name*="AttachmentUrl"]');
@@ -1051,24 +1020,43 @@
                             if (readingAttachmentUrl) readingAttachmentUrl.value = '';
                             if (readingMainFileIndex) {
                                 readingMainFileIndex.value = '';
-                                readingMainFileIndex.disabled = true; // DISABLE to prevent submission
+                                readingMainFileIndex.disabled = true; 
+                                readingMainFileIndex.removeAttribute('name'); 
                             }
                             
-                            // Enable and make quiz file required
                             const quizFile = lessonItem.querySelector('.quiz-file');
                             const quizMainFileIndex = lessonItem.querySelector('.quiz-content-section .main-file-index');
+                            const maxAttempts = lessonItem.querySelector('input[name*="QuizMaxAttempts"]');
+                            const passingScore = lessonItem.querySelector('input[name*="QuizPassingScore"]');
+                            const timeLimit = lessonItem.querySelector('input[name*="QuizTimeLimit"]');
+                            const isQuizExcel = lessonItem.querySelector('input[name*="IsQuizExcel"]');
+                            const moduleIndex = lessonItem.closest('.module-card').getAttribute('data-module-index');
+                            const lessonIndex = lessonItem.getAttribute('data-lesson-index');
+                            
                             if (quizFile) {
                                 quizFile.disabled = false;
                                 quizFile.setAttribute('required', 'required');
                             }
                             if (quizMainFileIndex) {
-                                quizMainFileIndex.disabled = false; // ENABLE for Quiz
+                                quizMainFileIndex.disabled = false;
+                                quizMainFileIndex.setAttribute('name', `Modules[${moduleIndex}].Lessons[${lessonIndex}].MainFileIndex`);
+                            }
+                            if (maxAttempts) {
+                                maxAttempts.setAttribute('name', `Modules[${moduleIndex}].Lessons[${lessonIndex}].QuizMaxAttempts`);
+                            }
+                            if (passingScore) {
+                                passingScore.setAttribute('name', `Modules[${moduleIndex}].Lessons[${lessonIndex}].QuizPassingScore`);
+                            }
+                            if (timeLimit) {
+                                timeLimit.setAttribute('name', `Modules[${moduleIndex}].Lessons[${lessonIndex}].QuizTimeLimit`);
+                            }
+                            if (isQuizExcel) {
+                                isQuizExcel.setAttribute('name', `Modules[${moduleIndex}].Lessons[${lessonIndex}].IsQuizExcel`);
                             }
                         }
                     });
                 });
 
-                // Remove lesson button
                 clone.querySelector('.remove-lesson').addEventListener('click', function() {
                     const lessonItem = this.closest('.lesson-item');
                     const moduleCard = lessonItem.closest('.module-card');
@@ -1076,7 +1064,6 @@
                     updateLessonOrders(moduleCard);
                 });
 
-                // Move lesson up
                 clone.querySelector('.move-up-lesson').addEventListener('click', function() {
                     const lessonItem = this.closest('.lesson-item');
                     const prevLesson = lessonItem.previousElementSibling;
@@ -1087,7 +1074,6 @@
                     }
                 });
 
-                // Move lesson down
                 clone.querySelector('.move-down-lesson').addEventListener('click', function() {
                     const lessonItem = this.closest('.lesson-item');
                     const nextLesson = lessonItem.nextElementSibling;
@@ -1098,7 +1084,6 @@
                     }
                 });
 
-                // Validation for video URL
                 const videoUrl = clone.querySelector('.video-content-section input[name*="ContentUrl"]');
                 if (videoUrl) {
                     videoUrl.addEventListener('blur', function() {
@@ -1108,7 +1093,6 @@
                     });
                 }
 
-                // Validation for quiz parameters
                 const maxAttempts = clone.querySelector('input[name*="QuizMaxAttempts"]');
                 const passingScore = clone.querySelector('input[name*="QuizPassingScore"]');
                 const timeLimit = clone.querySelector('input[name*="QuizTimeLimit"]');
@@ -1142,7 +1126,6 @@
                     card.querySelector('.module-number').textContent = index + 1;
                     card.querySelector('.module-order').value = index + 1;
                     
-                    // Update all field names in this module
                     const inputs = card.querySelectorAll('input, select, textarea');
                     inputs.forEach(input => {
                         const name = input.getAttribute('name');
@@ -1165,7 +1148,6 @@
                     item.querySelector('.lesson-number').textContent = index + 1;
                     item.querySelector('.lesson-order').value = index + 1;
                     
-                    // Update all field names in this lesson
                     const inputs = item.querySelectorAll('input, select, textarea');
                     inputs.forEach(input => {
                         const name = input.getAttribute('name');
@@ -1174,13 +1156,11 @@
                             input.setAttribute('name', newName);
                         }
                         
-                        // Update radio button IDs
                         const id = input.getAttribute('id');
                         if (id && id.includes('lesson-type-')) {
                             const newId = id.replace(/-\d+-\d+$/, `-${moduleIndex}-${index}`);
                             input.setAttribute('id', newId);
                             
-                            // Update corresponding label's 'for' attribute
                             const label = item.querySelector(`label[for="${id}"]`);
                             if (label) {
                                 label.setAttribute('for', newId);
@@ -1190,7 +1170,6 @@
                 });
             }
 
-            // Form validation and file index assignment
             $('form').on('submit', function(e) {
                 const modules = document.querySelectorAll('.module-card');
                 if (modules.length === 0) {
@@ -1199,11 +1178,8 @@
                     return false;
                 }
 
-                // Check each module has at least one lesson
                 let hasError = false;
-                let fileIndex = 0; // Track file index for LessonFiles array
-                
-                console.log('=== FORM SUBMIT - Starting validation ===');
+                let fileIndex = 0; 
                 
                 modules.forEach((module, index) => {
                     const lessons = module.querySelectorAll('.lesson-item');
@@ -1212,7 +1188,6 @@
                         alert(`Module ${index + 1} phải có ít nhất 1 bài học.`);
                     }
                     
-                    // Validate each lesson based on type and assign file indices
                     lessons.forEach((lesson, lessonIndex) => {
                         const lessonType = lesson.querySelector('input[name*="LessonType"]:checked');
                         if (!lessonType) {
@@ -1228,57 +1203,54 @@
                                 alert(`Module ${index + 1}, Bài học ${lessonIndex + 1}: Vui lòng nhập URL video.`);
                             }
                             
-                            // Remove MainFileIndex for Video lessons (no file needed)
                             const videoMainFileIndex = lesson.querySelector('.video-content-section .main-file-index');
                             if (videoMainFileIndex) {
-                                videoMainFileIndex.removeAttribute('name'); // Don't submit for Video
+                                videoMainFileIndex.removeAttribute('name'); 
                             }
                         } else if (lessonType.value === 'Reading') {
                             const readingFile = lesson.querySelector('.reading-file');
                             
-                            // Temporarily enable to check if file is selected
+                            
                             const wasDisabled = readingFile.disabled;
                             readingFile.disabled = false;
                             
                             if (!readingFile || !readingFile.files || readingFile.files.length === 0) {
                                 hasError = true;
                                 alert(`Module ${index + 1}, Bài học ${lessonIndex + 1}: Vui lòng upload file tài liệu chính.`);
-                                if (wasDisabled) readingFile.disabled = true; // Restore state
+                                if (wasDisabled) readingFile.disabled = true; 
                             } else {
-                                // Set MainFileIndex for Reading lesson and keep enabled for submission
                                 const mainFileIndexField = lesson.querySelector('.reading-content-section .main-file-index');
                                 if (mainFileIndexField) {
                                     mainFileIndexField.value = fileIndex;
-                                    mainFileIndexField.disabled = false; // ENABLE to submit
-                                    console.log(`Reading lesson - Set MainFileIndex = ${fileIndex} for Module ${index}, Lesson ${lessonIndex}`);
-                                    fileIndex++; // Increment for next file
+                                    mainFileIndexField.disabled = false; 
+                                    const moduleIdx = lesson.closest('.module-card').getAttribute('data-module-index');
+                                    const lessonIdx = lesson.getAttribute('data-lesson-index');
+                                    mainFileIndexField.setAttribute('name', `Modules[${moduleIdx}].Lessons[${lessonIdx}].MainFileIndex`);
+                                    fileIndex++; 
                                 }
-                                // Keep file input enabled for form submission
                             }
                         } else if (lessonType.value === 'Quiz') {
                             const quizFile = lesson.querySelector('.quiz-file');
                             
-                            // Temporarily enable to check if file is selected
                             const wasDisabled = quizFile.disabled;
                             quizFile.disabled = false;
                             
                             if (!quizFile || !quizFile.files || quizFile.files.length === 0) {
                                 hasError = true;
                                 alert(`Module ${index + 1}, Bài học ${lessonIndex + 1}: Vui lòng upload file Excel Quiz.`);
-                                if (wasDisabled) quizFile.disabled = true; // Restore state
+                                if (wasDisabled) quizFile.disabled = true; 
                             } else {
-                                // Set MainFileIndex for Quiz lesson and keep enabled for submission
                                 const mainFileIndexField = lesson.querySelector('.quiz-content-section .main-file-index');
                                 if (mainFileIndexField) {
                                     mainFileIndexField.value = fileIndex;
-                                    mainFileIndexField.disabled = false; // ENABLE to submit
-                                    console.log(`Quiz lesson - Set MainFileIndex = ${fileIndex} for Module ${index}, Lesson ${lessonIndex}`);
-                                    fileIndex++; // Increment for next file
+                                    mainFileIndexField.disabled = false; 
+                                    const moduleIdx = lesson.closest('.module-card').getAttribute('data-module-index');
+                                    const lessonIdx = lesson.getAttribute('data-lesson-index');
+                                    mainFileIndexField.setAttribute('name', `Modules[${moduleIdx}].Lessons[${lessonIdx}].MainFileIndex`);
+                                    fileIndex++; 
                                 }
-                                // Keep file input enabled for form submission
                             }
                             
-                            // Validate quiz parameters
                             const maxAttempts = lesson.querySelector('input[name*="QuizMaxAttempts"]');
                             const passingScore = lesson.querySelector('input[name*="QuizPassingScore"]');
                             const timeLimit = lesson.querySelector('input[name*="QuizTimeLimit"]');
@@ -1304,18 +1276,6 @@
                     return false;
                 }
 
-                // Debug: Log all MainFileIndex values before submit
-                console.log('=== FORM SUBMIT - MainFileIndex Summary ===');
-                document.querySelectorAll('.main-file-index').forEach((field, idx) => {
-                    console.log(`MainFileIndex[${idx}]:`, {
-                        name: field.name,
-                        value: field.value,
-                        disabled: field.disabled,
-                        hasName: field.hasAttribute('name')
-                    });
-                });
-
-                // Check department selection
                 const selectedDepts = document.querySelectorAll('input[name="SelectedDepartmentIds"]:checked');
                 if (selectedDepts.length === 0) {
                     e.preventDefault();
