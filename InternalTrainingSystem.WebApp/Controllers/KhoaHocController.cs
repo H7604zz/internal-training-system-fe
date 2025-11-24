@@ -224,6 +224,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpGet("tao-moi")]
+        [Authorize(Roles = UserRoles.TrainingDepartment)]
         public async Task<IActionResult> TaoMoi()
         {
             await ReloadFormData();
@@ -231,6 +232,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpPost("tao-moi")]
+        [Authorize(Roles = UserRoles.TrainingDepartment)]
         public async Task<IActionResult> TaoMoi(CreateFullCourseDto model)
         {
             try

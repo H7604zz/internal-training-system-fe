@@ -20,12 +20,15 @@
                     </h1>
                     <p class="page-subtitle">Quản lý và theo dõi các khóa học đào tạo nội bộ</p>
                 </div>
-                <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                    <a href="@Url.Action("TaoMoi")" class="add-course-btn">
-                        <i class="fas fa-plus"></i>
-                        Thêm Khóa Học
-                    </a>
-                </div>
+                @if (User.IsInRole(UserRoles.TrainingDepartment))
+                {
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <a href="@Url.Action("TaoMoi")" class="add-course-btn">
+                            <i class="fas fa-plus"></i>
+                            Thêm Khóa Học
+                        </a>
+                    </div>
+                }
             </div>
         </div>
 

@@ -116,7 +116,6 @@ body {
 .dropdown-item:hover {
     background-color: var(--primary-color);
     color: white;
-    transform: translateX(5px);
 }
 
 .dropdown-header {

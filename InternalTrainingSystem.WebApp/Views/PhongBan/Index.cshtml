@@ -20,9 +20,13 @@
                     <p class="page-subtitle">Quản lý thông tin các phòng ban trong công ty</p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <a href="@Url.Action("BaoCao")" class="btn btn-success me-2">
-                        <i class="fas fa-chart-line me-2"></i>Báo Cáo - Thống Kê
-                    </a>
+                    @if (User.IsInRole(UserRoles.Administrator) || User.IsInRole(UserRoles.Administrator))
+                    {
+                        <a href="@Url.Action("BaoCao")" class="btn btn-success me-2">
+                            <i class="fas fa-chart-line me-2"></i>Báo Cáo - Thống Kê
+                        </a>
+                    }
+                    
                     @if(User.IsInRole(UserRoles.Administrator))
                     {
                         <a href="@Url.Action("TaoMoi")" class="btn btn-primary">

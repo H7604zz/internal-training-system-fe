@@ -155,7 +155,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         /// </summary>
         [HttpPost("cap-nhat-thong-tin")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = UserRoles.Staff)]
+        [Authorize]
         public async Task<IActionResult> CapNhatThongTin(UpdateProfileDto model)
         {
             try
