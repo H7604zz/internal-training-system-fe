@@ -159,4 +159,13 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public object? Data { get; set; }
         public List<string> Errors { get; set; } = new List<string>();
     }
+
+    /// <summary>
+    /// DTO cho thông tin role
+    /// </summary>
+    public class RoleDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+    }
 }

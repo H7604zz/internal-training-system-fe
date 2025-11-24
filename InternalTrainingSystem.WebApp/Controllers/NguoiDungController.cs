@@ -110,6 +110,48 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
         }
 
+        // POST: nguoi-dung/doi-role
+        [HttpPost("doi-role")]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = UserRoles.Administrator)]
+        public async Task<IActionResult> DoiRole([FromBody] ChangeUserRoleRequest request)
+        {
+            try
+            {
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
+                {
+                    return Json(new { success = false, message = "Phiên đăng nhập đã hết hạn" });
+                }
+
+                var jsonContent = new StringContent(
+                    JsonSerializer.Serialize(request),
+                    Encoding.UTF8,
+                    "application/json");
+
+                var response = await _httpClient.PostAsync(
+                    Utilities.GetAbsoluteUrl("api/auth/change-role"),
+                    jsonContent);
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = JsonSerializer.Deserialize<JsonElement>(responseContent);
+                    var message = result.GetProperty("message").GetString();
+                    return Json(new { success = true, message = message });
+                }
+                else
+                {
+                    var result = JsonSerializer.Deserialize<JsonElement>(responseContent);
+                    var message = result.GetProperty("message").GetString();
+                    return Json(new { success = false, message = message });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Đã xảy ra lỗi: {ex.Message}" });
+            }
+        }
         // GET: nguoi-dung/them-moi
         [HttpGet("them-moi")]
         [Authorize(Roles = "HR")]
