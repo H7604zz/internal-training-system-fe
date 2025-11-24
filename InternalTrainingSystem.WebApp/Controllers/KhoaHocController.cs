@@ -263,7 +263,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     IsOnline = model.IsOnline,
                     IsMandatory = model.IsMandatory,
                     Departments = model.SelectedDepartmentIds, // Backend expect "Departments", not "SelectedDepartmentIds"
-                    PassScore = model.PassScore,
+                    PassScore = model.IsOnline ? (double?)null : model.PassScore, 
                     Modules = model.Modules.Select(m => new
                     {
                         Title = m.Title,
@@ -410,6 +410,13 @@ namespace InternalTrainingSystem.WebApp.Controllers
                         model.SelectedDepartmentIds.Count, 
                         string.Join(", ", model.SelectedDepartmentIds));
                 }
+                
+                // Preserve IsOnline and PassScore values
+                if (model != null)
+                {
+                    ViewBag.IsOnline = model.IsOnline;
+                    ViewBag.PassScore = model.PassScore;
+                }
             }
             catch (Exception ex)
             {
@@ -422,6 +429,13 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 if (model?.SelectedDepartmentIds != null && model.SelectedDepartmentIds.Any())
                 {
                     ViewBag.SelectedDepartmentIds = model.SelectedDepartmentIds;
+                }
+                
+                // Still preserve IsOnline and PassScore even if API calls fail
+                if (model != null)
+                {
+                    ViewBag.IsOnline = model.IsOnline;
+                    ViewBag.PassScore = model.PassScore;
                 }
             }
         }
