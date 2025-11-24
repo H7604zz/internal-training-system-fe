@@ -414,9 +414,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
             if (request.EndDate.HasValue)
                 queryParams.Add($"EndDate={request.EndDate.Value:yyyy-MM-dd}");
 
-            if (request.CourseId.HasValue)
-                queryParams.Add($"CourseId={request.CourseId.Value}");
-
             return queryParams.Any() ? "?" + string.Join("&", queryParams) : string.Empty;
         }
     }
