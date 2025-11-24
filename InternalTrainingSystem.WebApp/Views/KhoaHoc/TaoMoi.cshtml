@@ -180,23 +180,6 @@
 
                 <!-- Side Panel -->
                 <div class="col-lg-4 mb-4">
-                    <!-- Form Actions -->
-                    <div class="form-card">
-                        <h3 class="form-section-title">
-                            <i class="fas fa-save me-2"></i>Thao Tác
-                        </h3>
-                        
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-save">
-                                <i class="fas fa-plus me-2"></i>Tạo Khóa Học
-                            </button>
-                            <a href="@Url.Action("Index")" class="btn btn-cancel">
-                                <i class="fas fa-times me-2"></i>Hủy Bỏ
-                            </a>
-                        </div>
-
-                    </div>
-
                     <!-- Form Help -->
                     <div class="form-card">
                         <h3 class="form-section-title">
@@ -263,7 +246,22 @@
                         </div>
                     </div>
 
-                    
+                    <!-- Form Actions -->
+                    <div class="form-card" style="position: sticky; top: 20px;">
+                        <h3 class="form-section-title">
+                            <i class="fas fa-save me-2"></i>Thao Tác
+                        </h3>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-save">
+                                <i class="fas fa-plus me-2"></i>Tạo Khóa Học
+                            </button>
+                            <a href="@Url.Action("Index")" class="btn btn-cancel">
+                                <i class="fas fa-times me-2"></i>Hủy Bỏ
+                            </a>
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </form>
