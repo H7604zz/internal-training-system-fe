@@ -559,10 +559,10 @@
                 
                 if (dayOfWeek && startTime && endTime) {
                     weeklySchedules.push({
-                        dayOfWeek: dayOfWeek,
-                        startTime: startTime + ':00',
-                        endTime: endTime + ':00',
-                        location: location && location.trim() ? location.trim() : null
+                        DayOfWeek: dayOfWeek,
+                        StartTime: startTime + ':00',
+                        EndTime: endTime + ':00',
+                        Location: location && location.trim() ? location.trim() : null
                     });
                 }
             });
@@ -581,12 +581,12 @@
                 const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
                 
                 const requestData = {
-                    classId: classId,
-                    courseId: courseId,
-                    mentorId: mentorId,
-                    startWeek: startWeek,
-                    numberOfWeeks: numberOfWeeks,
-                    weeklySchedules: weeklySchedules
+                    ClassId: classId,
+                    CourseId: courseId,
+                    MentorId: mentorId,
+                    StartWeek: startWeek,
+                    NumberOfWeeks: numberOfWeeks,
+                    WeeklySchedules: weeklySchedules
                 };
                 
                 console.log('Request data:', requestData);
