@@ -12,7 +12,6 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string Level { get; set; } = string.Empty;
         public string Category { get; set; } = string.Empty;
         public string CategoryName { get; set; } = string.Empty;
-        public bool IsActive { get; set; }
         public bool IsOnline { get; set; }
         public bool IsMandatory { get; set; }
         public double? PassScore { get; set; }
@@ -33,7 +32,6 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public List<ModuleDetailDto> Modules { get; set; } = new();
         
         // Computed properties
-        public string StatusDisplay => IsActive ? "Hoạt động" : "Không hoạt động";
         public string DurationDisplay => Duration > 0 ? $"{Duration} giờ" : "Chưa xác định";
         public string DepartmentsDisplay => Departments.Any() ? string.Join(", ", Departments.Select(d => d.DepartmentName)) : "Tất cả phòng ban";
         public string ApprovalStatusDisplay => CourseStatus.GetDisplayText(Status ?? CourseStatus.Pending);

@@ -20,10 +20,6 @@
                     <div class="header-content">
                         <div class="d-flex align-items-center mb-2">
                             <h1 class="course-detail-title">@Model.CourseName</h1>
-                            <span class="status-badge @(Model.IsActive ? "status-active" : "status-inactive") ms-3">
-                                <i class="fas @(Model.IsActive ? "fa-check-circle" : "fa-pause-circle") me-1"></i>
-                                @Model.StatusDisplay
-                            </span>
                         </div>
                         <div class="course-meta-inline">
                             <span class="meta-item">
@@ -43,9 +39,12 @@
                 </div>
                 <div class="col-md-4 text-md-end mt-3 mt-md-0">
                     <div class="action-buttons">
-                        <a href="@Url.Action("ChinhSua", new { id = Model.CourseId })" class="btn btn-edit-main">
-                            <i class="fas fa-edit me-2"></i>Chỉnh Sửa
-                        </a>
+                        @if (User.IsInRole(UserRoles.TrainingDepartment))
+                        {
+                            <a href="@Url.Action("ChinhSua", new { id = Model.CourseId })" class="btn btn-edit-main">
+                                <i class="fas fa-edit me-2"></i>Chỉnh Sửa
+                            </a>
+                        }
                         <a href="@Url.Action("Index")" class="btn btn-back">
                             <i class="fas fa-arrow-left me-2"></i>Quay Lại
                         </a>
@@ -123,15 +122,6 @@
                                     <label><i class="fas fa-star me-1"></i>Điểm đạt:</label>
                                     <span class="level-badge level-intermediate">
                                         @Model.PassScore.Value.ToString("0.0")/10
-                                    </span>
-                                </div>
-                            }
-                            @if (Model.Status == "Approved")
-                            {
-                                <div class="info-item">
-                                    <label><i class="fas fa-toggle-on me-1"></i>Trạng thái:</label>
-                                    <span class="status-badge @(Model.IsActive ? "status-active" : "status-inactive")">
-                                        @Model.StatusDisplay
                                     </span>
                                 </div>
                             }

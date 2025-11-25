@@ -159,25 +159,7 @@
                                             <small class="text-muted">Nhân viên bắt buộc phải tham gia</small>
                                         </label>
                                     </div>
-                                    @if (Model.Status == "Approved")
-                                    {
-                                        <div class="form-check form-switch">
-                                            <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch">
-                                            <label asp-for="IsActive" class="form-check-label">
-                                                <span class="fw-semibold">Khóa học đang hoạt động</span>
-                                                <br>
-                                                <small class="text-muted">Cho phép tạo lớp học và đăng ký mới</small>
-                                            </label>
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <input asp-for="IsActive" type="hidden" value="false">
-                                        <div class="alert alert-info d-flex align-items-center">
-                                            <i class="fas fa-info-circle me-2"></i>
-                                            <small>Khóa học sẽ được kích hoạt sau khi được phê duyệt</small>
-                                        </div>
-                                    }
+                                    
                                 </div>
                             </div>
                         </div>
@@ -540,16 +522,7 @@
                                     <small class="text-muted">@(Model.IsMandatory ? "Bắt buộc" : "Tùy chọn")</small>
                                 </span>
                             </div>
-                            @if (Model.Status == "Approved")
-                            {
-                                <div class="help-item">
-                                    <i class="fas fa-@(Model.IsActive ? "play-circle text-success" : "pause-circle text-warning")"></i>
-                                    <span>
-                                        <strong>Hoạt động:</strong><br>
-                                        <small class="text-muted">@(Model.IsActive ? "Đang hoạt động" : "Tạm dừng")</small>
-                                    </span>
-                                </div>
-                            }
+
                             <div class="help-item">
                                 <i class="fas fa-users text-info"></i>
                                 <span>
