@@ -27,7 +27,8 @@ namespace InternalTrainingSystem.WebApp.Controllers
             _httpContextAccessor = httpContextAccessor;
         }
 
-        [HttpGet("")]
+        [HttpGet]
+        [Authorize(Roles = UserRoles.TrainingDepartment + "," + UserRoles.BoardOfDirectors + "," + UserRoles.DirectManager)]
         public async Task<IActionResult> Index(string status, int page = 1)
         {
             try
@@ -77,6 +78,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpGet("chi-tiet/{id}")]
+        [Authorize]
         public async Task<IActionResult> ChiTiet(int id)
         {
             try
@@ -142,11 +144,12 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpGet("chinh-sua/{id}")]
+        [Authorize(Roles = UserRoles.TrainingDepartment)]
         public async Task<IActionResult> ChinhSua(int id)
         {
             try
             {
-                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/course/{id}"));
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/course/{id}/detail"));
                 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -185,41 +188,60 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<IActionResult> ChinhSua(CourseDto model)
+        [HttpPost("chinh-sua/{id}")]
+        [Authorize(Roles = UserRoles.TrainingDepartment)]
+        public async Task<IActionResult> ChinhSua(int id, [FromForm] string metadata, [FromForm] List<IFormFile>? lessonFiles)
         {
             try
             {
-                if (!ModelState.IsValid)
+                if (string.IsNullOrWhiteSpace(metadata))
                 {
-                    await ReloadFormData();
-                    return View(model);
+                    TempData["Error"] = "Dữ liệu không hợp lệ!";
+                    return RedirectToAction("ChinhSua", new { id });
                 }
 
-                var json = JsonSerializer.Serialize(model);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                var response = await _httpClient.PutAsync(Utilities.GetAbsoluteUrl($"api/course/{model.CourseId}"), content);
+                // Create multipart form data
+                using var formData = new MultipartFormDataContent();
+                
+                // Add metadata as a form field
+                formData.Add(new StringContent(metadata, Encoding.UTF8, "application/json"), "metadata");
+                
+                // Add lesson files if any
+                if (lessonFiles != null && lessonFiles.Any())
+                {
+                    foreach (var file in lessonFiles)
+                    {
+                        if (file.Length > 0)
+                        {
+                            var fileContent = new StreamContent(file.OpenReadStream());
+                            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+                            formData.Add(fileContent, "LessonFiles", file.FileName);
+                        }
+                    }
+                }
+                
+                // Call API to update course
+                var response = await _httpClient.PutAsync(Utilities.GetAbsoluteUrl($"api/course/{id}"), formData);
                 
                 if (response.IsSuccessStatusCode)
                 {
                     TempData["SuccessMessage"] = "Cập nhật khóa học thành công!";
-                    return RedirectToAction("ChiTiet", new { id = model.CourseId });
+                    return RedirectToAction("ChiTiet", new { id });
                 }
                 else
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("API Error updating course {CourseId}: {Error}", id, errorContent);
+                    
                     TempData["Error"] = !string.IsNullOrEmpty(errorContent) ? errorContent.Trim('"') : "Không thể cập nhật khóa học. Vui lòng thử lại.";
-                    await ReloadFormData();
-                    return View(model);
+                    return RedirectToAction("ChinhSua", new { id });
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error occurred while updating course {model.CourseId}");
+                _logger.LogError(ex, $"Error occurred while updating course {id}");
                 TempData["Error"] = "Đã xảy ra lỗi khi cập nhật khóa học.";
-                await ReloadFormData();
-                return View(model);
+                return RedirectToAction("ChinhSua", new { id });
             }
         }
 
@@ -443,6 +465,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         
 
         [HttpGet("danh-sach-nhan-vien/{id}")]
+        [Authorize(Roles = UserRoles.TrainingDepartment + "," + UserRoles.DirectManager)]
         public async Task<IActionResult> DanhSachNhanVien(int id, string search, string status, int page = 1)
         {
             try
@@ -594,12 +617,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 {
                     TempData["Success"] = "Đã gửi thông báo thành công cho tất cả nhân viên đủ điều kiện!";
                 }
-                //else
-                //{
-                //    var errorContent = await response.Content.ReadAsStringAsync();
-                //    var errorMessage = !string.IsNullOrEmpty(errorContent) ? errorContent.Trim('"') : "Không thể gửi thông báo. Vui lòng thử lại.";
-                //    TempData["Error"] = errorMessage;
-                //}
             }
             catch (Exception ex)
             {
@@ -1032,6 +1049,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpPost("finalize-enrollments")]
+        [Authorize(Roles = UserRoles.DirectManager)]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> FinalizeEnrollments(int courseId)
         {
