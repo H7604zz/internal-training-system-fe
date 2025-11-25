@@ -518,33 +518,114 @@
             if (url) {
                 const absUrl = toAbsoluteUrl(url);
                 const ext = getExtension(absUrl);
+                
+                // Show loading state
+                readingText.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Đang tải...</span></div><p class="mt-3">Đang tải tài liệu...</p></div>';
+                readingText.classList.remove('d-none');
+                
                 try {
-                    if (ext === 'pdf') {
-                        // Use blob URL to avoid forced download by Content-Disposition
-                        const blobUrl = await fetchBlobUrl(absUrl);
-                        iframe.src = `${blobUrl}#toolbar=1&navpanes=0`;
-                        readingDoc.classList.remove('d-none');
-                    } else if (['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'].includes(ext)) {
-                        // Try Office viewer (requires public access to the file URL)
-                        const viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(absUrl)}`;
-                        iframe.src = viewerUrl;
-                        readingDoc.classList.remove('d-none');
+                    // Handle document files (PDF, Office documents)
+                    if (['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'].includes(ext)) {
+                        console.log(`Loading ${ext.toUpperCase()} document from:`, absUrl);
+                        
+                        // Method 1: Try blob URL approach first
+                        try {
+                            const blobUrl = await fetchBlobUrl(absUrl);
+                            // For PDF, add parameters to improve viewing
+                            iframe.src = ext === 'pdf' ? `${blobUrl}#toolbar=1&navpanes=0&view=FitH` : blobUrl;
+                            readingText.classList.add('d-none');
+                            readingDoc.classList.remove('d-none');
+                            console.log(`${ext.toUpperCase()} loaded successfully via blob URL`);
+                        } catch (blobError) {
+                            console.warn('Blob URL failed, trying alternative methods:', blobError);
+                            
+                            // Method 2: For Office documents, try Office Online Viewer
+                            if (['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'].includes(ext)) {
+                                const viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(absUrl)}`;
+                                iframe.src = viewerUrl;
+                                readingText.classList.add('d-none');
+                                readingDoc.classList.remove('d-none');
+                                console.log('Office document loaded via Office Online Viewer');
+                            } else {
+                                // Method 3: For PDF, try direct URL
+                                iframe.src = `${absUrl}#toolbar=1&navpanes=0&view=FitH`;
+                                readingText.classList.add('d-none');
+                                readingDoc.classList.remove('d-none');
+                                console.log('PDF loaded via direct URL');
+                            }
+                        }
+                        
+                        // Fallback error handler for iframe
+                        iframe.onerror = function() {
+                            console.error('Document iframe error');
+                            readingDoc.classList.add('d-none');
+                            const docType = ext === 'pdf' ? 'PDF' : 'tài liệu';
+                            readingText.innerHTML = `
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Không thể hiển thị ${docType} trực tiếp trong trình duyệt.
+                                    <div class="mt-3">
+                                        <a href="${absUrl}" target="_blank" class="btn btn-primary" download>
+                                            <i class="fas fa-download me-2"></i>Tải xuống ${docType}
+                                        </a>
+                                        <a href="${absUrl}" target="_blank" class="btn btn-secondary ms-2">
+                                            <i class="fas fa-external-link-alt me-2"></i>Mở trong tab mới
+                                        </a>
+                                    </div>
+                                </div>
+                            `;
+                            readingText.classList.remove('d-none');
+                        };
+                        
                     } else if (['txt', 'md', 'csv', 'json'].includes(ext)) {
+                        console.log('Loading text file from:', absUrl);
                         const resp = await fetch(absUrl, { credentials: 'include' });
                         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
                         const text = await resp.text();
-                        readingText.innerText = text;
+                        readingText.innerHTML = `<pre style="white-space: pre-wrap; word-wrap: break-word;">${text}</pre>`;
                         readingText.classList.remove('d-none');
                     } else {
+                        console.log('Loading document with fallback method from:', absUrl);
                         // Fallback: try embed via blob
-                        const blobUrl = await fetchBlobUrl(absUrl);
-                        iframe.src = blobUrl;
-                        readingDoc.classList.remove('d-none');
+                        try {
+                            const blobUrl = await fetchBlobUrl(absUrl);
+                            iframe.src = blobUrl;
+                            readingText.classList.add('d-none');
+                            readingDoc.classList.remove('d-none');
+                        } catch (fallbackError) {
+                            // If all else fails, provide download link
+                            readingText.innerHTML = `
+                                <div class="alert alert-info">
+                                    <i class="fas fa-file me-2"></i>
+                                    Không thể xem trước loại file này.
+                                    <div class="mt-3">
+                                        <a href="${absUrl}" target="_blank" class="btn btn-primary" download>
+                                            <i class="fas fa-download me-2"></i>Tải xuống tài liệu
+                                        </a>
+                                    </div>
+                                </div>
+                            `;
+                            readingText.classList.remove('d-none');
+                        }
                     }
                 } catch (e) {
                     console.error('Reading content load failed:', e);
-                    alert('Không thể hiển thị tài liệu. Vui lòng thử lại hoặc tải xuống sau.');
-                    return;
+                    readingText.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <strong>Lỗi:</strong> ${e.message}
+                            <div class="mt-3">
+                                <a href="${absUrl}" target="_blank" class="btn btn-primary" download>
+                                    <i class="fas fa-download me-2"></i>Thử tải xuống
+                                </a>
+                                <button onclick="loadReadingLesson(${lessonId})" class="btn btn-secondary ms-2">
+                                    <i class="fas fa-redo me-2"></i>Thử lại
+                                </button>
+                            </div>
+                            <small class="d-block mt-2 text-muted">Chi tiết lỗi: ${e.toString()}</small>
+                        </div>
+                    `;
+                    readingText.classList.remove('d-none');
                 }
             } else if (lesson.description) {
                 readingText.innerHTML = lesson.description;
