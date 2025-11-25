@@ -141,7 +141,7 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
 
     public class WeeklyScheduleItem
     {
-        public string Day { get; set; } = string.Empty;
+        public string DayOfWeek { get; set; } = string.Empty;
         public string StartTime { get; set; } = string.Empty;
         public string EndTime { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
