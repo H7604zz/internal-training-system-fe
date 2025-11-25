@@ -35,7 +35,7 @@ builder.Services.AddAuthentication("CustomCookie")
     {
         options.LoginPath = "/dang-nhap";
         options.LogoutPath = "/dang-xuat";
-        options.AccessDeniedPath = "/khong-co-quyen";
+        options.AccessDeniedPath = "/trang-chu/access-denied";
         options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
         options.SlidingExpiration = true;
         options.Cookie.HttpOnly = true;
