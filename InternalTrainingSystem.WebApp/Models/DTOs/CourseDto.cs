@@ -58,6 +58,11 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string? ContentUrl { get; set; }
         public int? QuizId { get; set; }
         
+        // Quiz settings
+        public int? QuizTimeLimit { get; set; }
+        public int? QuizMaxAttempts { get; set; }
+        public int? QuizPassingScore { get; set; }
+        
         // Computed properties
         public string TypeDisplay => Type switch
         {

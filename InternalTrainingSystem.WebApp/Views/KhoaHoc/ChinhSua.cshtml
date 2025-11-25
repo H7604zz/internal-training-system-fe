@@ -1,12 +1,14 @@
 @model InternalTrainingSystem.WebApp.Models.DTOs.CourseDto
 @using InternalTrainingSystem.WebApp.Constants
 @using InternalTrainingSystem.WebApp.Extensions
+@using InternalTrainingSystem.WebApp.Models.DTOs
 @{
     ViewData["Title"] = "Chỉnh Sửa Khóa Học";
 }
 
 @section Styles {
     <link rel="stylesheet" href="~/css/khoa-hoc.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/tao-moi-khoa-hoc.css" asp-append-version="true" />
 }
 
 <div class="course-container">
@@ -46,10 +48,11 @@
         </div>
 
         <!-- Edit Form -->
-        <form method="post" asp-action="ChinhSua" class="course-edit-form">
+        <form method="post" asp-action="ChinhSua" asp-route-id="@Model.CourseId" enctype="multipart/form-data" class="course-edit-form">
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="CourseId" />
             <input type="hidden" asp-for="CreatedDate" />
+            <input type="hidden" name="metadata" id="metadata-input" />
 
             <div class="row">
                 <!-- Main Form -->
@@ -58,14 +61,14 @@
                         <h3 class="form-section-title">
                             <i class="fas fa-info-circle me-2"></i>Thông Tin Cơ Bản
                         </h3>
-                        
+
                         <div class="row">
                             <div class="col-md-8 mb-3">
                                 <label asp-for="CourseName" class="form-label required">
                                     <i class="fas fa-graduation-cap me-1"></i>Tên khóa học
                                 </label>
                                 <input asp-for="CourseName" class="form-control" 
-                                       placeholder="Nhập tên khóa học (VD: Khóa học lập trình C#)">
+                                placeholder="Nhập tên khóa học (VD: Khóa học lập trình C#)">
                                 <span asp-validation-for="CourseName" class="text-danger"></span>
                             </div>
                             <div class="col-md-4 mb-3">
@@ -73,7 +76,7 @@
                                     <i class="fas fa-barcode me-1"></i>Mã khóa học
                                 </label>
                                 <input asp-for="Code" class="form-control" 
-                                       placeholder="VD: IT-001">
+                                placeholder="VD: IT-001">
                                 <span asp-validation-for="Code" class="text-danger"></span>
                             </div>
                         </div>
@@ -83,7 +86,7 @@
                                 <i class="fas fa-align-left me-1"></i>Mô tả khóa học
                             </label>
                             <textarea asp-for="Description" class="form-control" rows="4" 
-                                      placeholder="Nhập mô tả chi tiết về nội dung, mục tiêu và lợi ích của khóa học..."></textarea>
+                            placeholder="Nhập mô tả chi tiết về nội dung, mục tiêu và lợi ích của khóa học..."></textarea>
                             <span asp-validation-for="Description" class="text-danger"></span>
                             <div class="form-text">
                                 <i class="fas fa-lightbulb me-1"></i>
@@ -96,13 +99,14 @@
                                 <label asp-for="Category" class="form-label required">
                                     <i class="fas fa-folder me-1"></i>Danh mục
                                 </label>
-                                <select asp-for="Category" class="form-select">
+                                <select asp-for="Category" class="form-select" id="Category">
                                     <option value="">-- Chọn danh mục khóa học --</option>
                                     @if (ViewBag.Categories != null)
                                     {
                                         @foreach (dynamic category in ViewBag.Categories)
                                         {
-                                            <option value="@category.Id">@category.Name</option>
+                                            var isSelected = Model.CategoryName == category.CategoryName;
+                                            <option value="@category.CourseCategoryId" selected="@isSelected">@category.CategoryName</option>
                                         }
                                     }
                                 </select>
@@ -181,13 +185,13 @@
                                 @foreach (var dept in ViewBag.Departments)
                                 {
                                     <div class="form-check department-check">
-                                        <input class="form-check-input" type="checkbox" 
-                                               name="SelectedDepartmentIds" value="@dept.Id" 
-                                               id="dept_@dept.Id"
-                                               checked="@(Model.Departments?.Any(d => d.DepartmentId == dept.Id) == true)">
-                                        <label class="form-check-label" for="dept_@dept.Id">
+                                        <input class="form-check-input" type="checkbox"
+                                               name="SelectedDepartmentIds" value="@dept.DepartmentId"
+                                               id="dept_@dept.DepartmentId"
+                                               checked="@(Model.Departments?.Any(d => d.DepartmentId == dept.DepartmentId) == true)">
+                                        <label class="form-check-label" for="dept_@dept.DepartmentId">
                                             <i class="fas fa-building me-2"></i>
-                                            <span class="fw-semibold">@dept.Name</span>
+                                            <span class="fw-semibold">@dept.DepartmentName</span>
                                             <br>
                                             <small class="text-muted">Phòng ban trong tổ chức</small>
                                         </label>
@@ -201,9 +205,11 @@
                             }
                             else
                             {
-                                <div class="alert alert-info">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    Không có dữ liệu phòng ban. Vui lòng liên hệ quản trị viên.
+                                <div class="card border-warning bg-light">
+                                    <div class="card-body py-2">
+                                        <i class="fas fa-info-circle me-2 text-warning"></i>
+                                        Không có dữ liệu phòng ban. Vui lòng liên hệ quản trị viên.
+                                    </div>
                                 </div>
                             }
                         </div>
@@ -218,236 +224,244 @@
 
                         <!-- Existing Modules Container -->
                         <div id="existing-modules-container">
-                            <!-- Module 1 - Existing with sample data -->
-                            <div class="module-item mb-4" data-module-index="0">
-                                <div class="card">
-                                    <div class="card-header d-flex justify-content-between align-items-center">
-                                        <h5 class="mb-0">
-                                            <i class="fas fa-folder me-2"></i>Module <span class="module-number">1</span>
-                                        </h5>
-                                        <div>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary move-up-module" title="Di chuyển lên">
-                                                <i class="fas fa-arrow-up"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary move-down-module" title="Di chuyển xuống">
-                                                <i class="fas fa-arrow-down"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger remove-module" title="Xóa module">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="row mb-3">
-                                            <div class="col-md-6">
-                                                <label class="form-label required">Tên Module</label>
-                                                <input type="text" name="Modules[0].ModuleName" class="form-control" 
-                                                       value="Giới thiệu về Lập trình Web" placeholder="Nhập tên module">
+                            @if (Model.Modules != null && Model.Modules.Any())
+                            {
+                                @for (int moduleIdx = 0; moduleIdx < Model.Modules.Count; moduleIdx++)
+                                {
+                                    var module = Model.Modules[moduleIdx];
+                                    <div class="module-item mb-4" data-module-index="@moduleIdx" data-module-id="@module.Id">
+                                        <div class="card">
+                                            <div class="card-header d-flex justify-content-between align-items-center">
+                                                <h5 class="mb-0">
+                                                    <i class="fas fa-folder me-2"></i>Module <span class="module-number">@(moduleIdx + 1)</span>
+                                                </h5>
+                                                <div>
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary move-up-module" title="Di chuyển lên">
+                                                        <i class="fas fa-arrow-up"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary move-down-module" title="Di chuyển xuống">
+                                                        <i class="fas fa-arrow-down"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger remove-module" title="Xóa module">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label required">Thứ tự</label>
-                                                <input type="number" name="Modules[0].Order" class="form-control module-order" min="1" value="1" readonly>
-                                            </div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Mô tả Module</label>
-                                            <textarea name="Modules[0].Description" class="form-control" rows="2" 
-                                                      placeholder="Nhập mô tả module...">Tìm hiểu các khái niệm cơ bản về phát triển web, HTML, CSS và JavaScript</textarea>
-                                        </div>
+                                            <div class="card-body">
+                                                <input type="hidden" name="Modules[@moduleIdx].ModuleId" value="@module.Id" class="module-id" />
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label required">Tên Module</label>
+                                                        <input type="text" name="Modules[@moduleIdx].Title" class="form-control module-title" 
+                                                               value="@module.Title" placeholder="Nhập tên module" required>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label required">Thứ tự</label>
+                                                        <input type="number" name="Modules[@moduleIdx].OrderIndex" class="form-control module-order" min="1" value="@(moduleIdx + 1)" readonly>
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Mô tả Module</label>
+                                                    <textarea name="Modules[@moduleIdx].Description" class="form-control module-description" rows="2" 
+                                                              placeholder="Nhập mô tả module...">@module.Description</textarea>
+                                                </div>
 
-                                        <!-- Lessons Section -->
-                                        <div class="lessons-section">
-                                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                                <h6><i class="fas fa-play-circle me-2"></i>Bài Học</h6>
-                                                <button type="button" class="btn btn-sm btn-outline-primary add-lesson-btn">
-                                                    <i class="fas fa-plus me-1"></i>Thêm Bài Học
-                                                </button>
-                                            </div>
-                                            <div class="lessons-container">
-                                                <!-- Existing Lesson 1 -->
-                                                <div class="lesson-item mb-3" data-lesson-index="0">
-                                                    <div class="card border-start border-primary border-3">
-                                                        <div class="card-body">
-                                                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                                                <h6 class="card-title mb-0">
-                                                                    <i class="fas fa-play me-2"></i>Bài học <span class="lesson-number">1</span>
-                                                                </h6>
-                                                                <div>
-                                                                    <button type="button" class="btn btn-sm btn-outline-secondary move-up-lesson" title="Di chuyển lên">
-                                                                        <i class="fas fa-arrow-up"></i>
-                                                                    </button>
-                                                                    <button type="button" class="btn btn-sm btn-outline-secondary move-down-lesson" title="Di chuyển xuống">
-                                                                        <i class="fas fa-arrow-down"></i>
-                                                                    </button>
-                                                                    <button type="button" class="btn btn-sm btn-outline-danger remove-lesson" title="Xóa bài học">
-                                                                        <i class="fas fa-trash"></i>
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                            
-                                                            <div class="row mb-3">
-                                                                <div class="col-md-8">
-                                                                    <label class="form-label required">Tên Bài Học</label>
-                                                                    <input type="text" name="Modules[0].Lessons[0].LessonName" class="form-control" 
-                                                                           value="HTML cơ bản" placeholder="Nhập tên bài học">
-                                                                </div>
-                                                                <div class="col-md-4">
-                                                                    <label class="form-label required">Thứ tự</label>
-                                                                    <input type="number" name="Modules[0].Lessons[0].Order" class="form-control lesson-order" min="1" value="1" readonly>
-                                                                </div>
-                                                            </div>
+                                                <!-- Lessons Section -->
+                                                <div class="lessons-section">
+                                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                                        <h6><i class="fas fa-play-circle me-2"></i>Bài Học</h6>
+                                                        <button type="button" class="btn btn-sm btn-outline-primary add-lesson-btn">
+                                                            <i class="fas fa-plus me-1"></i>Thêm Bài Học
+                                                        </button>
+                                                    </div>
+                                                    <div class="lessons-container">
+                                                        @if (module.Lessons != null && module.Lessons.Any())
+                                                        {
+                                                            @for (int lessonIdx = 0; lessonIdx < module.Lessons.Count; lessonIdx++)
+                                                            {
+                                                                var lesson = module.Lessons[lessonIdx];
+                                                                var lessonContentUrl = string.IsNullOrEmpty(lesson.ContentUrl) ? "" : lesson.ContentUrl;
+                                                                <div class="lesson-item mb-3" data-lesson-index="@lessonIdx" data-lesson-id="@lesson.Id" data-content-url="@lessonContentUrl" data-lesson-type="@((int)lesson.Type)" data-quiz-id="@(lesson.QuizId?.ToString() ?? string.Empty)">
+                                                                    <div class="card border-start border-primary border-3">
+                                                                        <div class="card-body">
+                                                                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                                                                <h6 class="card-title mb-0">
+                                                                                    <i class="fas fa-play me-2"></i>Bài học <span class="lesson-number">@(lessonIdx + 1)</span>
+                                                                                </h6>
+                                                                                <div>
+                                                                                    <button type="button" class="btn btn-sm btn-outline-secondary move-up-lesson" title="Di chuyển lên">
+                                                                                        <i class="fas fa-arrow-up"></i>
+                                                                                    </button>
+                                                                                    <button type="button" class="btn btn-sm btn-outline-secondary move-down-lesson" title="Di chuyển xuống">
+                                                                                        <i class="fas fa-arrow-down"></i>
+                                                                                    </button>
+                                                                                    <button type="button" class="btn btn-sm btn-outline-danger remove-lesson" title="Xóa bài học">
+                                                                                        <i class="fas fa-trash"></i>
+                                                                                    </button>
+                                                                                </div>
+                                                                            </div>
+                                                                            
+                                                                            <input type="hidden" name="Modules[@moduleIdx].Lessons[@lessonIdx].LessonId" value="@lesson.Id" class="lesson-id" />
+                                                                            <div class="row mb-3">
+                                                                                <div class="col-md-8">
+                                                                                    <label class="form-label required">Tên Bài Học</label>
+                                                                                    <input type="text" name="Modules[@moduleIdx].Lessons[@lessonIdx].Title" class="form-control lesson-title" 
+                                                                                           value="@lesson.Title" placeholder="Nhập tên bài học" required>
+                                                                                </div>
+                                                                                <div class="col-md-4">
+                                                                                    <label class="form-label required">Thứ tự</label>
+                                                                                    <input type="number" name="Modules[@moduleIdx].Lessons[@lessonIdx].OrderIndex" class="form-control lesson-order" min="1" value="@(lessonIdx + 1)" readonly>
+                                                                                </div>
+                                                                            </div>
 
-                                                            <div class="mb-3">
-                                                                <label class="form-label">Nội dung học hiện tại</label>
-                                                                <div class="current-content-info">
-                                                                    <div class="alert alert-info">
-                                                                        <i class="fas fa-video me-2"></i>
-                                                                        <strong>video_html_basics.mp4</strong> (45 phút)
-                                                                        <a href="#" class="btn btn-sm btn-outline-primary ms-2">
-                                                                            <i class="fas fa-eye me-1"></i>Xem
-                                                                        </a>
-                                                                        <button type="button" class="btn btn-sm btn-outline-danger ms-2">
-                                                                            <i class="fas fa-trash me-1"></i>Xóa
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                                <label class="form-label mt-3">Thay đổi nội dung</label>
-                                                                <div class="content-upload-area">
-                                                                    <div class="upload-tabs mb-3">
-                                                                        <div class="btn-group" role="group">
-                                                                            <input type="radio" class="btn-check content-type" name="content-type-0-0" id="video-0-0" value="video">
-                                                                            <label class="btn btn-outline-primary" for="video-0-0">
-                                                                                <i class="fas fa-video me-1"></i>Video
-                                                                            </label>
+                                                                            @if (!string.IsNullOrEmpty(lesson.ContentUrl))
+                                                                            {
+                                                                                <div class="mb-3">
+                                                                                    <label class="form-label">Nội dung học hiện tại</label>
+                                                                                    <div class="card border-info bg-light">
+                                                                                        <div class="card-body py-3 d-flex align-items-center justify-content-between">
+                                                                                            <div>
+                                                                                                <i class="fas @lesson.TypeIcon me-2 text-info"></i>
+                                                                                                <strong>@lesson.TypeDisplay</strong>
+                                                                                            </div>
+                                                                                            <a href="@lesson.ContentUrl" target="_blank" class="btn-primary px-3 py-2">
+                                                                                                <i class="fas fa-eye me-1"></i>Xem
+                                                                                            </a>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            }
 
-                                                                            <input type="radio" class="btn-check content-type" name="content-type-0-0" id="pdf-0-0" value="pdf">
-                                                                            <label class="btn btn-outline-primary" for="pdf-0-0">
-                                                                                <i class="fas fa-file-pdf me-1"></i>PDF
-                                                                            </label>
+                                                                            @if (lesson.Type == LessonType.Quiz && lesson.QuizId.HasValue)
+                                                                            {
+                                                                                <div class="mb-3 quiz-current-wrapper" data-quiz-id="@lesson.QuizId">
+                                                                                    <label class="form-label">Quiz hiện tại</label>
+                                                                                    <div class="card border-warning bg-light">
+                                                                                        <div class="card-body">
+                                                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                                                <div>
+                                                                                                    <i class="fas fa-clipboard-list me-2 text-warning"></i>
+                                                                                                    <strong class="quiz-title-display">@lesson.Title</strong>
+                                                                                                </div>
+                                                                                                <button type="button" class="btn-outline-primary view-quiz-detail" data-quiz-id="@lesson.QuizId">
+                                                                                                    <i class="fas fa-eye me-1"></i>Xem chi tiết
+                                                                                                </button>
+                                                                                            </div>
+                                                                                            <div class="quiz-summary mt-3">
+                                                                                                <div class="quiz-summary-loading text-muted small">
+                                                                                                    <i class="fas fa-spinner fa-spin me-1"></i>Đang tải thông tin quiz...
+                                                                                                </div>
+                                                                                                <div class="quiz-summary-content d-none small text-muted">
+                                                                                                    <div>
+                                                                                                        <i class="fas fa-clock me-1"></i><span class="quiz-time-limit">--</span> phút
+                                                                                                        <span class="ms-3"><i class="fas fa-redo me-1"></i><span class="quiz-max-attempts">--</span> lần</span>
+                                                                                                        <span class="ms-3"><i class="fas fa-check-circle me-1"></i>Đạt <span class="quiz-passing-score">--</span>%</span>
+                                                                                                    </div>
+                                                                                                    <div class="mt-2">
+                                                                                                        <i class="fas fa-question-circle me-1"></i><span class="quiz-question-count">0</span> câu hỏi
+                                                                                                    </div>
+                                                                                                    <p class="quiz-description mt-2 mb-0 d-none"></p>
+                                                                                                </div>
+                                                                                                    <div class="alert alert-warning quiz-replace-notice mt-3 mb-0 d-none">
+                                                                                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                                                                                        Quiz hiện tại sẽ được thay thế sau khi tải lên file Excel mới.
+                                                                                                    </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            }
 
-                                                                            <input type="radio" class="btn-check content-type" name="content-type-0-0" id="image-0-0" value="image">
-                                                                            <label class="btn btn-outline-primary" for="image-0-0">
-                                                                                <i class="fas fa-image me-1"></i>Hình ảnh
-                                                                            </label>
+                                                                            <div class="mb-3">
+                                                                                <label class="form-label">Loại Nội Dung</label>
+                                                                                <div class="content-type-selector mb-3">
+                                                                                    <div class="btn-group" role="group">
+                                                                                        <input type="radio" class="btn-check lesson-type-radio" name="lesson-type-@moduleIdx-@lessonIdx" id="type-video-@moduleIdx-@lessonIdx" value="1">
+                                                                                        <label class="btn btn-outline-primary" for="type-video-@moduleIdx-@lessonIdx">
+                                                                                            <i class="fas fa-video me-1"></i>Video
+                                                                                        </label>
 
-                                                                            <input type="radio" class="btn-check content-type" name="content-type-0-0" id="document-0-0" value="document">
-                                                                            <label class="btn btn-outline-primary" for="document-0-0">
-                                                                                <i class="fas fa-file-alt me-1"></i>Tài liệu
-                                                                            </label>
-                                                                        </div>
-                                                                    </div>
+                                                                                        <input type="radio" class="btn-check lesson-type-radio" name="lesson-type-@moduleIdx-@lessonIdx" id="type-docs-@moduleIdx-@lessonIdx" value="2">
+                                                                                        <label class="btn btn-outline-success" for="type-docs-@moduleIdx-@lessonIdx">
+                                                                                            <i class="fas fa-file-alt me-1"></i>Tài liệu
+                                                                                        </label>
 
-                                                                    <div class="file-upload-container">
-                                                                        <div class="file-upload-area">
-                                                                            <input type="file" name="Modules[0].Lessons[0].ContentFile" class="form-control content-file-input" accept="">
-                                                                            <div class="upload-placeholder text-center p-4">
-                                                                                <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-2"></i>
-                                                                                <p class="text-muted mb-0">Chọn loại nội dung và tải lên tệp mới</p>
-                                                                                <small class="text-muted">Để trống nếu không muốn thay đổi</small>
+                                                                                        <input type="radio" class="btn-check lesson-type-radio" name="lesson-type-@moduleIdx-@lessonIdx" id="type-quiz-@moduleIdx-@lessonIdx" value="3">
+                                                                                        <label class="btn btn-outline-warning" for="type-quiz-@moduleIdx-@lessonIdx">
+                                                                                            <i class="fas fa-question-circle me-1"></i>Quiz
+                                                                                        </label>
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                <!-- Video URL Input -->
+                                                                                <div class="video-input-area" style="display: none;">
+                                                                                    <label class="form-label">URL Video</label>
+                                                                                    <input type="text" class="form-control lesson-video-url" placeholder="Nhập URL video (YouTube, Vimeo, hoặc link trực tiếp...)">
+                                                                                    <div class="form-text">
+                                                                                        <i class="fas fa-info-circle me-1"></i>
+                                                                                        Hỗ trợ: YouTube, Vimeo, hoặc link video trực tiếp (.mp4)
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                <!-- Docs/Quiz Upload -->
+                                                                                <div class="file-upload-area" style="display: none;">
+                                                                                    <label class="form-label">Tải lên tệp mới (để trống nếu giữ nguyên)</label>
+                                                                                    <input type="file" name="LessonFiles" class="form-control content-file-input" accept="">
+                                                                                    <div class="form-text file-upload-hint">
+                                                                                        <i class="fas fa-cloud-upload-alt me-1"></i>
+                                                                                        <span class="upload-type-text"></span>
+                                                                                    </div>
+                                                                                    <div class="file-info mt-2" style="display: none;">
+                                                                                        <div class="card border-success bg-light">
+                                                                                            <div class="card-body py-2">
+                                                                                                <i class="fas fa-file me-2 text-success"></i>
+                                                                                                <span class="file-name fw-semibold"></span>
+                                                                                                <span class="file-size text-muted ms-2"></span>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                <!-- Quiz Settings -->
+                                                                                <div class="quiz-settings-area" style="display: none;">
+                                                                                    <hr class="my-3">
+                                                                                    <h6 class="mb-3">
+                                                                                        <i class="fas fa-cog me-2 text-warning"></i>Cấu hình Quiz
+                                                                                    </h6>
+                                                                                    <div class="row">
+                                                                                        <div class="col-md-4 mb-3">
+                                                                                            <label class="form-label required">Số lần làm tối đa</label>
+                                                                                            <input type="number" name="Modules[@moduleIdx].Lessons[@lessonIdx].QuizMaxAttempts" class="form-control quiz-max-attempts" 
+                                                                                                   min="1" max="10" value="@(lesson.QuizMaxAttempts ?? 3)" placeholder="VD: 3">
+                                                                                            <small class="form-text text-muted">Từ 1 đến 10 lần</small>
+                                                                                        </div>
+                                                                                        <div class="col-md-4 mb-3">
+                                                                                            <label class="form-label required">Điểm Pass (%)</label>
+                                                                                            <input type="number" name="Modules[@moduleIdx].Lessons[@lessonIdx].QuizPassingScore" class="form-control quiz-passing-score" 
+                                                                                                   min="0" max="100" value="@(lesson.QuizPassingScore ?? 70)" placeholder="VD: 70">
+                                                                                            <small class="form-text text-muted">Từ 0% đến 100%</small>
+                                                                                        </div>
+                                                                                        <div class="col-md-4 mb-3">
+                                                                                            <label class="form-label required">Thời gian (phút)</label>
+                                                                                            <input type="number" name="Modules[@moduleIdx].Lessons[@lessonIdx].QuizTimeLimit" class="form-control quiz-time-limit" 
+                                                                                                   min="1" max="180" value="@(lesson.QuizTimeLimit ?? 30)" placeholder="VD: 30">
+                                                                                            <small class="form-text text-muted">Từ 1 đến 180 phút</small>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
                                                                             </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <!-- Existing Lesson 2 -->
-                                                <div class="lesson-item mb-3" data-lesson-index="1">
-                                                    <div class="card border-start border-primary border-3">
-                                                        <div class="card-body">
-                                                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                                                <h6 class="card-title mb-0">
-                                                                    <i class="fas fa-play me-2"></i>Bài học <span class="lesson-number">2</span>
-                                                                </h6>
-                                                                <div>
-                                                                    <button type="button" class="btn btn-sm btn-outline-secondary move-up-lesson" title="Di chuyển lên">
-                                                                        <i class="fas fa-arrow-up"></i>
-                                                                    </button>
-                                                                    <button type="button" class="btn btn-sm btn-outline-secondary move-down-lesson" title="Di chuyển xuống">
-                                                                        <i class="fas fa-arrow-down"></i>
-                                                                    </button>
-                                                                    <button type="button" class="btn btn-sm btn-outline-danger remove-lesson" title="Xóa bài học">
-                                                                        <i class="fas fa-trash"></i>
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                            
-                                                            <div class="row mb-3">
-                                                                <div class="col-md-8">
-                                                                    <label class="form-label required">Tên Bài Học</label>
-                                                                    <input type="text" name="Modules[0].Lessons[1].LessonName" class="form-control" 
-                                                                           value="CSS Styling" placeholder="Nhập tên bài học">
-                                                                </div>
-                                                                <div class="col-md-4">
-                                                                    <label class="form-label required">Thứ tự</label>
-                                                                    <input type="number" name="Modules[0].Lessons[1].Order" class="form-control lesson-order" min="1" value="2" readonly>
-                                                                </div>
-                                                            </div>
-
-                                                            <div class="mb-3">
-                                                                <label class="form-label">Nội dung học hiện tại</label>
-                                                                <div class="current-content-info">
-                                                                    <div class="alert alert-warning">
-                                                                        <i class="fas fa-file-pdf me-2"></i>
-                                                                        <strong>css_styling_guide.pdf</strong> (20 trang)
-                                                                        <a href="#" class="btn btn-sm btn-outline-primary ms-2">
-                                                                            <i class="fas fa-eye me-1"></i>Xem
-                                                                        </a>
-                                                                        <button type="button" class="btn btn-sm btn-outline-danger ms-2">
-                                                                            <i class="fas fa-trash me-1"></i>Xóa
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                                <label class="form-label mt-3">Thay đổi nội dung</label>
-                                                                <div class="content-upload-area">
-                                                                    <div class="upload-tabs mb-3">
-                                                                        <div class="btn-group" role="group">
-                                                                            <input type="radio" class="btn-check content-type" name="content-type-0-1" id="video-0-1" value="video">
-                                                                            <label class="btn btn-outline-primary" for="video-0-1">
-                                                                                <i class="fas fa-video me-1"></i>Video
-                                                                            </label>
-
-                                                                            <input type="radio" class="btn-check content-type" name="content-type-0-1" id="pdf-0-1" value="pdf">
-                                                                            <label class="btn btn-outline-primary" for="pdf-0-1">
-                                                                                <i class="fas fa-file-pdf me-1"></i>PDF
-                                                                            </label>
-
-                                                                            <input type="radio" class="btn-check content-type" name="content-type-0-1" id="image-0-1" value="image">
-                                                                            <label class="btn btn-outline-primary" for="image-0-1">
-                                                                                <i class="fas fa-image me-1"></i>Hình ảnh
-                                                                            </label>
-
-                                                                            <input type="radio" class="btn-check content-type" name="content-type-0-1" id="document-0-1" value="document">
-                                                                            <label class="btn btn-outline-primary" for="document-0-1">
-                                                                                <i class="fas fa-file-alt me-1"></i>Tài liệu
-                                                                            </label>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <div class="file-upload-container">
-                                                                        <div class="file-upload-area">
-                                                                            <input type="file" name="Modules[0].Lessons[1].ContentFile" class="form-control content-file-input" accept="">
-                                                                            <div class="upload-placeholder text-center p-4">
-                                                                                <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-2"></i>
-                                                                                <p class="text-muted mb-0">Chọn loại nội dung và tải lên tệp mới</p>
-                                                                                <small class="text-muted">Để trống nếu không muốn thay đổi</small>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                            }
+                                                        }
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
+                                }
+                            }
                         </div>
 
                         <!-- New Modules Container -->
@@ -463,76 +477,6 @@
 
                 <!-- Side Panel -->
                 <div class="col-lg-4 mb-4">
-                    <!-- Form Actions -->
-                    <div class="form-card">
-                        <h3 class="form-section-title">
-                            <i class="fas fa-save me-2"></i>Lưu Thay Đổi
-                        </h3>
-                        
-                        <div class="d-grid gap-3">
-                            <button type="submit" class="btn btn-save">
-                                <i class="fas fa-save me-2"></i>Lưu Thay Đổi
-                            </button>
-                            <a href="@Url.Action("ChiTiet", new { id = Model.CourseId })" 
-                               class="btn btn-cancel">
-                                <i class="fas fa-times me-2"></i>Hủy Bỏ
-                            </a>
-                        </div>
-                        
-                        <div class="mt-3 p-3" style="background: #f8f9fa; border-radius: 8px; border-left: 4px solid #28a745;">
-                            <small class="text-muted">
-                                <i class="fas fa-info-circle me-1"></i>
-                                <strong>Lưu ý:</strong> Các thay đổi sẽ được áp dụng ngay lập tức và có thể ảnh hưởng đến các lớp học đang diễn ra.
-                            </small>
-                        </div>
-                    </div>
-
-                    <!-- Course Status -->
-                    <div class="form-card">
-                        <h3 class="form-section-title">
-                            <i class="fas fa-chart-pie me-2"></i>Trạng Thái Khóa Học
-                        </h3>
-                        
-                        <div class="help-list">
-                            <div class="help-item">
-                                <i class="fas fa-check-circle text-success"></i>
-                                <span>
-                                    <strong>Đã tạo:</strong><br>
-                                    <small class="text-muted">@(Model.CreatedDate.ToString("dd/MM/yyyy HH:mm"))</small>
-                                </span>
-                            </div>
-                            <div class="help-item">
-                                <i class="fas fa-clipboard-check @(Model.Status == "Approved" ? "text-success" : Model.Status == "Rejected" ? "text-danger" : "text-warning")"></i>
-                                <span>
-                                    <strong>Phê duyệt:</strong><br>
-                                    <small class="text-muted">@(Model.ApprovalStatusDisplay ?? "Chờ phê duyệt")</small>
-                                </span>
-                            </div>
-                            <div class="help-item">
-                                <i class="fas fa-@(Model.IsOnline ? "wifi text-info" : "chalkboard-teacher text-primary")"></i>
-                                <span>
-                                    <strong>Hình thức:</strong><br>
-                                    <small class="text-muted">@(Model.IsOnline ? "Trực tuyến" : "Trực tiếp")</small>
-                                </span>
-                            </div>
-                            <div class="help-item">
-                                <i class="fas fa-@(Model.IsMandatory ? "star text-warning" : "star-o text-secondary")"></i>
-                                <span>
-                                    <strong>Yêu cầu:</strong><br>
-                                    <small class="text-muted">@(Model.IsMandatory ? "Bắt buộc" : "Tùy chọn")</small>
-                                </span>
-                            </div>
-
-                            <div class="help-item">
-                                <i class="fas fa-users text-info"></i>
-                                <span>
-                                    <strong>Phòng ban:</strong><br>
-                                    <small class="text-muted">@(Model.Departments?.Count ?? 0) phòng ban được chọn</small>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Form Help -->
                     <div class="form-card">
                         <h3 class="form-section-title">
@@ -584,6 +528,30 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-card" style="position: sticky; top: 20px;">
+                        <h3 class="form-section-title">
+                            <i class="fas fa-save me-2"></i>Lưu Thay Đổi
+                        </h3>
+
+                        <div class="d-grid gap-3">
+                            <button type="submit" class="btn btn-save">
+                                <i class="fas fa-save me-2"></i>Lưu Thay Đổi
+                            </button>
+                            <a href="@Url.Action("ChiTiet", new { id = Model.CourseId })"
+                               class="btn btn-cancel">
+                                <i class="fas fa-times me-2"></i>Hủy Bỏ
+                            </a>
+                        </div>
+
+                        <div class="mt-3 p-3" style="background: #f8f9fa; border-radius: 8px; border-left: 4px solid #28a745;">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                <strong>Lưu ý:</strong> Các thay đổi sẽ được áp dụng ngay lập tức và có thể ảnh hưởng đến các lớp học đang diễn ra.
+                            </small>
+                        </div>
+                    </div>
                 </div>
             </div>
         </form>
@@ -596,7 +564,7 @@
                         <h5 class="mb-0">
                             <i class="fas fa-folder me-2"></i>Module <span class="module-number"></span>
                         </h5>
-                        <div>
+                        <div class="btn-group">
                             <button type="button" class="btn btn-sm btn-outline-secondary move-up-module" title="Di chuyển lên">
                                 <i class="fas fa-arrow-up"></i>
                             </button>
@@ -612,7 +580,7 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label required">Tên Module</label>
-                                <input type="text" name="Modules[].ModuleName" class="form-control" placeholder="Nhập tên module">
+                                <input type="text" name="Modules[].ModuleName" class="form-control module-title" placeholder="Nhập tên module" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label required">Thứ tự</label>
@@ -621,7 +589,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Mô tả Module</label>
-                            <textarea name="Modules[].Description" class="form-control" rows="2" placeholder="Nhập mô tả module..."></textarea>
+                            <textarea name="Modules[].Description" class="form-control module-description" rows="2" placeholder="Nhập mô tả module..."></textarea>
                         </div>
 
                         <!-- Lessons Section -->
@@ -665,7 +633,7 @@
                         <div class="row mb-3">
                             <div class="col-md-8">
                                 <label class="form-label required">Tên Bài Học</label>
-                                <input type="text" name="Modules[].Lessons[].LessonName" class="form-control" placeholder="Nhập tên bài học">
+                                <input type="text" name="Modules[].Lessons[].LessonName" class="form-control lesson-title" placeholder="Nhập tên bài học" required>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label required">Thứ tự</label>
@@ -674,47 +642,79 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Nội dung học</label>
-                            <div class="content-upload-area">
-                                <div class="upload-tabs mb-3">
-                                    <div class="btn-group" role="group">
-                                        <input type="radio" class="btn-check content-type" name="content-type-" id="video-" value="video">
-                                        <label class="btn btn-outline-primary" for="video-">
-                                            <i class="fas fa-video me-1"></i>Video
-                                        </label>
+                            <label class="form-label">Loại Nội Dung</label>
+                            <div class="content-type-selector mb-3">
+                                <div class="btn-group" role="group">
+                                    <input type="radio" class="btn-check lesson-type-radio" name="lesson-type-" id="type-video-" value="1">
+                                    <label class="btn btn-outline-primary" for="type-video-">
+                                        <i class="fas fa-video me-1"></i>Video
+                                    </label>
 
-                                        <input type="radio" class="btn-check content-type" name="content-type-" id="pdf-" value="pdf">
-                                        <label class="btn btn-outline-primary" for="pdf-">
-                                            <i class="fas fa-file-pdf me-1"></i>PDF
-                                        </label>
+                                    <input type="radio" class="btn-check lesson-type-radio" name="lesson-type-" id="type-docs-" value="2">
+                                    <label class="btn btn-outline-success" for="type-docs-">
+                                        <i class="fas fa-file-alt me-1"></i>Tài liệu
+                                    </label>
 
-                                        <input type="radio" class="btn-check content-type" name="content-type-" id="image-" value="image">
-                                        <label class="btn btn-outline-primary" for="image-">
-                                            <i class="fas fa-image me-1"></i>Hình ảnh
-                                        </label>
-
-                                        <input type="radio" class="btn-check content-type" name="content-type-" id="document-" value="document">
-                                        <label class="btn btn-outline-primary" for="document-">
-                                            <i class="fas fa-file-alt me-1"></i>Tài liệu
-                                        </label>
-                                    </div>
+                                    <input type="radio" class="btn-check lesson-type-radio" name="lesson-type-" id="type-quiz-" value="3">
+                                    <label class="btn btn-outline-warning" for="type-quiz-">
+                                        <i class="fas fa-question-circle me-1"></i>Quiz
+                                    </label>
                                 </div>
+                            </div>
 
-                                <div class="file-upload-container">
-                                    <div class="file-upload-area">
-                                        <input type="file" name="Modules[].Lessons[].ContentFile" class="form-control content-file-input" accept="">
-                                        <div class="upload-placeholder text-center p-4">
-                                            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-2"></i>
-                                            <p class="text-muted mb-0">Chọn loại nội dung và tải lên tệp</p>
-                                            <small class="text-muted">Hỗ trợ: Video (MP4), PDF, Hình ảnh (JPG, PNG), Tài liệu (DOCX, PPTX)</small>
-                                        </div>
-                                    </div>
-                                    <div class="file-info mt-2" style="display: none;">
-                                        <div class="alert alert-info">
-                                            <i class="fas fa-file me-2"></i>
-                                            <span class="file-name"></span>
+                            <!-- Video URL Input -->
+                            <div class="video-input-area" style="display: none;">
+                                <label class="form-label">URL Video</label>
+                                <input type="text" class="form-control lesson-video-url" placeholder="Nhập URL video (YouTube, Vimeo, hoặc link trực tiếp...)">
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Hỗ trợ: YouTube, Vimeo, hoặc link video trực tiếp (.mp4)
+                                </div>
+                            </div>
+
+                            <!-- Docs/Quiz Upload -->
+                            <div class="file-upload-area" style="display: none;">
+                                <label class="form-label">Tải lên tệp</label>
+                                <input type="file" name="LessonFiles" class="form-control content-file-input" accept="">
+                                <div class="form-text file-upload-hint">
+                                    <i class="fas fa-cloud-upload-alt me-1"></i>
+                                    <span class="upload-type-text"></span>
+                                </div>
+                                <div class="file-info mt-2" style="display: none;">
+                                    <div class="card border-success bg-light">
+                                        <div class="card-body py-2">
+                                            <i class="fas fa-file me-2 text-success"></i>
+                                            <span class="file-name fw-semibold"></span>
                                             <span class="file-size text-muted ms-2"></span>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quiz Settings -->
+                            <div class="quiz-settings-area" style="display: none;">
+                                <hr class="my-3">
+                                <h6 class="mb-3">
+                                    <i class="fas fa-cog me-2 text-warning"></i>Cấu hình Quiz
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label required">Số lần làm tối đa</label>
+                                        <input type="number" name="Modules[].Lessons[].QuizMaxAttempts" class="form-control quiz-max-attempts" 
+                                               min="1" max="10" value="3" placeholder="VD: 3">
+                                        <small class="form-text text-muted">Từ 1 đến 10 lần</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label required">Điểm Pass (%)</label>
+                                        <input type="number" name="Modules[].Lessons[].QuizPassingScore" class="form-control quiz-passing-score" 
+                                               min="0" max="100" value="70" placeholder="VD: 70">
+                                        <small class="form-text text-muted">Từ 0% đến 100%</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label required">Thời gian (phút)</label>
+                                        <input type="number" name="Modules[].Lessons[].QuizTimeLimit" class="form-control quiz-time-limit" 
+                                               min="1" max="180" value="30" placeholder="VD: 30">
+                                        <small class="form-text text-muted">Từ 1 đến 180 phút</small>
                                     </div>
                                 </div>
                             </div>
@@ -761,6 +761,342 @@
             const moduleTemplate = document.getElementById('module-template');
             const lessonTemplate = document.getElementById('lesson-template');
 
+            const quizDetailCache = new Map();
+
+            function ensureQuizModal() {
+                if (document.getElementById('quizModal')) {
+                    return;
+                }
+
+                const modalHtml = `
+<div class="modal fade modal-quiz" id="quizModal" tabindex="-1" aria-labelledby="quizModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="quizModalLabel">
+                    <i class="fas fa-clipboard-list me-2"></i>
+                    <span id="quizTitle"></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="quizLoadingSpinner" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                </div>
+                <div id="quizContent" style="display: none;">
+                    <div class="quiz-info mb-4 p-3 bg-light rounded">
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <strong><i class="fas fa-clock me-2"></i>Thời gian:</strong>
+                                <span id="quizTimeLimit"></span> phút
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <strong><i class="fas fa-redo me-2"></i>Số lần làm tối đa:</strong>
+                                <span id="quizMaxAttempts"></span>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <strong><i class="fas fa-check-circle me-2"></i>Điểm đạt:</strong>
+                                <span id="quizPassingScore"></span>%
+                            </div>
+                        </div>
+                        <div class="mt-2" id="quizDescriptionContainer">
+                            <strong><i class="fas fa-info-circle me-2"></i>Mô tả:</strong>
+                            <p class="mb-0 mt-1" id="quizDescription"></p>
+                        </div>
+                    </div>
+                    <h6 class="mb-3"><i class="fas fa-question-circle me-2"></i>Danh sách câu hỏi (<span id="questionCount"></span> câu)</h6>
+                    <div id="questionsList"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>`;
+
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+            }
+
+            async function fetchQuizDetail(quizId) {
+                if (!quizId) {
+                    throw new Error('QuizId không hợp lệ.');
+                }
+
+                if (quizDetailCache.has(quizId)) {
+                    return quizDetailCache.get(quizId);
+                }
+
+                const response = await fetch(`/bai-thi/get-quiz-detail/${quizId}`);
+
+                if (!response.ok) {
+                    let errorMessage = 'Không thể tải thông tin quiz';
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.message) {
+                            errorMessage = errorData.message;
+                        }
+                    } catch (err) {
+                        if (response.status === 404) {
+                            errorMessage = `Quiz với ID ${quizId} không tồn tại`;
+                        } else if (response.status === 401) {
+                            errorMessage = 'Bạn cần đăng nhập để xem quiz này';
+                        } else if (response.status === 403) {
+                            errorMessage = 'Bạn không có quyền xem quiz này';
+                        } else {
+                            errorMessage = `Không thể tải thông tin quiz (Status: ${response.status})`;
+                        }
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                const data = await response.json();
+                quizDetailCache.set(quizId, data);
+                return data;
+            }
+
+            async function populateQuizSummary(lessonItem, quizId) {
+                if (!lessonItem || !quizId) {
+                    return;
+                }
+
+                const wrapper = lessonItem.querySelector('.quiz-current-wrapper');
+                if (!wrapper || wrapper.getAttribute('data-summary-loaded') === 'true') {
+                    return;
+                }
+
+                const loadingEl = wrapper.querySelector('.quiz-summary-loading');
+
+                try {
+                    const quiz = await fetchQuizDetail(quizId);
+                    renderQuizSummary(lessonItem, quiz);
+                    wrapper.setAttribute('data-summary-loaded', 'true');
+                    const quizTitle = quiz.title || lessonItem.querySelector('.quiz-title-display')?.textContent || '';
+                    lessonItem.setAttribute('data-quiz-title', quizTitle);
+                } catch (error) {
+                    if (loadingEl) {
+                        loadingEl.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>${error.message}</span>`;
+                    }
+                }
+            }
+
+            function renderQuizSummary(lessonItem, quiz) {
+                const wrapper = lessonItem.querySelector('.quiz-current-wrapper');
+                if (!wrapper) {
+                    return;
+                }
+
+                const loadingEl = wrapper.querySelector('.quiz-summary-loading');
+                const contentEl = wrapper.querySelector('.quiz-summary-content');
+                const timeLimitEl = wrapper.querySelector('.quiz-time-limit');
+                const maxAttemptsEl = wrapper.querySelector('.quiz-max-attempts');
+                const passingScoreEl = wrapper.querySelector('.quiz-passing-score');
+                const questionCountEl = wrapper.querySelector('.quiz-question-count');
+                const descriptionEl = wrapper.querySelector('.quiz-description');
+                const titleDisplayEl = lessonItem.querySelector('.quiz-title-display');
+
+                if (loadingEl) {
+                    loadingEl.classList.add('d-none');
+                }
+                if (contentEl) {
+                    contentEl.classList.remove('d-none');
+                }
+                if (titleDisplayEl && quiz?.title) {
+                    titleDisplayEl.textContent = quiz.title;
+                }
+                if (timeLimitEl) {
+                    timeLimitEl.textContent = quiz?.timeLimit ?? 0;
+                }
+                if (maxAttemptsEl) {
+                    maxAttemptsEl.textContent = quiz?.maxAttempts ?? 0;
+                }
+                if (passingScoreEl) {
+                    passingScoreEl.textContent = quiz?.passingScore ?? 0;
+                }
+                if (questionCountEl) {
+                    const questions = Array.isArray(quiz?.questions) ? quiz.questions : [];
+                    questionCountEl.textContent = questions.length;
+                }
+                if (descriptionEl) {
+                    if (quiz?.description) {
+                        descriptionEl.textContent = quiz.description;
+                        descriptionEl.classList.remove('d-none');
+                    } else {
+                        descriptionEl.textContent = '';
+                        descriptionEl.classList.add('d-none');
+                    }
+                }
+            }
+
+            function attachQuizDetailHandlers(lessonItem) {
+                if (!lessonItem) {
+                    return;
+                }
+
+                const viewBtn = lessonItem.querySelector('.view-quiz-detail');
+                if (viewBtn && !viewBtn.dataset.bound) {
+                    viewBtn.dataset.bound = 'true';
+                    viewBtn.addEventListener('click', async function() {
+                        const clickedQuizId = this.getAttribute('data-quiz-id') || lessonItem.getAttribute('data-quiz-id');
+                        if (!clickedQuizId) {
+                            return;
+                        }
+
+                        const title = lessonItem.getAttribute('data-quiz-title') || lessonItem.querySelector('.quiz-title-display')?.textContent || 'Quiz';
+                        await showQuizDetailModal(clickedQuizId, title);
+                    });
+                }
+            }
+
+            async function showQuizDetailModal(quizId, title) {
+                ensureQuizModal();
+
+                const modalEl = document.getElementById('quizModal');
+                if (typeof bootstrap === 'undefined' || !modalEl) {
+                    console.error('Bootstrap modal instance is not available.');
+                    return;
+                }
+
+                const spinner = document.getElementById('quizLoadingSpinner');
+                const content = document.getElementById('quizContent');
+                const titleEl = document.getElementById('quizTitle');
+
+                if (spinner) {
+                    spinner.style.display = 'block';
+                    spinner.innerHTML = `
+<div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Đang tải...</span>
+</div>`;
+                }
+                if (content) {
+                    content.style.display = 'none';
+                }
+                if (titleEl) {
+                    titleEl.textContent = title || 'Quiz';
+                }
+
+                const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modalInstance.show();
+
+                try {
+                    const quiz = await fetchQuizDetail(quizId);
+                    displayQuizDetailInModal(quiz);
+                } catch (error) {
+                    if (spinner) {
+                        spinner.innerHTML = `
+<div class="alert alert-danger">
+    <i class="fas fa-exclamation-triangle me-2"></i>${error.message}
+</div>`;
+                    }
+                }
+            }
+
+            function displayQuizDetailInModal(quiz) {
+                const spinner = document.getElementById('quizLoadingSpinner');
+                const content = document.getElementById('quizContent');
+
+                if (spinner) {
+                    spinner.style.display = 'none';
+                }
+                if (content) {
+                    content.style.display = 'block';
+                }
+
+                const timeLimitEl = document.getElementById('quizTimeLimit');
+                const maxAttemptsEl = document.getElementById('quizMaxAttempts');
+                const passingScoreEl = document.getElementById('quizPassingScore');
+                const descriptionContainer = document.getElementById('quizDescriptionContainer');
+                const descriptionEl = document.getElementById('quizDescription');
+                const questionCountEl = document.getElementById('questionCount');
+                const questionsList = document.getElementById('questionsList');
+
+                if (timeLimitEl) {
+                    timeLimitEl.textContent = quiz?.timeLimit ?? 0;
+                }
+                if (maxAttemptsEl) {
+                    maxAttemptsEl.textContent = quiz?.maxAttempts ?? 0;
+                }
+                if (passingScoreEl) {
+                    passingScoreEl.textContent = quiz?.passingScore ?? 0;
+                }
+
+                if (descriptionContainer && descriptionEl) {
+                    if (quiz?.description) {
+                        descriptionEl.textContent = quiz.description;
+                        descriptionContainer.style.display = 'block';
+                    } else {
+                        descriptionEl.textContent = '';
+                        descriptionContainer.style.display = 'none';
+                    }
+                }
+
+                const questions = Array.isArray(quiz?.questions) ? quiz.questions.sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0)) : [];
+                if (questionCountEl) {
+                    questionCountEl.textContent = questions.length;
+                }
+
+                if (questionsList) {
+                    questionsList.innerHTML = '';
+
+                    if (questions.length === 0) {
+                        questionsList.innerHTML = '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>Quiz này chưa có câu hỏi nào.</div>';
+                        return;
+                    }
+
+                    questions.forEach((question, index) => {
+                        const questionDiv = document.createElement('div');
+                        questionDiv.className = 'question-item mb-3 p-3 border rounded';
+
+                        let questionTypeIcon = 'fa-check-circle';
+                        let questionTypeBadge = 'Multiple Choice';
+                        let questionTypeBadgeClass = 'bg-primary';
+
+                        if (question.questionType === 'TrueFalse') {
+                            questionTypeIcon = 'fa-toggle-on';
+                            questionTypeBadge = 'True/False';
+                            questionTypeBadgeClass = 'bg-info';
+                        } else if (question.questionType === 'Essay') {
+                            questionTypeIcon = 'fa-pen';
+                            questionTypeBadge = 'Essay';
+                            questionTypeBadgeClass = 'bg-warning text-dark';
+                        }
+
+                        const answers = Array.isArray(question.answers) ? [...question.answers].sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0)) : [];
+                        const answersHtml = answers.length > 0
+                            ? `<ul class="list-unstyled mt-2 ms-3">${answers.map(answer => {
+                                const correctIcon = answer.isCorrect
+                                    ? '<i class="fas fa-check-circle text-success me-2"></i>'
+                                    : '<i class="far fa-circle text-muted me-2"></i>';
+                                return `<li class="mb-1">${correctIcon}${answer.answerText}</li>`;
+                            }).join('')}</ul>`
+                            : '<div class="text-muted fst-italic">(Không có đáp án)</div>';
+
+                        questionDiv.innerHTML = `
+<div class="d-flex justify-content-between align-items-start mb-2">
+    <h6 class="mb-0">
+        <span class="badge bg-secondary me-2">Câu ${index + 1}</span>
+        ${question.questionText}
+    </h6>
+    <div>
+        <span class="badge ${questionTypeBadgeClass} me-1">
+            <i class="fas ${questionTypeIcon} me-1"></i>${questionTypeBadge}
+        </span>
+        <span class="badge bg-success">
+            <i class="fas fa-star me-1"></i>${question.points ?? 0} điểm
+        </span>
+    </div>
+</div>
+${answersHtml}`;
+
+                        questionsList.appendChild(questionDiv);
+                    });
+                }
+            }
+
             // Add event listeners to existing lessons
             initializeExistingContent();
 
@@ -772,9 +1108,68 @@
             function initializeExistingContent() {
                 // Add event listeners to existing modules and lessons
                 const existingModules = document.querySelectorAll('#existing-modules-container .module-item');
-                existingModules.forEach(moduleItem => {
+                let maxModuleIndex = 0;
+                existingModules.forEach((moduleItem, idx) => {
                     addModuleEventListeners(moduleItem);
+                    const moduleIdx = parseInt(moduleItem.getAttribute('data-module-index') || idx);
+                    if (moduleIdx >= maxModuleIndex) {
+                        maxModuleIndex = moduleIdx + 1;
+                    }
+                    
+                    // Initialize lesson types for existing lessons
+                    const existingLessons = moduleItem.querySelectorAll('.lesson-item');
+                    existingLessons.forEach(lessonItem => {
+                        const lessonType = lessonItem.getAttribute('data-lesson-type') || '1';
+                        const contentUrl = lessonItem.getAttribute('data-content-url') || '';
+                        
+                        // Set the appropriate radio button
+                        const radioBtn = lessonItem.querySelector(`.lesson-type-radio[value="${lessonType}"]`);
+                        if (radioBtn) {
+                            radioBtn.checked = true;
+                        }
+                        
+                        // Initialize UI based on lesson type
+                        if (lessonType === '1') {
+                            // Video: show video input and set URL
+                            const videoInputArea = lessonItem.querySelector('.video-input-area');
+                            const videoUrlInput = lessonItem.querySelector('.lesson-video-url');
+                            if (videoInputArea) videoInputArea.style.display = 'block';
+                            if (videoUrlInput && contentUrl) {
+                                videoUrlInput.value = contentUrl;
+                                lessonItem.setAttribute('data-video-url', contentUrl);
+                            }
+                        } else {
+                            // Docs or Quiz: show file upload area
+                            handleLessonTypeChange(lessonItem, lessonType);
+                            
+                            // If there's existing content, show info
+                            if (contentUrl) {
+                                const fileInfo = lessonItem.querySelector('.file-info');
+                                const fileName = lessonItem.querySelector('.file-name');
+                                if (fileInfo && fileName) {
+                                    const urlParts = contentUrl.split('/');
+                                    const displayName = decodeURIComponent(urlParts[urlParts.length - 1]);
+                                    fileName.textContent = displayName;
+                                    fileInfo.style.display = 'block';
+                                }
+                            }
+                            
+                            // Show Quiz settings for Quiz type
+                            if (lessonType === '3') {
+                                const quizSettingsArea = lessonItem.querySelector('.quiz-settings-area');
+                                if (quizSettingsArea) {
+                                    quizSettingsArea.style.display = 'block';
+                                }
+                                const quizId = lessonItem.getAttribute('data-quiz-id');
+                                if (quizId) {
+                                    populateQuizSummary(lessonItem, quizId);
+                                }
+                                attachQuizDetailHandlers(lessonItem);
+                            }
+                        }
+                    });
                 });
+                moduleIndex = maxModuleIndex;
             }
 
             function addModule() {
@@ -860,6 +1255,15 @@
                 
                 lessonItem.setAttribute('data-lesson-index', lessonIndex);
                 
+                // Set default lesson type to Video (1) and check the radio button
+                lessonItem.setAttribute('data-lesson-type', '1');
+                const videoRadio = lessonItem.querySelector('.lesson-type-radio[value="1"]');
+                if (videoRadio) {
+                    videoRadio.checked = true;
+                }
+                // Show video input area by default
+                handleLessonTypeChange(lessonItem, '1');
+                
                 // Update lesson form names and IDs
                 updateLessonIndexes(lessonItem, moduleIndex, lessonIndex);
                 
@@ -909,21 +1313,108 @@
                     });
                 }
 
-                // Content type change
-                const contentTypeInputs = lessonItem.querySelectorAll('.content-type');
-                const fileInput = lessonItem.querySelector('.content-file-input');
-                
-                contentTypeInputs.forEach(input => {
+                // Lesson type change (Video/Docs/Quiz)
+                const lessonTypeInputs = lessonItem.querySelectorAll('.lesson-type-radio');
+                lessonTypeInputs.forEach(input => {
                     input.addEventListener('change', function() {
-                        updateFileInputAccept(lessonItem, this.value);
+                        handleLessonTypeChange(lessonItem, this.value);
                     });
                 });
 
+                // Video URL input
+                const videoUrlInput = lessonItem.querySelector('.lesson-video-url');
+                if (videoUrlInput) {
+                    videoUrlInput.addEventListener('input', function() {
+                        // Store the video URL for later use
+                        lessonItem.setAttribute('data-video-url', this.value);
+                    });
+                }
+
                 // File upload
+                const fileInput = lessonItem.querySelector('.content-file-input');
                 if (fileInput) {
                     fileInput.addEventListener('change', function() {
                         handleFileUpload(lessonItem, this);
                     });
+                }
+
+                attachQuizDetailHandlers(lessonItem);
+            }
+
+            function handleLessonTypeChange(lessonItem, lessonType) {
+                const videoInputArea = lessonItem.querySelector('.video-input-area');
+                const fileUploadArea = lessonItem.querySelector('.file-upload-area');
+                const quizSettingsArea = lessonItem.querySelector('.quiz-settings-area');
+                const fileInput = lessonItem.querySelector('.content-file-input');
+                const uploadHint = lessonItem.querySelector('.upload-type-text');
+                const quizInfoWrapper = lessonItem.querySelector('.quiz-current-wrapper');
+                
+                // Hide all areas first
+                if (videoInputArea) videoInputArea.style.display = 'none';
+                if (fileUploadArea) fileUploadArea.style.display = 'none';
+                if (quizSettingsArea) quizSettingsArea.style.display = 'none';
+                
+                // Store lesson type
+                lessonItem.setAttribute('data-lesson-type', lessonType);
+                
+                switch(lessonType) {
+                    case '1': // Video
+                        if (videoInputArea) videoInputArea.style.display = 'block';
+                        // Disable file input for video lessons
+                        if (fileInput) {
+                            fileInput.disabled = true;
+                            fileInput.value = '';
+                        }
+                        if (quizInfoWrapper) {
+                            quizInfoWrapper.style.display = 'none';
+                        }
+                        lessonItem.removeAttribute('data-has-new-quiz-file');
+                        const quizNoticeVideo = lessonItem.querySelector('.quiz-replace-notice');
+                        if (quizNoticeVideo) {
+                            quizNoticeVideo.classList.add('d-none');
+                        }
+                        break;
+                    case '2': // Docs
+                        if (fileUploadArea) fileUploadArea.style.display = 'block';
+                        if (fileInput) {
+                            fileInput.disabled = false;
+                            fileInput.setAttribute('accept', '.pdf,.doc,.docx,.ppt,.pptx,.txt');
+                        }
+                        if (uploadHint) uploadHint.textContent = 'Hỗ trợ: PDF, Word, PowerPoint, Text';
+                        if (quizInfoWrapper) {
+                            quizInfoWrapper.style.display = 'none';
+                        }
+                        lessonItem.removeAttribute('data-has-new-quiz-file');
+                        const quizNoticeDocs = lessonItem.querySelector('.quiz-replace-notice');
+                        if (quizNoticeDocs) {
+                            quizNoticeDocs.classList.add('d-none');
+                        }
+                        break;
+                    case '3': // Quiz
+                        if (fileUploadArea) fileUploadArea.style.display = 'block';
+                        if (quizSettingsArea) quizSettingsArea.style.display = 'block';
+                        if (fileInput) {
+                            fileInput.disabled = false;
+                            fileInput.setAttribute('accept', '.xlsx,.xls');
+                        }
+                        if (uploadHint) uploadHint.textContent = 'Hỗ trợ: Excel (.xlsx, .xls)';
+                        if (quizInfoWrapper) {
+                            quizInfoWrapper.style.display = '';
+                        }
+                        const quizNoticeQuiz = lessonItem.querySelector('.quiz-replace-notice');
+                        if (quizNoticeQuiz) {
+                            if (lessonItem.getAttribute('data-has-new-quiz-file') === 'true') {
+                                quizNoticeQuiz.classList.remove('d-none');
+                            } else {
+                                quizNoticeQuiz.classList.add('d-none');
+                            }
+                        }
+                        const currentQuizId = lessonItem.getAttribute('data-quiz-id');
+                        if (currentQuizId && quizInfoWrapper && quizInfoWrapper.getAttribute('data-summary-loaded') !== 'true') {
+                            populateQuizSummary(lessonItem, currentQuizId);
+                        }
+                        attachQuizDetailHandlers(lessonItem);
+                        break;
                 }
             }
 
@@ -963,7 +1454,7 @@
 
                     const id = input.getAttribute('id');
                     if (id && (id.includes('-') && id.endsWith('-'))) {
-                        const newId = id.replace('-', `-${moduleIndex}-${lessonIndex}-`);
+                        const newId = id.replace(/-$/, `-${moduleIndex}-${lessonIndex}`);
                         input.setAttribute('id', newId);
                         
                         // Update corresponding label
@@ -973,10 +1464,27 @@
                         }
                     }
 
-                    const radioName = input.getAttribute('name');
-                    if (radioName && radioName.includes('content-type-')) {
-                        const newRadioName = `content-type-${moduleIndex}-${lessonIndex}`;
-                        input.setAttribute('name', newRadioName);
+                    // Update radio button names for lesson type
+                    if (input.type === 'radio' && input.classList.contains('lesson-type-radio')) {
+                        const radioName = input.getAttribute('name');
+                        if (radioName && radioName.includes('lesson-type-')) {
+                            const newRadioName = `lesson-type-${moduleIndex}-${lessonIndex}`;
+                            input.setAttribute('name', newRadioName);
+                            
+                            // Update the ID too
+                            const radioId = input.getAttribute('id');
+                            if (radioId && radioId.startsWith('type-')) {
+                                const typePrefix = radioId.split('-')[1]; // video, docs, or quiz
+                                const newRadioId = `type-${typePrefix}-${moduleIndex}-${lessonIndex}`;
+                                input.setAttribute('id', newRadioId);
+                                
+                                // Update corresponding label
+                                const radioLabel = lessonItem.querySelector(`label[for="${radioId}"]`);
+                                if (radioLabel) {
+                                    radioLabel.setAttribute('for', newRadioId);
+                                }
+                            }
+                        }
                     }
                 });
 
@@ -1024,20 +1532,6 @@
                 });
             }
 
-            function updateFileInputAccept(lessonItem, contentType) {
-                const fileInput = lessonItem.querySelector('.content-file-input');
-                const acceptTypes = {
-                    'video': '.mp4,.avi,.mov,.wmv',
-                    'pdf': '.pdf',
-                    'image': '.jpg,.jpeg,.png,.gif,.bmp',
-                    'document': '.doc,.docx,.ppt,.pptx,.txt'
-                };
-                
-                if (fileInput) {
-                    fileInput.setAttribute('accept', acceptTypes[contentType] || '');
-                }
-            }
-
             function handleFileUpload(lessonItem, fileInput) {
                 const fileInfo = lessonItem.querySelector('.file-info');
                 const fileName = lessonItem.querySelector('.file-name');
@@ -1048,8 +1542,23 @@
                     if (fileName) fileName.textContent = file.name;
                     if (fileSize) fileSize.textContent = `(${formatFileSize(file.size)})`;
                     if (fileInfo) fileInfo.style.display = 'block';
+
+                    if (lessonItem.getAttribute('data-lesson-type') === '3') {
+                        lessonItem.setAttribute('data-has-new-quiz-file', 'true');
+                        const replaceNotice = lessonItem.querySelector('.quiz-replace-notice');
+                        if (replaceNotice) {
+                            replaceNotice.classList.remove('d-none');
+                        }
+                    }
                 } else {
                     if (fileInfo) fileInfo.style.display = 'none';
+                    if (lessonItem.getAttribute('data-lesson-type') === '3') {
+                        lessonItem.removeAttribute('data-has-new-quiz-file');
+                        const replaceNotice = lessonItem.querySelector('.quiz-replace-notice');
+                        if (replaceNotice) {
+                            replaceNotice.classList.add('d-none');
+                        }
+                    }
                 }
             }
 
@@ -1108,25 +1617,267 @@
             
             if (form && submitBtn) {
                 form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    console.log('=== FORM SUBMISSION DEBUG START ===');
+                    
                     // Show loading state
                     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang lưu...';
                     submitBtn.disabled = true;
                     
                     // Validate department selection
-                    const selectedDepts = document.querySelectorAll('input[name="SelectedDepartmentIds"]:checked').length;
-                    if (selectedDepts === 0) {
-                        e.preventDefault();
+                    const selectedDepts = document.querySelectorAll('input[name="SelectedDepartmentIds"]:checked');
+                    if (selectedDepts.length === 0) {
                         alert('Vui lòng chọn ít nhất 1 phòng ban để áp dụng khóa học!');
                         submitBtn.innerHTML = '<i class="fas fa-save me-2"></i>Lưu Thay Đổi';
                         submitBtn.disabled = false;
                         return false;
                     }
                     
-                    // Add a small delay to show the loading state
-                    setTimeout(() => {
-                        // Form will be submitted
-                    }, 500);
+                    // Build metadata JSON
+                    const metadata = buildMetadataJson();
+                    
+                    console.log('=== METADATA STRUCTURE ===');
+                    console.log('Metadata:', JSON.stringify(metadata, null, 2));
+                    
+                    // Validate metadata before submit
+                    let hasError = false;
+                    let errorMessages = [];
+                    
+                    // Check if there are modules
+                    if (!metadata.Modules || metadata.Modules.length === 0) {
+                        errorMessages.push('Khóa học phải có ít nhất 1 module!');
+                        hasError = true;
+                    }
+                    
+                    // Validate each module
+                    metadata.Modules.forEach((module, idx) => {
+                        if (!module.Title || module.Title.trim() === '') {
+                            errorMessages.push(`Module ${idx + 1} thiếu tiêu đề!`);
+                            hasError = true;
+                        }
+                        if (!module.Lessons || module.Lessons.length === 0) {
+                            errorMessages.push(`Module "${module.Title || (idx + 1)}" phải có ít nhất 1 bài học!`);
+                            hasError = true;
+                        } else {
+                            // Validate each lesson
+                            module.Lessons.forEach((lesson, lessonIdx) => {
+                                if (!lesson.Title || lesson.Title.trim() === '') {
+                                    errorMessages.push(`Module "${module.Title}" - Bài học ${lessonIdx + 1} thiếu tiêu đề!`);
+                                    hasError = true;
+                                }
+                                
+                                // Validate content based on type
+                                if (lesson.Type === 1) { // Video
+                                    if (!lesson.ContentUrl || lesson.ContentUrl.trim() === '') {
+                                        errorMessages.push(`Module ${idx + 1}, Bài học "${lesson.Title}": Vui lòng nhập URL video!`);
+                                        hasError = true;
+                                    }
+                                } else if (lesson.Type === 2) { // Docs
+                                    if (lesson.MainFileIndex === null && (!lesson.ContentUrl || lesson.ContentUrl.trim() === '')) {
+                                        errorMessages.push(`Module ${idx + 1}, Bài học "${lesson.Title}": Vui lòng upload tài liệu!`);
+                                        hasError = true;
+                                    }
+                                } else if (lesson.Type === 3) { // Quiz
+                                    const hasExistingQuiz = !!lesson.QuizId;
+                                    const hasNewFile = lesson.MainFileIndex !== null;
+                                    if (!hasExistingQuiz && !hasNewFile) {
+                                        errorMessages.push(`Module ${idx + 1}, Bài học "${lesson.Title}": Vui lòng upload file Excel Quiz!`);
+                                        hasError = true;
+                                    }
+                                }
+                            });
+                        }
+                    });
+                    
+                    if (hasError) {
+                        console.error('=== VALIDATION ERRORS ===', errorMessages);
+                        alert('Vui lòng kiểm tra lại thông tin:\n\n' + errorMessages.join('\n'));
+                        submitBtn.innerHTML = '<i class="fas fa-save me-2"></i>Lưu Thay Đổi';
+                        submitBtn.disabled = false;
+                        return false;
+                    }
+                    
+                    // Count and log file inputs before disabling
+                    const allFileInputs = document.querySelectorAll('.content-file-input');
+                    let activeFileCount = 0;
+                    console.log('=== FILE INPUTS DEBUG ===');
+                    allFileInputs.forEach((input, idx) => {
+                        const hasFile = input.files && input.files.length > 0;
+                        const isDisabled = input.disabled;
+                        console.log(`File input ${idx}: hasFile=${hasFile}, disabled=${isDisabled}, name="${input.name}"`);
+                        if (hasFile && !isDisabled) {
+                            activeFileCount++;
+                        }
+                    });
+                    console.log(`Total active files: ${activeFileCount}`);
+                    
+                    // Disable all file inputs that don't have files (to prevent empty file submissions)
+                    allFileInputs.forEach(input => {
+                        if (!input.files || input.files.length === 0) {
+                            input.disabled = true;
+                            console.log(`Disabling empty file input: ${input.name}`);
+                        } else {
+                            console.log(`Keeping active file input: ${input.name}, file: ${input.files[0].name}`);
+                        }
+                    });
+                    
+                    // Set metadata to hidden input
+                    document.getElementById('metadata-input').value = JSON.stringify(metadata);
+                    
+                    console.log('=== SUBMITTING FORM ===');
+                    
+                    // Submit form
+                    form.submit();
                 });
+            }
+            
+            // Function to build metadata JSON from form data
+            function buildMetadataJson() {
+                const selectedDepts = Array.from(document.querySelectorAll('input[name="SelectedDepartmentIds"]:checked'))
+                    .map(cb => parseInt(cb.value));
+                
+                const modules = [];
+                // Lấy modules từ cả 2 container: existing và new
+                const existingModules = document.querySelectorAll('#existing-modules-container .module-item');
+                const newModules = document.querySelectorAll('#modules-container .module-item');
+                const allModules = [...existingModules, ...newModules];
+                
+                // Track file uploads to assign MainFileIndex
+                let fileUploadCount = 0;
+                
+                allModules.forEach((moduleEl, moduleIdx) => {
+                    const lessons = [];
+                    const lessonEls = moduleEl.querySelectorAll('.lesson-item');
+                    
+                    console.log(`Processing Module ${moduleIdx + 1}:`, moduleEl);
+                    
+                    lessonEls.forEach((lessonEl, lessonIdx) => {
+                        const lessonIdInput = lessonEl.querySelector('.lesson-id');
+                        const lessonId = lessonIdInput ? parseInt(lessonIdInput.value) : null;
+                        
+                        // Tìm input lesson-title - có thể có nhiều input, lấy đúng cái trong card-body
+                        const lessonTitleInput = lessonEl.querySelector('input.lesson-title');
+                        const lessonTitle = lessonTitleInput ? lessonTitleInput.value.trim() : '';
+                        
+                        console.log(`  Lesson ${lessonIdx + 1}: title="${lessonTitle}", input found:`, !!lessonTitleInput);
+                        
+                        // Kiểm tra xem có title không, nếu không có thì báo lỗi
+                        if (!lessonTitle) {
+                            console.warn('Lesson không có title tại module', moduleIdx, 'lesson', lessonIdx);
+                        }
+                        
+                        // Lấy Type từ data attribute
+                                                const lessonType = lessonEl.getAttribute('data-lesson-type') ? parseInt(lessonEl.getAttribute('data-lesson-type')) : 1;
+                                                const quizIdAttr = lessonEl.getAttribute('data-quiz-id');
+                                                const quizId = lessonType === 3 && quizIdAttr ? parseInt(quizIdAttr) : null;
+                        
+                        console.log(`  Lesson ${lessonIdx + 1}: type=${lessonType}, title="${lessonTitle}"`);
+                        
+                        // Xử lý ContentUrl và MainFileIndex dựa trên lesson type
+                        let contentUrl = null;
+                        let mainFileIndex = null;
+                        
+                        if (lessonType === 1) {
+                            // Video: lấy từ input URL hoặc data attribute
+                            const videoUrlInput = lessonEl.querySelector('.lesson-video-url');
+                            contentUrl = videoUrlInput?.value?.trim() || lessonEl.getAttribute('data-video-url') || lessonEl.getAttribute('data-content-url') || null;
+                            console.log(`    Video lesson - ContentUrl: "${contentUrl}", MainFileIndex: null`);
+                        } else {
+                            // Docs/Quiz: kiểm tra xem có file upload mới không
+                            const fileInput = lessonEl.querySelector('.content-file-input');
+                            if (fileInput && fileInput.files && fileInput.files.length > 0) {
+                                // Có file mới được upload
+                                mainFileIndex = fileUploadCount;
+                                fileUploadCount++;
+                                console.log(`    Docs/Quiz lesson with NEW file - MainFileIndex: ${mainFileIndex}, file: ${fileInput.files[0].name}`);
+                            } else {
+                                // Không có file mới, giữ URL hiện tại
+                                const existingContentUrl = lessonEl.getAttribute('data-content-url') || null;
+                                contentUrl = existingContentUrl && existingContentUrl.trim() !== '' ? existingContentUrl : null;
+                                console.log(`    Docs/Quiz lesson with EXISTING content - ContentUrl: "${contentUrl}", MainFileIndex: null`);
+                            }
+                        }
+                        
+                        // Get Quiz settings if lesson type is Quiz
+                        let quizTimeLimit = null;
+                        let quizMaxAttempts = null;
+                        let quizPassingScore = null;
+                        
+                        if (lessonType === 3) {
+                            const timeLimitInput = lessonEl.querySelector('.quiz-time-limit');
+                            const maxAttemptsInput = lessonEl.querySelector('.quiz-max-attempts');
+                            const passingScoreInput = lessonEl.querySelector('.quiz-passing-score');
+                            
+                            quizTimeLimit = timeLimitInput ? parseInt(timeLimitInput.value) : 30;
+                            quizMaxAttempts = maxAttemptsInput ? parseInt(maxAttemptsInput.value) : 3;
+                            quizPassingScore = passingScoreInput ? parseInt(passingScoreInput.value) : 70;
+                        }
+                        
+                        const lessonData = {
+                            LessonId: lessonId,
+                            Title: lessonTitle,
+                            Description: '',
+                            Type: lessonType,
+                            OrderIndex: lessonIdx + 1,
+                            ContentUrl: contentUrl,
+                            AttachmentUrl: null,
+                            QuizId: quizId,
+                            IsQuizExcel: lessonType === 3 && mainFileIndex !== null,
+                            QuizTitle: lessonType === 3 ? lessonTitle : null,
+                            QuizTimeLimit: quizTimeLimit,
+                            QuizMaxAttempts: quizMaxAttempts,
+                            QuizPassingScore: quizPassingScore,
+                            MainFileIndex: mainFileIndex
+                        };
+                        lessons.push(lessonData);
+                    });
+                    
+                    const moduleIdInput = moduleEl.querySelector('.module-id');
+                    const moduleId = moduleIdInput ? parseInt(moduleIdInput.value) : null;
+                    
+                    // Tìm input module-title
+                    const moduleTitleInput = moduleEl.querySelector('input.module-title');
+                    const moduleTitle = moduleTitleInput ? moduleTitleInput.value.trim() : '';
+                    
+                    console.log(`  Module title input found:`, !!moduleTitleInput, `value="${moduleTitle}"`);
+                    
+                    // Tìm textarea module-description
+                    const moduleDescInput = moduleEl.querySelector('textarea.module-description');
+                    const moduleDesc = moduleDescInput ? moduleDescInput.value.trim() : '';
+                    
+                    // Kiểm tra xem có title không
+                    if (!moduleTitle) {
+                        console.warn('Module không có title tại index', moduleIdx, 'Element:', moduleEl);
+                    }
+                    
+                    // Kiểm tra module phải có ít nhất 1 lesson
+                    if (lessons.length === 0) {
+                        console.warn('Module không có lesson tại index', moduleIdx);
+                    }
+                    
+                    const moduleData = {
+                        ModuleId: moduleId,
+                        Title: moduleTitle,
+                        Description: moduleDesc,
+                        OrderIndex: moduleIdx + 1,
+                        Lessons: lessons
+                    };
+                    modules.push(moduleData);
+                });
+                
+                return {
+                    CourseName: document.getElementById('CourseName')?.value || '',
+                    CourseCode: document.getElementById('Code')?.value || '',
+                    Description: document.getElementById('Description')?.value || '',
+                    CourseCategoryId: parseInt(document.getElementById('Category')?.value) || 0,
+                    Duration: parseInt(document.getElementById('Duration')?.value) || 0,
+                    Level: document.getElementById('Level')?.value || 'Beginner',
+                    IsOnline: document.getElementById('IsOnline')?.checked || false,
+                    IsMandatory: document.getElementById('IsMandatory')?.checked || false,
+                    Departments: selectedDepts,
+                    Modules: modules
+                };
             }
 
             // Enhanced form validation feedback
