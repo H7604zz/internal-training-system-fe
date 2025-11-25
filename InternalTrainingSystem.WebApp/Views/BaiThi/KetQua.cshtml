@@ -35,6 +35,13 @@
         <div style="margin-top: 1.5rem; text-center;">
             <span id="status-badge" class="status-badge" style="font-size: 1.2rem; padding: 0.5rem 1.5rem;">--</span>
         </div>
+        
+        <!-- Action Buttons -->
+        <div id="action-buttons" class="action-buttons" style="display: none; margin-top: 2rem; justify-content: center; gap: 1rem;">
+            <button id="btn-back-to-course" class="btn btn-primary btn-lg" onclick="backToCourse()">
+                <i class="fas fa-arrow-left me-2"></i>Tiếp tục học
+            </button>
+        </div>
     </div>
 </div>
 
@@ -42,9 +49,16 @@
     <script>
         let attemptId = @attemptId;
         let resultData = null;
+        let courseId = null;
+        let lessonId = null;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', async function() {
+            // Get courseId and lessonId from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            courseId = urlParams.get('courseId');
+            lessonId = urlParams.get('lessonId');
+            
             await loadResult();
         });
 
@@ -73,9 +87,7 @@
         function displayResult() {
             // Show sections
             document.getElementById('result-header').style.display = 'block';
-            // If an action buttons section exists in future, reveal it safely
-            const actions = document.getElementById('action-buttons');
-            if (actions) actions.style.display = 'flex';
+            document.getElementById('action-buttons').style.display = 'flex';
 
             // Set icon and title based on pass/fail
             const resultIcon = document.getElementById('result-icon');
@@ -133,6 +145,16 @@
                         confetti.remove();
                     }, 5000);
                 }, i * 50);
+            }
+        }
+
+        function backToCourse() {
+            if (courseId) {
+                // Redirect back to learning page with courseId
+                window.location.href = `/khoa-hoc/hoc-tap/${courseId}`;
+            } else {
+                // Fallback: go back in history
+                window.history.back();
             }
         }
 
