@@ -1092,6 +1092,58 @@ namespace InternalTrainingSystem.WebApp.Controllers
             return RedirectToAction("DanhSachNhanVien", new { id = courseId });
         }
 
+        [HttpPost("confirm-enrollment-reason")]
+        [Authorize(Roles = UserRoles.DirectManager)]
+        public async Task<IActionResult> ConfirmEnrollmentReason([FromBody] ConfirmEnrollmentReasonRequestDto request)
+        {
+            try
+            {
+                if (request == null || request.CourseId <= 0 || string.IsNullOrEmpty(request.UserId))
+                {
+                    return BadRequest("Dữ liệu không hợp lệ");
+                }
+
+                // Kiểm tra authentication
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
+                {
+                    return Unauthorized("Phiên đăng nhập đã hết hạn");
+                }
+
+                // Prepare request body for API
+                var requestData = new ConfirmEnrollmentReasonDto
+                {
+                    UserId = request.UserId,
+                    IsConfirmed = request.IsConfirmed
+                };
+
+                var jsonContent = JsonSerializer.Serialize(requestData);
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                // Call API to confirm enrollment reason
+                var response = await _httpClient.PostAsync(
+                    Utilities.GetAbsoluteUrl($"api/course/{request.CourseId}/enrollments/confirm"),
+                    content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadAsStringAsync();
+                    return Ok(result.Trim('"'));
+                }
+                else
+                {
+                    var errorMessage = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode, !string.IsNullOrEmpty(errorMessage) 
+                        ? errorMessage.Trim('"') 
+                        : "Không thể xác nhận lý do. Vui lòng thử lại sau!");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error confirming enrollment reason for course {CourseId}, user {UserId}", request?.CourseId, request?.UserId);
+                return StatusCode(500, "Có lỗi xảy ra khi xác nhận. Vui lòng thử lại sau!");
+            }
+        }
+
         /// <summary>
         /// Trang học tập của nhân viên
         /// </summary>

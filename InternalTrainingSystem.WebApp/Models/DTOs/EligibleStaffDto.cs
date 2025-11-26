@@ -8,6 +8,7 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
     /// </summary>
     public class EligibleStaffDto
     {
+        public string Id { get; set; } = string.Empty;
         public string EmployeeId { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
@@ -52,5 +53,24 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
                    FullName.ToLower().Contains(term) ||
                    Email.ToLower().Contains(term);
         }
+    }
+
+    /// <summary>
+    /// DTO cho việc xác nhận lý do từ chối của nhân viên (gửi đến API)
+    /// </summary>
+    public class ConfirmEnrollmentReasonDto
+    {
+        public string UserId { get; set; } = string.Empty;
+        public bool IsConfirmed { get; set; }
+    }
+
+    /// <summary>
+    /// DTO cho request xác nhận từ form (nhận từ view)
+    /// </summary>
+    public class ConfirmEnrollmentReasonRequestDto
+    {
+        public int CourseId { get; set; }
+        public string UserId { get; set; } = string.Empty;
+        public bool IsConfirmed { get; set; }
     }
 }

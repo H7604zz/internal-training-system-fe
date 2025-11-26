@@ -127,6 +127,10 @@
                             <th>Chức vụ</th>
                             <th style="width: 140px;" class="text-center">Trạng thái</th>
                             <th style="min-width: 200px;">Ghi chú</th>
+                            @if (User.IsInRole(UserRoles.DirectManager))
+                            {
+                                <th style="width: 150px;" class="text-center">Hành động</th>
+                            }
                         </tr>
                     </thead>
                     <tbody>
@@ -154,6 +158,24 @@
                                             @employee.Reason
                                         }
                                     </td>
+                                    @if (User.IsInRole(UserRoles.DirectManager))
+                                    {
+                                        <td class="text-center">
+                                            @if (employee.Status == EnrollmentConstants.Status.Dropped && !string.IsNullOrEmpty(employee.Reason))
+                                            {
+                                                <button type="button" class="btn btn-sm btn-success me-1" 
+                                                        onclick="confirmEnrollmentReason('@employee.Id', '@employee.FullName', true)" 
+                                                        title="Đồng ý cho nhân viên không tham gia">
+                                                    <i class="fas fa-check me-1"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-danger" 
+                                                        onclick="confirmEnrollmentReason('@employee.Id', '@employee.FullName', false)" 
+                                                        title="Lời từ chối không được chấp nhận">
+                                                    <i class="fas fa-times me-1"></i>
+                                                </button>
+                                            }
+                                        </td>
+                                    }
                                 </tr>
                                 stt++;
                             }
@@ -161,7 +183,7 @@
                         else
                         {
                             <tr>
-                                <td colspan="8" class="text-center py-4">
+                                <td colspan="@(User.IsInRole(UserRoles.DirectManager) ? 9 : 8)" class="text-center py-4">
                                     <div class="empty-state mb-0">
                                         <i class="fas fa-users-slash"></i>
                                         <h5 class="mt-2 mb-1">Không tìm thấy nhân viên nào</h5>
@@ -257,6 +279,50 @@
 @section Scripts {
     @Html.AntiForgeryToken()
     <script>
+        async function confirmEnrollmentReason(userId, fullName, isConfirmed) {
+            const courseId = @ViewBag.CourseId;
+            const message = isConfirmed 
+                ? `Bạn có chắc chắn đồng ý cho nhân viên "${fullName}" không tham gia khóa học này?\n\nĐây là quyết định cuối cùng và không thể hoàn tác!`
+                : `Bạn không đồng ý cho nhân viên "${fullName}" nghỉ khóa học?\n\nNhân viên sẽ được chuyển sang trạng thái "Đã đăng ký".`;
+            
+            if (!confirm(message)) {
+                return;
+            }
+
+            try {
+                // Create DTO object
+                const dto = {
+                    courseId: courseId,
+                    userId: userId,
+                    isConfirmed: isConfirmed
+                };
+
+                // Get anti-forgery token
+                const token = $('input[name="__RequestVerificationToken"]').val();
+
+                // Send POST request with JSON body
+                const response = await fetch('@Url.Action("ConfirmEnrollmentReason", "KhoaHoc")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify(dto)
+                });
+
+                if (response.ok) {
+                    // Reload page to show updated data
+                    window.location.reload();
+                } else {
+                    const errorText = await response.text();
+                    alert('Có lỗi xảy ra: ' + errorText);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi xác nhận. Vui lòng thử lại!');
+            }
+        }
+        
         function finalizeEnrollments() {
             const courseId = @ViewBag.CourseId;
             
