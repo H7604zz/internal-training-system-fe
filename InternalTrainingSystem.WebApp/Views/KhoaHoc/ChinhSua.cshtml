@@ -401,6 +401,15 @@
                                                                                         <i class="fas fa-info-circle me-1"></i>
                                                                                         Hỗ trợ: YouTube, Vimeo, hoặc link video trực tiếp (.mp4)
                                                                                     </div>
+                                                                                    <div class="mt-3">
+                                                                                        <label class="form-label">Mô tả Video</label>
+                                                                                        <textarea class="form-control video-description" rows="3" placeholder="Nhập mô tả chi tiết cho video này...">@(lesson.Type == LessonType.Video ? lesson.Description : string.Empty)</textarea>
+                                                                                    </div>
+                                                                                    <div class="mt-3">
+                                                                                        <label class="form-label">Link Tài Liệu Đính Kèm (Tùy chọn)</label>
+                                                                                        <input type="url" class="form-control video-attachment" placeholder="Nhập URL tài liệu đính kèm (Google Drive, OneDrive, ...)">
+                                                                                        <small class="form-text text-muted">Tùy chọn thêm link tài liệu tham khảo cho bài học video</small>
+                                                                                    </div>
                                                                                 </div>
 
                                                                                 <!-- Docs/Quiz Upload -->
@@ -418,6 +427,15 @@
                                                                                                 <span class="file-name fw-semibold"></span>
                                                                                                 <span class="file-size text-muted ms-2"></span>
                                                                                             </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="docs-extra-fields mt-3" style="display: none;">
+                                                                                        <label class="form-label">Mô tả Tài Liệu</label>
+                                                                                        <textarea class="form-control reading-description" rows="3" placeholder="Nhập mô tả chi tiết cho tài liệu này...">@(lesson.Type == LessonType.Reading ? lesson.Description : string.Empty)</textarea>
+                                                                                        <div class="mt-3">
+                                                                                            <label class="form-label">Link Tài Liệu Bổ Sung (Tùy chọn)</label>
+                                                                                            <input type="url" class="form-control reading-attachment" placeholder="Nhập URL tài liệu tham khảo bổ sung (Google Drive, OneDrive, ...)">
+                                                                                            <small class="form-text text-muted">Thêm link tài liệu tham khảo để nhân viên tải xuống khi cần</small>
                                                                                         </div>
                                                                                     </div>
                                                                                 </div>
@@ -670,6 +688,15 @@
                                     <i class="fas fa-info-circle me-1"></i>
                                     Hỗ trợ: YouTube, Vimeo, hoặc link video trực tiếp (.mp4)
                                 </div>
+                                                        <div class="mt-3">
+                                                            <label class="form-label">Mô tả Video</label>
+                                                            <textarea class="form-control video-description" rows="3" placeholder="Nhập mô tả chi tiết cho video này..."></textarea>
+                                                        </div>
+                                                        <div class="mt-3">
+                                                            <label class="form-label">Link Tài Liệu Đính Kèm (Tùy chọn)</label>
+                                                            <input type="url" class="form-control video-attachment" placeholder="Nhập URL tài liệu đính kèm (Google Drive, OneDrive, ...)">
+                                                            <small class="form-text text-muted">Tùy chọn thêm link tài liệu tham khảo cho bài học video</small>
+                                                        </div>
                             </div>
 
                             <!-- Docs/Quiz Upload -->
@@ -689,6 +716,15 @@
                                         </div>
                                     </div>
                                 </div>
+                                                        <div class="docs-extra-fields mt-3" style="display: none;">
+                                                            <label class="form-label">Mô tả Tài Liệu</label>
+                                                            <textarea class="form-control reading-description" rows="3" placeholder="Nhập mô tả chi tiết cho tài liệu này..."></textarea>
+                                                            <div class="mt-3">
+                                                                <label class="form-label">Link Tài Liệu Bổ Sung (Tùy chọn)</label>
+                                                                <input type="url" class="form-control reading-attachment" placeholder="Nhập URL tài liệu tham khảo bổ sung (Google Drive, OneDrive, ...)">
+                                                                <small class="form-text text-muted">Thêm link tài liệu tham khảo để nhân viên tải xuống khi cần</small>
+                                                            </div>
+                                                        </div>
                             </div>
 
                             <!-- Quiz Settings -->
@@ -1127,21 +1163,18 @@ ${answersHtml}`;
                         if (radioBtn) {
                             radioBtn.checked = true;
                         }
-                        
+
                         // Initialize UI based on lesson type
+                        handleLessonTypeChange(lessonItem, lessonType);
+
                         if (lessonType === '1') {
-                            // Video: show video input and set URL
-                            const videoInputArea = lessonItem.querySelector('.video-input-area');
+                            // Video: set URL after handler toggles areas
                             const videoUrlInput = lessonItem.querySelector('.lesson-video-url');
-                            if (videoInputArea) videoInputArea.style.display = 'block';
                             if (videoUrlInput && contentUrl) {
                                 videoUrlInput.value = contentUrl;
                                 lessonItem.setAttribute('data-video-url', contentUrl);
                             }
                         } else {
-                            // Docs or Quiz: show file upload area
-                            handleLessonTypeChange(lessonItem, lessonType);
-                            
                             // If there's existing content, show info
                             if (contentUrl) {
                                 const fileInfo = lessonItem.querySelector('.file-info');
@@ -1153,7 +1186,7 @@ ${answersHtml}`;
                                     fileInfo.style.display = 'block';
                                 }
                             }
-                            
+
                             // Show Quiz settings for Quiz type
                             if (lessonType === '3') {
                                 const quizSettingsArea = lessonItem.querySelector('.quiz-settings-area');
@@ -1348,11 +1381,13 @@ ${answersHtml}`;
                 const fileInput = lessonItem.querySelector('.content-file-input');
                 const uploadHint = lessonItem.querySelector('.upload-type-text');
                 const quizInfoWrapper = lessonItem.querySelector('.quiz-current-wrapper');
+                const docsExtraFields = lessonItem.querySelector('.docs-extra-fields');
                 
                 // Hide all areas first
                 if (videoInputArea) videoInputArea.style.display = 'none';
                 if (fileUploadArea) fileUploadArea.style.display = 'none';
                 if (quizSettingsArea) quizSettingsArea.style.display = 'none';
+                if (docsExtraFields) docsExtraFields.style.display = 'none';
                 
                 // Store lesson type
                 lessonItem.setAttribute('data-lesson-type', lessonType);
@@ -1360,11 +1395,12 @@ ${answersHtml}`;
                 switch(lessonType) {
                     case '1': // Video
                         if (videoInputArea) videoInputArea.style.display = 'block';
-                        // Disable file input for video lessons
                         if (fileInput) {
                             fileInput.disabled = true;
                             fileInput.value = '';
+                            fileInput.removeAttribute('accept');
                         }
+                        if (uploadHint) uploadHint.textContent = '';
                         if (quizInfoWrapper) {
                             quizInfoWrapper.style.display = 'none';
                         }
@@ -1380,6 +1416,7 @@ ${answersHtml}`;
                             fileInput.disabled = false;
                             fileInput.setAttribute('accept', '.pdf,.doc,.docx,.ppt,.pptx,.txt');
                         }
+                        if (docsExtraFields) docsExtraFields.style.display = 'block';
                         if (uploadHint) uploadHint.textContent = 'Hỗ trợ: PDF, Word, PowerPoint, Text';
                         if (quizInfoWrapper) {
                             quizInfoWrapper.style.display = 'none';
@@ -1777,11 +1814,18 @@ ${answersHtml}`;
                         // Xử lý ContentUrl và MainFileIndex dựa trên lesson type
                         let contentUrl = null;
                         let mainFileIndex = null;
+                        let description = '';
+                        let attachmentUrl = null;
                         
                         if (lessonType === 1) {
                             // Video: lấy từ input URL hoặc data attribute
                             const videoUrlInput = lessonEl.querySelector('.lesson-video-url');
                             contentUrl = videoUrlInput?.value?.trim() || lessonEl.getAttribute('data-video-url') || lessonEl.getAttribute('data-content-url') || null;
+                            const videoDescriptionInput = lessonEl.querySelector('.video-description');
+                            const videoAttachmentInput = lessonEl.querySelector('.video-attachment');
+                            description = videoDescriptionInput ? videoDescriptionInput.value.trim() : '';
+                            const attachmentValue = videoAttachmentInput ? videoAttachmentInput.value.trim() : '';
+                            attachmentUrl = attachmentValue !== '' ? attachmentValue : null;
                             console.log(`    Video lesson - ContentUrl: "${contentUrl}", MainFileIndex: null`);
                         } else {
                             // Docs/Quiz: kiểm tra xem có file upload mới không
@@ -1796,6 +1840,13 @@ ${answersHtml}`;
                                 const existingContentUrl = lessonEl.getAttribute('data-content-url') || null;
                                 contentUrl = existingContentUrl && existingContentUrl.trim() !== '' ? existingContentUrl : null;
                                 console.log(`    Docs/Quiz lesson with EXISTING content - ContentUrl: "${contentUrl}", MainFileIndex: null`);
+                            }
+                            if (lessonType === 2) {
+                                const readingDescriptionInput = lessonEl.querySelector('.reading-description');
+                                const readingAttachmentInput = lessonEl.querySelector('.reading-attachment');
+                                description = readingDescriptionInput ? readingDescriptionInput.value.trim() : '';
+                                const attachmentValue = readingAttachmentInput ? readingAttachmentInput.value.trim() : '';
+                                attachmentUrl = attachmentValue !== '' ? attachmentValue : null;
                             }
                         }
                         
@@ -1817,11 +1868,11 @@ ${answersHtml}`;
                         const lessonData = {
                             LessonId: lessonId,
                             Title: lessonTitle,
-                            Description: '',
+                            Description: description,
                             Type: lessonType,
                             OrderIndex: lessonIdx + 1,
                             ContentUrl: contentUrl,
-                            AttachmentUrl: null,
+                            AttachmentUrl: attachmentUrl,
                             QuizId: quizId,
                             IsQuizExcel: lessonType === 3 && mainFileIndex !== null,
                             QuizTitle: lessonType === 3 ? lessonTitle : null,
