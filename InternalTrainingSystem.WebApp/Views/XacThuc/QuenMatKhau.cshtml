@@ -102,12 +102,6 @@
                             </div>
                         </div>
 
-                        <div class="text-center mb-3">
-                            <small class="text-muted">
-                                Mã OTP có hiệu lực trong <span id="countdown" class="text-danger fw-bold">5:00</span>
-                            </small>
-                        </div>
-
                         <div class="d-grid gap-2 mb-3">
                             <button class="btn btn-primary btn-login" type="submit" id="verifyOtpBtn">
                                 <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true" id="verifyOtpSpinner"></span>
@@ -165,7 +159,6 @@
     
     <script>
         let currentEmail = '';
-        let countdownTimer;
 
         // Configure toastr
         toastr.options = {
@@ -210,7 +203,6 @@
                 if (data.success) {
                     toastr.success(data.message);
                     showStep2();
-                    startCountdown();
                 } else {
                     toastr.error(data.message);
                 }
@@ -263,7 +255,6 @@
                 if (data.success) {
                     toastr.success(data.message);
                     showStep3();
-                    clearInterval(countdownTimer);
                 } else {
                     toastr.error(data.message);
                 }
@@ -292,7 +283,6 @@
             .then(data => {
                 if (data.success) {
                     toastr.success('Mã OTP mới đã được gửi đến email của bạn');
-                    startCountdown();
                     document.getElementById('otpCode').value = '';
                 } else {
                     toastr.error(data.message);
@@ -306,7 +296,6 @@
         // Back to email step
         document.getElementById('backToEmailBtn').addEventListener('click', function() {
             showStep1();
-            clearInterval(countdownTimer);
         });
 
         // Show/Hide steps
@@ -335,33 +324,5 @@
             let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
             if (value.length > 6) value = value.slice(0, 6);
             e.target.value = value;
-        });
-
-        // Countdown timer
-        function startCountdown() {
-            let timeLeft = 300; // 5 minutes in seconds
-            const countdownElement = document.getElementById('countdown');
-            
-            countdownTimer = setInterval(function() {
-                const minutes = Math.floor(timeLeft / 60);
-                const seconds = timeLeft % 60;
-                countdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-                
-                if (timeLeft <= 0) {
-                    clearInterval(countdownTimer);
-                    toastr.warning('Mã OTP đã hết hạn. Vui lòng gửi lại mã mới.');
-                    countdownElement.textContent = 'Hết hạn';
-                }
-                timeLeft--;
-            }, 1000);
-        }
-
-        // Auto-submit when OTP is complete
-        document.getElementById('otpCode').addEventListener('input', function(e) {
-            if (e.target.value.length === 6) {
-                setTimeout(() => {
-                    document.getElementById('verifyOtpForm').dispatchEvent(new Event('submit'));
-                }, 500);
-            }
         });
     </script>
