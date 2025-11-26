@@ -17,6 +17,12 @@
                     <i class="fas fa-chalkboard-teacher me-2"></i>Lớp Học Của Tôi
                 </h2>
                 <div class="d-flex align-items-center">
+                    @if (!isMentor)
+                    {
+                        <a href="@Url.Action("YeuCauDoiLop")" class="btn btn-info me-3">
+                            <i class="fas fa-exchange-alt me-2"></i>Yêu cầu đổi lớp
+                        </a>
+                    }
                     <span class="text-muted me-3">
                         Tổng số: <strong>@(Model?.Count ?? 0)</strong> lớp học
                     </span>
@@ -97,6 +103,15 @@
                                                    title="Xem chi tiết">
                                                     <i class="fas fa-eye"></i> Chi tiết
                                                 </a>
+                                                @if (!isMentor && classItem.StartDate > DateTime.Now)
+                                                {
+                                                    <button type="button" 
+                                                            class="btn btn-warning btn-sm ms-1" 
+                                                            onclick="openSwapClassModal(@classItem.ClassId, '@classItem.ClassName', @classItem.CourseId, '@classItem.EmployeeId')"
+                                                            title="Đổi lớp">
+                                                        <i class="fas fa-exchange-alt"></i> Đổi lớp
+                                                    </button>
+                                                }
                                             </td>
                                         </tr>
                                     }
@@ -118,3 +133,130 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Đổi lớp -->
+<div class="modal fade" id="swapClassModal" tabindex="-1" aria-labelledby="swapClassModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title" id="swapClassModalLabel">
+                    <i class="fas fa-exchange-alt me-2"></i>Đổi Lớp Học
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="swapClassId" />
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Bạn đang yêu cầu đổi lớp: <strong id="currentClassName"></strong>
+                </div>
+                <div class="mb-3">
+                    <label for="targetEmployeeId" class="form-label">
+                        <i class="fas fa-user me-1"></i>Mã nhân viên muốn đổi lớp
+                    </label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="targetEmployeeId" 
+                           placeholder="Nhập mã nhân viên..." 
+                           required />
+                    <div class="form-text">
+                        Nhập mã nhân viên của người bạn muốn đổi lớp cùng
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Hủy
+                </button>
+                <button type="button" class="btn btn-warning" onclick="submitSwapRequest()">
+                    <i class="fas fa-paper-plane me-1"></i>Gửi yêu cầu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let swapClassModal;
+        let currentCourseId;
+        let currentEmployeeId;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            swapClassModal = new bootstrap.Modal(document.getElementById('swapClassModal'));
+        });
+
+        function openSwapClassModal(classId, className, courseId, employeeId) {
+            document.getElementById('swapClassId').value = classId;
+            document.getElementById('currentClassName').textContent = className;
+            document.getElementById('targetEmployeeId').value = '';
+            currentCourseId = courseId;
+            currentEmployeeId = employeeId;
+            swapClassModal.show();
+        }
+
+        async function submitSwapRequest() {
+            const classId = parseInt(document.getElementById('swapClassId').value);
+            const targetEmployeeId = document.getElementById('targetEmployeeId').value.trim();
+
+            if (!targetEmployeeId) {
+                alert('Vui lòng nhập mã nhân viên!');
+                return;
+            }
+
+            try {
+                // Get target user's class in the same course
+                const classesResponse = await fetch(`/lop-hoc/by-course/${currentCourseId}`);
+                if (!classesResponse.ok) {
+                    throw new Error('Không thể lấy danh sách lớp học');
+                }
+                const classesResult = await classesResponse.json();
+                const classes = classesResult.data || classesResult;
+                
+                // Find which class the target employee is in
+                let targetClassId = null;
+                for (const cls of classes) {
+                    const detailResponse = await fetch(`/lop-hoc/json/class-detail/${cls.classId}`);
+                    if (detailResponse.ok) {
+                        const detail = await detailResponse.json();
+                        if (detail.employees && detail.employees.some(e => e.employeeId === targetEmployeeId)) {
+                            targetClassId = cls.classId;
+                            break;
+                        }
+                    }
+                }
+
+                if (!targetClassId) {
+                    alert('Không tìm thấy nhân viên này trong các lớp học cùng khóa học!');
+                    return;
+                }
+
+                // Submit swap request
+                const swapResponse = await fetch('/lop-hoc/swap-class/request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        employeeIdFrom: currentEmployeeId,
+                        classIdFrom: classId,
+                        employeeIdTo: targetEmployeeId,
+                        classIdTo: targetClassId
+                    })
+                });
+
+                if (swapResponse.ok) {
+                    swapClassModal.hide();
+                    alert('Gửi yêu cầu đổi lớp thành công!');
+                    location.reload();
+                } else {
+                    const errorText = await swapResponse.text();
+                    alert('Có lỗi xảy ra: ' + errorText);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi gửi yêu cầu: ' + error.message);
+            }
+        }
+    </script>
+}

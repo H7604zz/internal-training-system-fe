@@ -1,0 +1,178 @@
+@model List<InternalTrainingSystem.WebApp.Models.DTOs.SwapRequestDto>
+@{
+    ViewData["Title"] = "Yêu Cầu Đổi Lớp";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/lop-hoc.css" />
+    <link rel="stylesheet" href="~/css/yeu-cau-doi-lop.css" />
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-primary">
+                    <i class="fas fa-exchange-alt me-2"></i>Yêu Cầu Đổi Lớp
+                </h2>
+                <div>
+                    <a href="@Url.Action("CuaToi")" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Quay lại
+                    </a>
+                </div>
+            </div>
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            @if (Model != null && Model.Any())
+            {
+                <div class="row g-4">
+                    @foreach (var request in Model)
+                    {
+                        <div class="col-12">
+                            <div class="card shadow-sm swap-request-card">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <!-- Người gửi yêu cầu -->
+                                        <div class="col-md-5">
+                                            <div class="requester-section">
+                                                <h5 class="mb-3">
+                                                    <i class="fas fa-user text-primary me-2"></i>Người yêu cầu
+                                                </h5>
+                                                <div class="mb-2">
+                                                    <strong>Họ tên:</strong> @request.RequesterName
+                                                </div>
+                                                <div>
+                                                    <span class="class-badge from-class">
+                                                        <i class="fas fa-school me-1"></i>@request.FromClassName
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Mũi tên -->
+                                        <div class="col-md-2 text-center">
+                                            <div class="swap-arrow">
+                                                <i class="fas fa-exchange-alt"></i>
+                                            </div>
+                                            <small class="text-muted d-block mt-2">
+                                                @request.RequestedAt.ToString("dd/MM/yyyy HH:mm")
+                                            </small>
+                                        </div>
+
+                                        <!-- Người nhận yêu cầu -->
+                                        <div class="col-md-5">
+                                            <div class="target-section">
+                                                <h5 class="mb-3">
+                                                    <i class="fas fa-user-check text-success me-2"></i>Người được yêu cầu
+                                                </h5>
+                                                <div class="mb-2">
+                                                    <strong>Họ tên:</strong> @request.TargetName
+                                                </div>
+                                                <div>
+                                                    <span class="class-badge to-class">
+                                                        <i class="fas fa-school me-1"></i>@request.ToClassName
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Nút hành động -->
+                                    <div class="row mt-4">
+                                        <div class="col-12 text-end">
+                                            @if (request.Status == InternalTrainingSystem.WebApp.Constants.ClassSwapConstants.Status.Pending)
+                                            {
+                                                <button type="button" 
+                                                        class="btn btn-success me-2" 
+                                                        onclick="respondToSwap(@request.SwapClassId, true)"
+                                                        title="Chấp nhận đổi lớp">
+                                                    <i class="fas fa-check me-1"></i>Chấp nhận
+                                                </button>
+                                                <button type="button" 
+                                                        class="btn btn-danger" 
+                                                        onclick="respondToSwap(@request.SwapClassId, false)"
+                                                        title="Từ chối đổi lớp">
+                                                    <i class="fas fa-times me-1"></i>Từ chối
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                var badgeClass = InternalTrainingSystem.WebApp.Constants.ClassSwapConstants.GetBadgeClass(request.Status);
+                                                var statusText = InternalTrainingSystem.WebApp.Constants.ClassSwapConstants.GetDisplayText(request.Status);
+                                                var statusIcon = InternalTrainingSystem.WebApp.Constants.ClassSwapConstants.GetIcon(request.Status);
+                                                
+                                                <span class="badge @badgeClass fs-6 px-3 py-2">
+                                                    <i class="fas @statusIcon me-2"></i>@statusText
+                                                </span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="card shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                        <h4 class="text-muted">Không có yêu cầu đổi lớp nào</h4>
+                        <p class="text-muted">Hiện tại bạn chưa có yêu cầu đổi lớp nào đang chờ xử lý.</p>
+                        <a href="@Url.Action("CuaToi")" class="btn btn-primary mt-3">
+                            <i class="fas fa-arrow-left me-2"></i>Về lớp học của tôi
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function respondToSwap(swapRequestId, accepted) {
+            const action = accepted ? 'chấp nhận' : 'từ chối';
+            
+            if (!confirm(`Bạn có chắc chắn muốn ${action} yêu cầu đổi lớp này?`)) {
+                return;
+            }
+
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                
+                const response = await fetch('/lop-hoc/swap-class/respond', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify({
+                        swapRequestId: swapRequestId,
+                        accepted: accepted
+                    })
+                });
+
+                if (response.ok) {
+                    alert(`${accepted ? 'Chấp nhận' : 'Từ chối'} yêu cầu đổi lớp thành công!`);
+                    location.reload();
+                } else {
+                    const errorText = await response.text();
+                    alert('Có lỗi xảy ra: ' + errorText);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi xử lý yêu cầu: ' + error.message);
+            }
+        }
+    </script>
+    @Html.AntiForgeryToken()
+}

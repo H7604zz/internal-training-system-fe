@@ -163,5 +163,33 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string CourseName { get; set; } = string.Empty;
         public string Mentor { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
+        public DateTime StartDate { get; set; }
+        public string EmployeeId { get; set; } = string.Empty;
+    }
+
+    public class SwapClassRequestDto
+    {
+        public string EmployeeIdFrom { get; set; } = string.Empty;
+        public int ClassIdFrom { get; set; }
+        public string EmployeeIdTo { get; set; } = string.Empty;
+        public int ClassIdTo { get; set; }
+    }
+
+    public class SwapRequestDto
+    {
+        public int SwapClassId { get; set; }
+        public string RequesterName { get; set; } = string.Empty;
+        public string TargetName { get; set; } = string.Empty;
+        public string FromClassName { get; set; } = string.Empty;
+        public string ToClassName { get; set; } = string.Empty;
+        public DateTime RequestedAt { get; set; }
+        public string Status { get; set; } = string.Empty;
+    }
+
+    public class RespondSwapRequestDto
+    {
+        public int SwapRequestId { get; set; }
+        public bool Accepted { get; set; }
     }
 }
+

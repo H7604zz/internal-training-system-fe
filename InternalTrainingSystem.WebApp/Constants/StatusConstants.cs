@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http.HttpResults;
+
 namespace InternalTrainingSystem.WebApp.Constants
 {
     /// <summary>
@@ -198,5 +200,56 @@ namespace InternalTrainingSystem.WebApp.Constants
             public const string Scheduled = "Scheduled";
         }
     }
+    public static class ClassSwapConstants
+    {
+        public static class Status
+        {
+            public const string Pending = "Pending";
+            public const string Approved = "Approved";
+            public const string Cancelled = "Cancelled";
+            public const string Rejected = "Rejected";
+        }
 
+        public static string GetDisplayText(string status)
+        {
+            return status switch
+            {
+                Status.Pending => "Chờ phản hồi",
+                Status.Approved => "Đã chấp nhận",
+                Status.Rejected => "Đã từ chối",
+                Status.Cancelled => "Đã hủy",
+                _ => "Không xác định"
+            };
+        }
+
+        /// <summary>
+        /// Get badge class for class swap status
+        /// </summary>
+        public static string GetBadgeClass(string status)
+        {
+            return status switch
+            {
+                Status.Pending => "bg-warning",
+                Status.Approved => "bg-success",
+                Status.Rejected => "bg-danger",
+                Status.Cancelled => "bg-secondary",
+                _ => "bg-secondary"
+            };
+        }
+
+        /// <summary>
+        /// Get icon class for class swap status
+        /// </summary>
+        public static string GetIcon(string status)
+        {
+            return status switch
+            {
+                Status.Pending => "fa-clock",
+                Status.Approved => "fa-check-circle",
+                Status.Rejected => "fa-times-circle",
+                Status.Cancelled => "fa-ban",
+                _ => "fa-question-circle"
+            };
+        }
+    }
 }

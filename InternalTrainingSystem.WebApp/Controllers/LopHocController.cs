@@ -499,5 +499,151 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 return View(new List<MyClassDto>());
             }
         }
+
+        /// <summary>
+        /// Gửi yêu cầu đổi lớp
+        /// </summary>
+        [HttpPost("swap-class/request")]
+        [Authorize(Roles = UserRoles.Staff)]
+        public async Task<IActionResult> RequestSwapClass([FromBody] SwapClassRequestDto request)
+        {
+            try
+            {
+                var content = new StringContent(
+                    JsonSerializer.Serialize(request),
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+                var response = await _httpClient.PostAsync(
+                    Utilities.GetAbsoluteUrl("api/class/request-swap"),
+                    content
+                );
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return Ok("Gửi yêu cầu đổi lớp thành công");
+                }
+
+                var errorContent = await response.Content.ReadAsStringAsync();
+                return StatusCode((int)response.StatusCode, errorContent);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while requesting class swap");
+                return StatusCode(500, "Đã xảy ra lỗi khi gửi yêu cầu đổi lớp");
+            }
+        }
+
+        /// <summary>
+        /// Lấy chi tiết lớp học dưới dạng JSON
+        /// </summary>
+        [HttpGet("json/class-detail/{id}")]
+        [Authorize(Roles = UserRoles.Staff)]
+        public async Task<IActionResult> GetClassDetailJson(int id)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/class/{id}"));
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var classDetail = JsonSerializer.Deserialize<ClassDetailDto>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                    return Ok(classDetail);
+                }
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting class detail");
+                return StatusCode(500, "Đã xảy ra lỗi");
+            }
+        }
+
+        /// <summary>
+        /// Hiển thị danh sách yêu cầu đổi lớp
+        /// </summary>
+        [HttpGet("yeu-cau-doi-lop")]
+        [Authorize(Roles = UserRoles.Staff)]
+        public async Task<IActionResult> YeuCauDoiLop()
+        {
+            try
+            {
+                // Check authentication
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
+                {
+                    TempData["Error"] = "Phiên đăng nhập đã hết hạn.";
+                    return RedirectToAction("DangNhap", "XacThuc");
+                }
+
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl("api/class/my-swap-requests"));
+
+                List<SwapRequestDto> swapRequests;
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    swapRequests = JsonSerializer.Deserialize<List<SwapRequestDto>>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    }) ?? new List<SwapRequestDto>();
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    swapRequests = new List<SwapRequestDto>();
+                }
+                else
+                {
+                    swapRequests = new List<SwapRequestDto>();
+                    TempData["Error"] = "Đã xảy ra lỗi khi tải danh sách yêu cầu.";
+                }
+
+                return View(swapRequests);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting swap requests");
+                TempData["Error"] = "Đã xảy ra lỗi khi tải danh sách yêu cầu đổi lớp.";
+                return View(new List<SwapRequestDto>());
+            }
+        }
+
+        /// <summary>
+        /// Phản hồi yêu cầu đổi lớp
+        /// </summary>
+        [HttpPost("swap-class/respond")]
+        [Authorize(Roles = UserRoles.Staff)]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RespondSwapClass([FromBody] RespondSwapRequestDto request)
+        {
+            try
+            {
+                var content = new StringContent(
+                    JsonSerializer.Serialize(request),
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+                var response = await _httpClient.PostAsync(
+                    Utilities.GetAbsoluteUrl("api/class/respond-swap-request"),
+                    content
+                );
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return Ok("Phản hồi yêu cầu thành công");
+                }
+
+                var errorContent = await response.Content.ReadAsStringAsync();
+                return StatusCode((int)response.StatusCode, errorContent);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while responding to swap request");
+                return StatusCode(500, "Đã xảy ra lỗi khi phản hồi yêu cầu");
+            }
+        }
     }
 }
