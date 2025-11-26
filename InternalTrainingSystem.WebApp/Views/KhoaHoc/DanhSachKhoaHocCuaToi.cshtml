@@ -45,7 +45,7 @@
                         <i class="fas fa-check-circle me-2"></i>Đã hoàn thành
                     </a>
                     <a href="@Url.Action("DanhSachKhoaHocCuaToi", "KhoaHoc", new { status = EnrollmentConstants.Status.Dropped, page = 1 })"
-                       class="filter-tab @(ViewBag.CurrentStatus == EnrollmentConstants.Status.Completed ? "active" : "")">
+                       class="filter-tab @(ViewBag.CurrentStatus == EnrollmentConstants.Status.Dropped ? "active" : "")">
                         <i class="fas fa-check-circle me-2"></i>Đã từ chối
                     </a>
                 </div>
