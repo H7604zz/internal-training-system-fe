@@ -1,0 +1,174 @@
+@model InternalTrainingSystem.WebApp.Models.DTOs.AssignmentDto
+
+@{
+    ViewData["Title"] = "Sửa Bài Tập";
+    var classId = ViewBag.ClassId;
+    var assignmentId = ViewBag.AssignmentId;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/bai-tap.css" asp-append-version="true" />
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="text-primary mb-1">
+                        <i class="fas fa-edit me-2"></i>Sửa Bài Tập
+                    </h2>
+                    <p class="text-muted mb-0">Lớp: <strong>@Model.ClassName</strong></p>
+                </div>
+                <div>
+                    <a href="@Url.Action("ChiTiet", "BaiTap", new { classId, assignmentId })" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Quay Lại
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Form -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <form asp-action="Sua" asp-controller="BaiTap" 
+                          asp-route-classId="@classId" asp-route-assignmentId="@assignmentId"
+                          method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+
+                        <!-- Title -->
+                        <div class="mb-4">
+                            <label for="Title" class="form-label">
+                                <i class="fas fa-heading me-2"></i>Tiêu Đề <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="Title" name="Title" 
+                                   value="@Model.Title" placeholder="Nhập tiêu đề bài tập" required maxlength="200">
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label for="Description" class="form-label">
+                                <i class="fas fa-align-left me-2"></i>Mô Tả
+                            </label>
+                            <textarea class="form-control" id="Description" name="Description" rows="6"
+                                      placeholder="Nhập mô tả chi tiết về bài tập...">@Model.Description</textarea>
+                        </div>
+
+                        <!-- Due Date -->
+                        <div class="mb-4">
+                            <label for="DueAt" class="form-label">
+                                <i class="fas fa-calendar-alt me-2"></i>Hạn Nộp <span class="text-danger">*</span>
+                            </label>
+                            <input type="datetime-local" class="form-control" id="DueAt" name="DueDate"
+                                   value="@Model.DueAt.ToString("yyyy-MM-ddTHH:mm")" required>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Chọn ngày và giờ hạn nộp bài tập
+                            </div>
+                        </div>
+
+                        <!-- Current Attachment -->
+                        @if (!string.IsNullOrEmpty(Model.AttachmentUrl))
+                        {
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    <i class="fas fa-paperclip me-2"></i>File Đính Kèm Hiện Tại
+                                </label>
+                                <div class="alert alert-info d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-file fa-2x me-3"></i>
+                                        <div>
+                                            <strong>@Model.AttachmentFileName</strong><br>
+                                            @if (Model.AttachmentSizeBytes.HasValue)
+                                            {
+                                                <small>Kích thước: @((Model.AttachmentSizeBytes.Value / 1024.0 / 1024.0).ToString("0.##")) MB</small>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="RemoveAttachment" name="RemoveAttachment" value="true">
+                                        <label class="form-check-label text-danger" for="RemoveAttachment">
+                                            Xóa file này
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <!-- New Attachment -->
+                        <div class="mb-4">
+                            <label for="AttachmentFile" class="form-label">
+                                <i class="fas fa-paperclip me-2"></i>
+                                @(string.IsNullOrEmpty(Model.AttachmentUrl) ? "File Đính Kèm" : "File Đính Kèm Mới")
+                            </label>
+                            <input type="file" class="form-control" id="AttachmentFile" name="AttachmentFile">
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                @(string.IsNullOrEmpty(Model.AttachmentUrl) 
+                                    ? "Tài liệu hướng dẫn, yêu cầu bài tập (nếu có)" 
+                                    : "Chọn file mới để thay thế file hiện tại"). Kích thước tối đa: 100MB
+                            </div>
+                            <div id="filePreview" class="mt-2"></div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="@Url.Action("ChiTiet", "BaiTap", new { classId, assignmentId })" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Hủy
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Cập Nhật
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/bai-tap.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function() {
+            // File preview
+            $('#AttachmentFile').on('change', function(e) {
+                var file = e.target.files[0];
+                if (file) {
+                    var sizeInMB = (file.size / 1024 / 1024).toFixed(2);
+                    $('#filePreview').html(`
+                        <div class="alert alert-success d-flex align-items-center">
+                            <i class="fas fa-file fa-2x me-3"></i>
+                            <div>
+                                <strong>${file.name}</strong><br>
+                                <small>Kích thước: ${sizeInMB} MB</small>
+                            </div>
+                        </div>
+                    `);
+                } else {
+                    $('#filePreview').empty();
+                }
+            });
+
+            // Uncheck RemoveAttachment when new file is selected
+            $('#AttachmentFile').on('change', function() {
+                if (this.files.length > 0) {
+                    $('#RemoveAttachment').prop('checked', false);
+                }
+            });
+        });
+    </script>
+}

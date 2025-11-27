@@ -1,0 +1,132 @@
+@model InternalTrainingSystem.WebApp.Models.DTOs.AssignmentDto
+
+@{
+    ViewData["Title"] = "Tạo Bài Tập Mới";
+    var classId = ViewBag.ClassId;
+    var className = ViewBag.ClassName;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/bai-tap.css" asp-append-version="true" />
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="text-primary mb-1">
+                        <i class="fas fa-plus-circle me-2"></i>Tạo Bài Tập Mới
+                    </h2>
+                    <p class="text-muted mb-0">Lớp: <strong>@className</strong></p>
+                </div>
+                <div>
+                    <a href="@Url.Action("Index", "BaiTap", new { classId })" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Quay Lại
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <form asp-action="TaoMoi" asp-controller="BaiTap" asp-route-classId="@classId" 
+                          method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" name="ClassId" value="@classId" />
+
+                        <!-- Title -->
+                        <div class="mb-4">
+                            <label for="Title" class="form-label">
+                                <i class="fas fa-heading me-2"></i>Tiêu Đề <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="Title" name="Title" 
+                                   placeholder="Nhập tiêu đề bài tập" required maxlength="200">
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label for="Description" class="form-label">
+                                <i class="fas fa-align-left me-2"></i>Mô Tả
+                            </label>
+                            <textarea class="form-control" id="Description" name="Description" rows="6"
+                                      placeholder="Nhập mô tả chi tiết về bài tập..."></textarea>
+                        </div>
+
+                        <!-- Due Date -->
+                        <div class="mb-4">
+                            <label for="DueAt" class="form-label">
+                                <i class="fas fa-calendar-alt me-2"></i>Hạn Nộp <span class="text-danger">*</span>
+                            </label>
+                            <input type="datetime-local" class="form-control" id="DueAt" name="DueAt" required>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Chọn ngày và giờ hạn nộp bài tập
+                            </div>
+                        </div>
+
+                        <!-- Attachment -->
+                        <div class="mb-4">
+                            <label for="AttachmentFile" class="form-label">
+                                <i class="fas fa-paperclip me-2"></i>File Đính Kèm
+                            </label>
+                            <input type="file" class="form-control" id="AttachmentFile" name="AttachmentFile">
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Tài liệu hướng dẫn, yêu cầu bài tập (nếu có). Kích thước tối đa: 100MB
+                            </div>
+                            <div id="filePreview" class="mt-2"></div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="@Url.Action("Index", "BaiTap", new { classId })" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Hủy
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Tạo Bài Tập
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/bai-tap.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function() {
+            // Set min date to now
+            var now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('DueDate').min = now.toISOString().slice(0, 16);
+
+            // File preview
+            $('#AttachmentFile').on('change', function(e) {
+                var file = e.target.files[0];
+                if (file) {
+                    var sizeInMB = (file.size / 1024 / 1024).toFixed(2);
+                    $('#filePreview').html(`
+                        <div class="alert alert-info d-flex align-items-center">
+                            <i class="fas fa-file fa-2x me-3"></i>
+                            <div>
+                                <strong>${file.name}</strong><br>
+                                <small>Kích thước: ${sizeInMB} MB</small>
+                            </div>
+                        </div>
+                    `);
+                } else {
+                    $('#filePreview').empty();
+                }
+            });
+        });
+    </script>
+}
