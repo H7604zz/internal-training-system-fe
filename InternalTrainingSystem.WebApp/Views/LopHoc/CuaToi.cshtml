@@ -98,18 +98,25 @@
                                                 </span>
                                             </td>
                                             <td class="text-center">
-                                                <a href="@Url.Action("ChiTiet", new { id = classItem.ClassId })" 
-                                                   class="btn btn-primary btn-sm class-detail-btn" 
-                                                   title="Xem chi tiết">
-                                                    <i class="fas fa-eye"></i> Chi tiết
-                                                </a>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <a href="@Url.Action("ChiTiet", new { id = classItem.ClassId })" 
+                                                       class="btn btn-primary" 
+                                                       title="Xem chi tiết">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="@Url.Action("Index", "BaiTap", new { classId = classItem.ClassId })" 
+                                                       class="btn btn-info" 
+                                                       title="Bài tập">
+                                                        <i class="fas fa-tasks"></i>
+                                                    </a>
+                                                </div>
                                                 @if (!isMentor && classItem.StartDate > DateTime.Now)
                                                 {
                                                     <button type="button" 
                                                             class="btn btn-warning btn-sm ms-1" 
                                                             onclick="openSwapClassModal(@classItem.ClassId, '@classItem.ClassName', @classItem.CourseId, '@classItem.EmployeeId')"
                                                             title="Đổi lớp">
-                                                        <i class="fas fa-exchange-alt"></i> Đổi lớp
+                                                        <i class="fas fa-exchange-alt"></i>
                                                     </button>
                                                 }
                                             </td>
