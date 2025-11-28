@@ -16,12 +16,6 @@
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h2 class="text-primary mb-1">
-                        <i class="fas fa-edit me-2"></i>Sửa Bài Tập
-                    </h2>
-                    <p class="text-muted mb-0">Lớp: <strong>@Model.ClassName</strong></p>
-                </div>
-                <div>
                     <a href="@Url.Action("ChiTiet", "BaiTap", new { classId, assignmentId })" class="btn btn-secondary">
                         <i class="fas fa-arrow-left me-2"></i>Quay Lại
                     </a>
@@ -29,15 +23,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Alert Messages -->
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
 
     <!-- Form -->
     <div class="row">

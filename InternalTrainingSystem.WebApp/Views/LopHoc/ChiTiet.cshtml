@@ -119,42 +119,33 @@
     </div>
 
     <!-- Quick Actions -->
-    @if(isMentor){
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="mb-3">
-                            <i class="fas fa-bolt me-2"></i>Thao Tác Nhanh
-                        </h5>
-                        <div class="d-flex flex-wrap gap-2">
-                            @if (User.IsInRole(UserRoles.Mentor) || User.IsInRole(UserRoles.Staff))
-                            {
-                                <a href="@Url.Action("Index", "BaiTap", new { classId = Model.ClassId })"
-                                class="btn btn-primary">
-                                    <i class="fas fa-tasks me-2"></i>Bài Tập
-                                </a>
-                            }
-                            @if (User.IsInRole(UserRoles.Mentor))
-                            {
-                                <a href="@Url.Action("DanhSachBaiNop", "BaiTap", new { classId = Model.ClassId })"
-                                class="btn btn-info">
-                                    <i class="fas fa-list-alt me-2"></i>Quản Lý Bài Nộp
-                                </a>
-                                <a href="@Url.Action("TaoMoi", "BaiTap", new { classId = Model.ClassId })"
-                                class="btn btn-success">
-                                    <i class="fas fa-plus-circle me-2"></i>Tạo Bài Tập Mới
-                                </a>
-                            }
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="mb-3">
+                        <i class="fas fa-bolt me-2"></i>Thao Tác Nhanh
+                    </h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="@Url.Action("Index", "BaiTap", new { classId = Model.ClassId })"
+                           class="btn btn-primary">
+                            <i class="fas fa-tasks me-2"></i>Bài Tập
+                        </a>
+                        @if (isMentor)
+                        {
+                            <a href="@Url.Action("TaoMoi", "BaiTap", new { classId = Model.ClassId })"
+                               class="btn btn-success">
+                                <i class="fas fa-plus-circle me-2"></i>Tạo Bài Tập Mới
+                            </a>
                             <button type="button" class="btn btn-warning" onclick="openGradeModal()">
                                 <i class="fas fa-clipboard-check me-2"></i>Nhập Điểm
                             </button>
-                        </div>
+                        }
                     </div>
                 </div>
             </div>
         </div>
-    }
+    </div>
 
 
     <!-- Class Schedule -->
@@ -313,7 +304,7 @@
                                                 <div class="d-flex align-items-center">
                                                     <i class="fas fa-envelope me-2 text-muted"></i>
                                                     <a href="mailto:@staff.Email"
-                                                    class="email-link">@staff.Email</a>
+                                                       class="email-link">@staff.Email</a>
                                                 </div>
                                             </td>
                                             @if (!isStaff)
@@ -369,13 +360,13 @@
                     <div class="mt-2">Đang tải danh sách nhân viên...</div>
                 </div>
                 <div id="gradeError" class="bg-danger d-none"></div>
-                
+
                 <div id="gradeContent" class="d-none">
                     <div class="bg-warning">
                         <i class="fas fa-info-circle me-2"></i>
                         <strong>Lưu ý:</strong> Điểm cuối kỳ từ 0 đến 10. Sử dụng "Lưu Điểm" để lưu tạm thời, "Chốt Điểm" để xác nhận điểm cuối cùng (không thể sửa sau khi chốt).
                     </div>
-                    
+
                     <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
                         <table class="table table-hover table-bordered">
                             <thead class="table-light" style="position: sticky; top: 0; z-index: 10;">
@@ -396,7 +387,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-  
+
                 <button type="button" class="btn btn-primary" id="saveGradeBtn" onclick="saveGrades(false)">
                     <i class="fas fa-save me-2"></i>Lưu Điểm
                 </button>
@@ -424,7 +415,7 @@
                     <div class="mt-2">Đang tải thông tin...</div>
                 </div>
                 <div id="setupError" class="alert alert-danger d-none"></div>
-                
+
                 <form id="setupClassForm" class="d-none">
                     <!-- Bước 1: Chọn Mentor -->
                     <div class="card mb-3">
@@ -524,14 +515,14 @@
                 const result = await response.json();
                 const usersArray = result.users || [];
                 const isScoreSubmitted = result.isScoreSubmitted || false;
-                
+
                 // Populate table
                 tableBody.innerHTML = '';
                 usersArray.forEach((user, index) => {
                     const row = document.createElement('tr');
                     const isSubmitted = user.isSubmit === true;
                     const currentScore = user.scoreFinal !== null && user.scoreFinal !== undefined ? user.scoreFinal : '';
-                    
+
                     row.innerHTML = `
                         <td class="text-center">${index + 1}</td>
                         <td>${user.employeeId || 'N/A'}</td>
@@ -540,12 +531,12 @@
                             ${currentScore !== '' ? `<span class="badge bg-info">${currentScore}</span>` : '<span class="text-muted">Chưa có</span>'}
                         </td>
                         <td>
-                            <input 
-                                type="number" 
-                                class="form-control grade-input" 
+                            <input
+                                type="number"
+                                class="form-control grade-input"
                                 data-user-id="${user.userId}"
-                                min="0" 
-                                max="10" 
+                                min="0"
+                                max="10"
                                 step="0.1"
                                 value="${currentScore}"
                                 ${isSubmitted ? 'disabled' : ''}
@@ -557,7 +548,7 @@
 
                 loadingEl.classList.add('d-none');
                 contentEl.classList.remove('d-none');
-                
+
                 // Enable/disable buttons based on data
                 updateGradeButtons(isScoreSubmitted);
             } catch (error) {
@@ -571,12 +562,12 @@
             const saveBtn = document.getElementById('saveGradeBtn');
             const submitBtn = document.getElementById('submitGradeBtn');
             const modalFooter = document.querySelector('#gradeModal .modal-footer');
-            
+
             if (isScoreSubmitted) {
                 // Ẩn buttons và hiển thị thông báo
                 saveBtn.style.display = 'none';
                 submitBtn.style.display = 'none';
-                
+
                 // Kiểm tra xem thông báo đã tồn tại chưa
                 let alertDiv = modalFooter.querySelector('.alert-info');
                 if (!alertDiv) {
@@ -590,12 +581,12 @@
                 // Hiển thị buttons bình thường
                 saveBtn.style.display = '';
                 submitBtn.style.display = '';
-                
+
                 const inputs = document.querySelectorAll('.grade-input:not([disabled])');
                 const hasEditableInputs = inputs.length > 0;
                 saveBtn.disabled = !hasEditableInputs;
                 submitBtn.disabled = !hasEditableInputs;
-                
+
                 // Xóa thông báo nếu có
                 const alertDiv = modalFooter.querySelector('.alert-info');
                 if (alertDiv) {
@@ -621,7 +612,7 @@
             inputs.forEach(input => {
                 const userId = input.dataset.userId;
                 const value = parseFloat(input.value);
-                
+
                 if (input.value.trim() === '') {
                     // Khi chốt điểm, nhân viên chưa nhập điểm sẽ mặc định là 0
                     if (isSubmit) {
@@ -632,7 +623,7 @@
                     }
                     return;
                 }
-                
+
                 if (isNaN(value) || value < 0 || value > 10) {
                     hasError = true;
                     input.classList.add('is-invalid');
@@ -656,10 +647,10 @@
             }
 
             if (isSubmit) {
-                const warningMessage = emptyCount > 0 
+                const warningMessage = emptyCount > 0
                     ? `\n\nCẢNH BÁO: ${emptyCount} nhân viên chưa nhập điểm sẽ được mặc định là 0 điểm!`
                     : '';
-                    
+
                 const confirm = window.confirm(
                     'Bạn có chắc chắn muốn CHỐT ĐIỂM?\n\n' +
                     'Sau khi chốt, điểm số sẽ không thể thay đổi được nữa.\n\n' +
@@ -673,7 +664,7 @@
             const submitBtn = document.getElementById('submitGradeBtn');
             const originalSaveText = saveBtn.innerHTML;
             const originalSubmitText = submitBtn.innerHTML;
-            
+
             saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang lưu...';
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang lưu...';
             saveBtn.disabled = true;
@@ -681,13 +672,13 @@
 
             try {
                 const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-                
+
                 const requestData = {
                     ClassId: classId,
                     UserScore: scores,
                     IsSubmitted: isSubmit
                 };
-                
+
                 const response = await fetch('/lop-hoc/scores-final', {
                     method: 'PUT',
                     headers: {
@@ -699,7 +690,7 @@
 
                 if (response.ok) {
                     alert(isSubmit ? 'Chốt điểm thành công!' : 'Lưu điểm thành công!');
-                    
+
                     // Reload the page to show updated scores
                     location.reload();
                 } else {
@@ -734,13 +725,13 @@
                 formEl.classList.add('d-none');
 
                 const response = await fetch('/lop-hoc/danh-sach-mentor');
-                
+
                 if (!response.ok) {
                     throw new Error('Không thể tải danh sách mentor');
                 }
 
                 mentorsList = await response.json();
-                
+
                 // Clear and populate select
                 selectEl.innerHTML = '<option value="">-- Chọn mentor --</option>';
                 mentorsList.forEach(mentor => {
@@ -824,7 +815,7 @@
 
         document.getElementById('mentorSelect')?.addEventListener('change', function() {
             const infoDiv = document.getElementById('mentorInfo');
-            
+
             if (this.value) {
                 const selectedOption = this.options[this.selectedIndex];
                 document.getElementById('mentorEmail').textContent = selectedOption.dataset.email;
@@ -843,7 +834,7 @@
             const scheduleDays = document.querySelectorAll('.schedule-day');
 
             let isValid = mentorId && startWeek && numberOfWeeks && scheduleDays.length > 0;
-            
+
             // Check all schedule days are filled
             if (isValid) {
                 scheduleDays.forEach(day => {
@@ -856,7 +847,7 @@
                     }
                 });
             }
-            
+
             const saveBtn = document.getElementById('saveSetupBtn');
             if (saveBtn) {
                 saveBtn.disabled = !isValid;
@@ -867,18 +858,18 @@
             const mentorId = document.getElementById('mentorSelect').value;
             const startWeek = document.getElementById('startWeek').value;
             const numberOfWeeks = parseInt(document.getElementById('numberOfWeeks').value);
-            
+
             // Collect weekly schedules
             const weeklySchedules = [];
             const scheduleDays = document.querySelectorAll('.schedule-day');
-            
+
             scheduleDays.forEach(daySelect => {
                 const row = daySelect.closest('.row');
                 const dayOfWeek = daySelect.value;
                 const startTime = row.querySelector('.schedule-start').value;
                 const endTime = row.querySelector('.schedule-end').value;
                 const location = row.querySelector('.schedule-location').value;
-                
+
                 if (dayOfWeek && startTime && endTime) {
                     weeklySchedules.push({
                         DayOfWeek: dayOfWeek,
@@ -901,7 +892,7 @@
 
             try {
                 const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-                
+
                 const requestData = {
                     ClassId: classId,
                     CourseId: courseId,
@@ -910,9 +901,9 @@
                     NumberOfWeeks: numberOfWeeks,
                     WeeklySchedules: weeklySchedules
                 };
-                
+
                 console.log('Request data:', requestData);
-                
+
                 const response = await fetch('/lop-hoc/thiet-lap', {
                     method: 'POST',
                     headers: {
@@ -930,14 +921,14 @@
                 } else {
                     const contentType = response.headers.get('content-type');
                     let errorMessage = '';
-                    
+
                     if (contentType && contentType.includes('application/json')) {
                         const errorData = await response.json();
                         errorMessage = errorData.message || JSON.stringify(errorData);
                     } else {
                         errorMessage = await response.text();
                     }
-                    
+
                     console.error('Error response:', errorMessage);
                     alert(errorMessage);
                     btn.innerHTML = originalText;
