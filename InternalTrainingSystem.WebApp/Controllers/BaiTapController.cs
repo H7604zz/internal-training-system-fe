@@ -252,15 +252,15 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 if (!string.IsNullOrEmpty(form.Description))
                     formData.Add(new StringContent(form.Description), "Description");
                 
-                formData.Add(new StringContent(form.DueDate.ToString("o")), "DueDate");
+                formData.Add(new StringContent(form.DueAt.ToString("o")), "DueAt");
                 formData.Add(new StringContent(form.RemoveAttachment.ToString()), "RemoveAttachment");
 
-                if (form.AttachmentFile != null)
+                if (form.File != null)
                 {
-                    var fileContent = new StreamContent(form.AttachmentFile.OpenReadStream());
+                    var fileContent = new StreamContent(form.File.OpenReadStream());
                     fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(
-                        form.AttachmentFile.ContentType);
-                    formData.Add(fileContent, "AttachmentFile", form.AttachmentFile.FileName);
+                        form.File.ContentType);
+                    formData.Add(fileContent, "File", form.File.FileName);
                 }
 
                 var response = await _httpClient.PutAsync(
@@ -270,13 +270,13 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 if (response.IsSuccessStatusCode)
                 {
                     TempData["Success"] = "Cập nhật bài tập thành công!";
-                    return RedirectToAction("ChiTiet", new { classId, assignmentId });
+                    return RedirectToAction("Index", new { classId });
                 }
                 else
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
                     TempData["Error"] = $"Không thể cập nhật bài tập: {errorContent}";
-                    return RedirectToAction("Sua", new { classId, assignmentId });
+                    return RedirectToAction("Sua", new { classId });
                 }
             }
             catch (Exception ex)

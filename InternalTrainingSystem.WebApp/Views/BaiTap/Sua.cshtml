@@ -72,7 +72,7 @@
                             <label for="DueAt" class="form-label">
                                 <i class="fas fa-calendar-alt me-2"></i>Hạn Nộp <span class="text-danger">*</span>
                             </label>
-                            <input type="datetime-local" class="form-control" id="DueAt" name="DueDate"
+                            <input type="datetime-local" class="form-control" id="DueAt" name="DueAt"
                                    value="@Model.DueAt.ToString("yyyy-MM-ddTHH:mm")" required>
                             <div class="form-text">
                                 <i class="fas fa-info-circle me-1"></i>
@@ -87,23 +87,20 @@
                                 <label class="form-label">
                                     <i class="fas fa-paperclip me-2"></i>File Đính Kèm Hiện Tại
                                 </label>
-                                <div class="alert alert-info d-flex align-items-center justify-content-between">
+                                <div class="attachment-box d-flex align-items-center justify-content-between">
                                     <div class="d-flex align-items-center">
                                         <i class="fas fa-file fa-2x me-3"></i>
                                         <div>
-                                            <strong>@Model.AttachmentFileName</strong><br>
+                                            <strong>@(Model.AttachmentFileName ?? "file-dinh-kem")</strong><br>
                                             @if (Model.AttachmentSizeBytes.HasValue)
                                             {
                                                 <small>Kích thước: @((Model.AttachmentSizeBytes.Value / 1024.0 / 1024.0).ToString("0.##")) MB</small>
                                             }
                                         </div>
                                     </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="RemoveAttachment" name="RemoveAttachment" value="true">
-                                        <label class="form-check-label text-danger" for="RemoveAttachment">
-                                            Xóa file này
-                                        </label>
-                                    </div>
+                                    <a href="@Model.AttachmentUrl" target="_blank" class="btn btn-sm btn-outline-primary ms-3">
+                                        <i class="fas fa-download me-1"></i>Tải xuống
+                                    </a>
                                 </div>
                             </div>
                         }
@@ -112,9 +109,9 @@
                         <div class="mb-4">
                             <label for="AttachmentFile" class="form-label">
                                 <i class="fas fa-paperclip me-2"></i>
-                                @(string.IsNullOrEmpty(Model.AttachmentUrl) ? "File Đính Kèm" : "File Đính Kèm Mới")
+                                @(string.IsNullOrEmpty(Model.AttachmentUrl) ? "File Đính Kèm" : "File Đính Kèm Mới (Thay thế file hiện tại)")
                             </label>
-                            <input type="file" class="form-control" id="AttachmentFile" name="AttachmentFile">
+                            <input type="file" class="form-control" id="AttachmentFile" name="File">
                             <div class="form-text">
                                 <i class="fas fa-info-circle me-1"></i>
                                 @(string.IsNullOrEmpty(Model.AttachmentUrl) 
@@ -160,13 +157,6 @@
                     `);
                 } else {
                     $('#filePreview').empty();
-                }
-            });
-
-            // Uncheck RemoveAttachment when new file is selected
-            $('#AttachmentFile').on('change', function() {
-                if (this.files.length > 0) {
-                    $('#RemoveAttachment').prop('checked', false);
                 }
             });
         });

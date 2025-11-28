@@ -40,8 +40,8 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
     {
         public string Title { get; set; } = string.Empty;
         public string? Description { get; set; }
-        public DateTime DueDate { get; set; }
-        public IFormFile? AttachmentFile { get; set; }
+        public DateTime DueAt { get; set; }
+        public IFormFile? File { get; set; }
         public bool RemoveAttachment { get; set; }
     }
 
