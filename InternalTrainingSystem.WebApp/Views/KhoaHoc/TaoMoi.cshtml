@@ -48,7 +48,7 @@
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label asp-for="CourseCode" class="form-label required">Mã khóa học</label>
-                                <input asp-for="CourseCode" class="form-control" placeholder="VD: IT-001">
+                                <input asp-for="CourseCode" class="form-control" placeholder="VD: IT001">
                                 <span asp-validation-for="CourseCode" class="text-danger"></span>
                             </div>
                         </div>
@@ -194,7 +194,7 @@
                             </div>
                             <div class="help-item">
                                 <i class="fas fa-lightbulb"></i>
-                                <span>Mã khóa học nên theo chuẩn: AB-123</span>
+                                <span>Mã khóa học nên theo chuẩn: AB123</span>
                             </div>
                             <div class="help-item">
                                 <i class="fas fa-lightbulb"></i>
@@ -549,7 +549,7 @@
                     const randomNum = String(Math.floor(Math.random() * 900) + 100).padStart(3, '0');
                     
                     // Create course code: TK-012
-                    const courseCode = `${initials}-${randomNum}`;
+                    const courseCode = `${initials}${randomNum}`;
                     courseCodeField.val(courseCode);
                 }
             });
