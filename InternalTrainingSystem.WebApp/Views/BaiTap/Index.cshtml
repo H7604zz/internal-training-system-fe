@@ -218,19 +218,86 @@
         <!-- Submit Button for Staff -->
         @if (!isMentor)
         {
+            var userSubmission = assignment.Submissions?.FirstOrDefault();
+            var hasSubmitted = userSubmission != null && !string.IsNullOrEmpty(userSubmission.PublicUrl);
+            
             <div class="row mt-4">
-                <div class="col-12 text-center">
-                    @if (!isOverdue)
+                <div class="col-12">
+                    @if (hasSubmitted)
                     {
-                        <button type="button" class="btn btn-lg btn-primary" data-bs-toggle="modal" data-bs-target="#submitModal">
-                            <i class="fas fa-upload me-2"></i>Nộp Bài Tập
-                        </button>
+                        <div class="card border-success shadow-sm">
+                            <div class="card-header bg-success text-white">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-check-circle fa-2x me-3"></i>
+                                    <div class="flex-grow-1">
+                                        <h5 class="mb-0">Bài Làm Đã Nộp</h5>
+                                        <small>Bạn đã hoàn thành bài tập này</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <div class="mb-3">
+                                            <label class="text-muted mb-1">
+                                                <i class="fas fa-clock me-2"></i>Thời gian nộp
+                                            </label>
+                                            <div class="fs-5">
+                                                <strong>@userSubmission.SubmittedAt.ToString("dd/MM/yyyy HH:mm")</strong>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="text-muted mb-1">
+                                                <i class="fas fa-file-archive me-2"></i>File đã nộp
+                                            </label>
+                                            <div>
+                                                <a href="#" onclick="downloadFile('@userSubmission.PublicUrl', 'bai-lam-cua-toi'); return false;" 
+                                                   class="btn btn-outline-primary">
+                                                    <i class="fas fa-download me-2"></i>Tải xuống bài làm của bạn
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-center border-start">
+                                        @if (!isOverdue)
+                                        {
+                                            <div class="mb-2">
+                                                <i class="fas fa-info-circle text-muted"></i>
+                                                <p class="text-muted mb-3 small">Bạn có thể nộp lại bài trước hạn</p>
+                                            </div>
+                                            <button type="button" class="btn btn-warning btn-lg w-100" data-bs-toggle="modal" data-bs-target="#submitModal">
+                                                <i class="fas fa-redo me-2"></i>Nộp Lại
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <div class="text-success">
+                                                <i class="fas fa-check-circle fa-3x mb-2"></i>
+                                                <p class="mb-0 fw-bold">Đã Hoàn Thành</p>
+                                                <small class="text-muted">Hết hạn nộp bài</small>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     }
                     else
                     {
-                        <div class="alert alert-danger d-inline-block">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            Đã hết hạn nộp bài
+                        <div class="text-center">
+                            @if (!isOverdue)
+                            {
+                                <button type="button" class="btn btn-lg btn-primary px-5" data-bs-toggle="modal" data-bs-target="#submitModal">
+                                    <i class="fas fa-upload me-2"></i>Nộp Bài Tập
+                                </button>
+                            }
+                            else
+                            {
+                                <div class="alert alert-danger d-inline-block">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Đã hết hạn nộp bài
+                                </div>
+                            }
                         </div>
                     }
                 </div>
