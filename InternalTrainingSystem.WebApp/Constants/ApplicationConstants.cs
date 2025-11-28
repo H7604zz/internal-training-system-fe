@@ -210,7 +210,6 @@
         public const string Mentor = "Mentor"; // Người hướng dẫn/giảng viên
         public const string TrainingDepartment = "TrainingDepartment"; // Phòng đào tạo
         public const string HR = "HR"; // Phòng nhân sự
-        public const string System = "System"; // Hệ thống/AI chatbot
     }
 
     public enum NotificationType
