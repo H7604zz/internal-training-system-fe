@@ -26,6 +26,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpGet("")]
+        [Authorize(Roles = UserRoles.TrainingDepartment + "," + UserRoles.DirectManager)]
         public async Task<IActionResult> Index(int page = 1)
         {
             try
@@ -71,7 +72,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpGet("chi-tiet/{id}")]
-        [Authorize(Roles = UserRoles.TrainingDepartment +"," +UserRoles.DirectManager + "," + UserRoles.Mentor)]
+        [Authorize(Roles = UserRoles.TrainingDepartment +"," +UserRoles.DirectManager + "," + UserRoles.Mentor + "," + UserRoles.Staff)]
         public async Task<IActionResult> ChiTiet(int id)
         {
             try
@@ -238,18 +239,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     message = "Đã xảy ra lỗi khi tải danh sách lớp học." 
                 });
             }
-        }
-
-        [HttpGet("chon-lich/{classId}")]
-        public IActionResult ChonLich(int classId)
-        {
-            if (classId <= 0)
-            {
-                TempData["Error"] = "ID lớp học không hợp lệ.";
-                return RedirectToAction("Index");
-            }
-
-            return View("CalendarSchedule", classId);
         }
 
         [HttpGet("danh-sach-mentor")]
@@ -643,6 +632,81 @@ namespace InternalTrainingSystem.WebApp.Controllers
             {
                 _logger.LogError(ex, "Error occurred while responding to swap request");
                 return StatusCode(500, "Đã xảy ra lỗi khi phản hồi yêu cầu");
+            }
+        }
+
+        /// <summary>
+        /// Lấy danh sách nhân viên trong lớp để nhập điểm
+        /// </summary>
+        [HttpGet("{classId}/users")]
+        [Authorize(Roles = UserRoles.Mentor)]
+        public async Task<IActionResult> GetUsersInClass(int classId)
+        {
+            try
+            {
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
+                {
+                    return Unauthorized();
+                }
+
+                var response = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/class/{classId}/users"));
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var result = JsonSerializer.Deserialize<UsersInClassResponse>(responseContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                    return Ok(result);
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode, errorContent);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting users in class {ClassId}", classId);
+                return StatusCode(500, "Đã xảy ra lỗi khi tải danh sách nhân viên.");
+            }
+        }
+
+        /// <summary>
+        /// Nhập điểm cuối kỳ cho nhân viên
+        /// </summary>
+        [HttpPut("scores-final")]
+        [Authorize(Roles = UserRoles.Mentor)]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateScoresFinal([FromBody] ScoreFinalRequest request)
+        {
+            try
+            {
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
+                {
+                    return Unauthorized();
+                }
+
+                var json = JsonSerializer.Serialize(request);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PutAsync(Utilities.GetAbsoluteUrl("api/class/scores-final"), content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode, errorContent);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while updating scores");
+                return StatusCode(500, "Đã xảy ra lỗi khi lưu điểm.");
             }
         }
     }
