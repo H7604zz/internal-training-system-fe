@@ -151,12 +151,12 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 
                 formData.Add(new StringContent(form.DueAt.ToString("o")), "DueAt");
 
-                if (form.AttachmentFile != null)
+                if (form.File != null)
                 {
-                    var fileContent = new StreamContent(form.AttachmentFile.OpenReadStream());
+                    var fileContent = new StreamContent(form.File.OpenReadStream());
                     fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(
-                        form.AttachmentFile.ContentType);
-                    formData.Add(fileContent, "AttachmentFile", form.AttachmentFile.FileName);
+                        form.File.ContentType);
+                    formData.Add(fileContent, "File", form.File.FileName);
                 }
 
                 var response = await _httpClient.PostAsync(
