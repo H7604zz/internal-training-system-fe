@@ -93,6 +93,7 @@
             public const string InProgress = "InProgress";
             public const string Completed = "Completed";
             public const string Dropped = "Dropped";
+            public const string NotPass = "NotPass";
         }
 
 
@@ -108,6 +109,7 @@
                 Status.InProgress => "badge-warning",
                 Status.Completed => "badge-success",
                 Status.Dropped => "badge-danger",
+                Status.NotPass => "badge-danger",
                 _ => "badge-secondary"
             };
         }
@@ -124,6 +126,7 @@
                 Status.InProgress => "Đang học",
                 Status.Completed => "Hoàn thành",
                 Status.Dropped => "Đã từ chối",
+                Status.NotPass => "Trượt",
                 _ => status
             };
         }
