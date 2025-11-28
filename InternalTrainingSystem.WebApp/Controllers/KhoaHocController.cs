@@ -132,6 +132,9 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     _logger.LogWarning(ex, "Error loading statistics for course {CourseId}", id);
                 }
 
+                //hiện thị lịch sử phê duyệt nếu khóa học bị Từ chối
+                ViewBag.ApprovalHistory = await GetApprovalHistory(id);
+
                 ViewBag.Statistics = statistics;
                 return View(course);
             }
@@ -626,6 +629,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
 
         [HttpGet("phe-duyet/{id}")]
+        [Authorize(Roles = UserRoles.BoardOfDirectors)]
         public async Task<IActionResult> PheDuyet(int id)
         {
             try
@@ -724,7 +728,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     return Json(new CourseApprovalResponse
                     {
                         Success = false,
-                        Message = "Bạn không có quyền để thực hiện hành động này",
+                        Message = errorMessage,
                         ErrorCode = ErrorCode.InternalError
                     });
                 }

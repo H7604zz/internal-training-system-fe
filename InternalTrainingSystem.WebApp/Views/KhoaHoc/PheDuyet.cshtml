@@ -1,4 +1,5 @@
 ﻿@model InternalTrainingSystem.WebApp.Models.DTOs.CourseDto
+@using InternalTrainingSystem.WebApp.Constants
 @using InternalTrainingSystem.WebApp.Extensions
 @using InternalTrainingSystem.WebApp.Models.DTOs
 @{
@@ -38,10 +39,14 @@
                                 <i class="fas fa-calendar-plus"></i>
                                 <span>@(Model.CreatedDate.ToString("dd/MM/yyyy"))</span>
                             </span>
-                            <span class="status-badge status-pending">
-                                <i class="fas fa-clock me-1"></i>
-                                Chờ phê duyệt
-                            </span>
+
+                            @if (Model.Status == CourseStatus.Pending)
+                            {
+                                <span class="status-badge status-pending">
+                                    <i class="fas fa-clock me-1"></i>
+                                    Chờ phê duyệt
+                                </span>
+                            }
                         </div>
                     </div>
                 </div>
@@ -61,7 +66,7 @@
                     <h3 class="card-title">
                         <i class="fas fa-info-circle me-2"></i>Thông Tin Khóa Học
                     </h3>
-                    
+
                     <div class="course-info-grid">
                         <div class="info-item">
                             <div class="info-label">
@@ -152,7 +157,7 @@
                     <h3 class="card-title">
                         <i class="fas fa-book me-2"></i>Nội Dung Khóa Học
                     </h3>
-                    
+
                     @await Html.PartialAsync("_CourseContentPartial", Model.Modules)
                 </div>
 
@@ -161,7 +166,7 @@
                     <h3 class="card-title">
                         <i class="fas fa-history me-2"></i>Lịch Sử Phê Duyệt
                     </h3>
-                    
+
                     <div class="approval-history">
                         @if (ViewBag.ApprovalHistory != null)
                         {
@@ -189,72 +194,80 @@
 
             <!-- Approval Actions -->
             <div class="col-lg-4 mb-4">
-                <div class="approval-actions">
-                    <h3 class="card-title">
-                        <i class="fas fa-gavel me-2"></i>Quyết Định Phê Duyệt
-                    </h3>
-                    
-                    <div class="action-buttons">
-                        <button type="button" class="btn-approve" 
-                                onclick="approveThis()"
-                                aria-label="Phê duyệt khóa học này">
-                            <i class="fas fa-check-circle"></i>
-                            <span>Chấp Nhận</span>
-                        </button>
-                        <button type="button" class="btn-reject" 
-                                onclick="showRejectForm()"
-                                aria-label="Từ chối khóa học này">
-                            <i class="fas fa-times-circle"></i>
-                            <span>Từ Chối</span>
-                        </button>
-                    </div>
+                @if (Model.Status == CourseStatus.Pending)
+                {
+                    <div class="approval-actions">
+                        <h3 class="card-title">
+                            <i class="fas fa-gavel me-2"></i>Quyết Định Phê Duyệt
+                        </h3>
 
-                    <!-- Rejection Form -->
-                    <div class="rejection-section" id="rejectionSection">
-                        <label for="rejectionReason" class="rejection-label">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            Lý do từ chối (bắt buộc)
-                        </label>
-                        <textarea class="rejection-textarea" id="rejectionReason" name="rejectionReason"
-                                  aria-label="Lý do từ chối khóa học"
-                                  aria-required="true"
-                                  placeholder="Vui lòng nhập lý do cụ thể tại sao khóa học này không được phê duyệt...
+
+                        <div class="action-buttons">
+                            <button type="button" class="btn-approve"
+                                    onclick="approveThis()"
+                                    aria-label="Phê duyệt khóa học này">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Chấp Nhận</span>
+                            </button>
+                            <button type="button" class="btn-reject"
+                                    onclick="showRejectForm()"
+                                    aria-label="Từ chối khóa học này">
+                                <i class="fas fa-times-circle"></i>
+                                <span>Từ Chối</span>
+                            </button>
+                        </div>
+
+
+
+                        <!-- Rejection Form -->
+                        <div class="rejection-section" id="rejectionSection">
+                            <label for="rejectionReason" class="rejection-label">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Lý do từ chối (bắt buộc)
+                            </label>
+                            <textarea class="rejection-textarea" id="rejectionReason" name="rejectionReason"
+                                      aria-label="Lý do từ chối khóa học"
+                                      aria-required="true"
+                                      placeholder="Vui lòng nhập lý do cụ thể tại sao khóa học này không được phê duyệt...
 Ví dụ:
 - Nội dung khóa học chưa phù hợp với yêu cầu
 - Thời lượng quá dài/ngắn
 - Thiếu thông tin chi tiết
 - Không phù hợp với chiến lược đào tạo hiện tại"></textarea>
-                        <div class="rejection-buttons">
-                            <button type="button" class="btn-confirm-reject" 
-                                    onclick="rejectThis()"
-                                    aria-label="Xác nhận từ chối khóa học với lý do đã nhập">
-                                <i class="fas fa-ban me-1"></i>Xác Nhận Từ Chối
-                            </button>
-                            <button type="button" class="btn-cancel-reject" 
-                                    onclick="hideRejectForm()"
-                                    aria-label="Hủy bỏ việc từ chối khóa học">
-                                <i class="fas fa-undo me-1"></i>Hủy Bỏ
-                            </button>
+                            <div class="rejection-buttons">
+                                <button type="button" class="btn-confirm-reject"
+                                        onclick="rejectThis()"
+                                        aria-label="Xác nhận từ chối khóa học với lý do đã nhập">
+                                    <i class="fas fa-ban me-1"></i>Xác Nhận Từ Chối
+                                </button>
+                                <button type="button" class="btn-cancel-reject"
+                                        onclick="hideRejectForm()"
+                                        aria-label="Hủy bỏ việc từ chối khóa học">
+                                    <i class="fas fa-undo me-1"></i>Hủy Bỏ
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="success-message" id="successMessage">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <span id="successText">Phê duyệt thành công!</span>
+                        </div>
+
+                        <div class="error-message" id="errorMessage">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <span id="errorText">Có lỗi xảy ra. Vui lòng thử lại!</span>
                         </div>
                     </div>
+                }
 
-                    <div class="success-message" id="successMessage">
-                        <i class="fas fa-check-circle me-2"></i>
-                        <span id="successText">Phê duyệt thành công!</span>
-                    </div>
 
-                    <div class="error-message" id="errorMessage">
-                        <i class="fas fa-exclamation-circle me-2"></i>
-                        <span id="errorText">Có lỗi xảy ra. Vui lòng thử lại!</span>
-                    </div>
-                </div>
 
                 <!-- Course Guidelines -->
                 <div class="approval-card">
                     <h3 class="card-title">
                         <i class="fas fa-clipboard-list me-2"></i>Tiêu Chí Đánh Giá
                     </h3>
-                    
+
                     <div class="help-list">
                         <div class="help-item">
                             <i class="fas fa-check-circle text-success"></i>
@@ -294,7 +307,7 @@ Ví dụ:
                     <h3 class="card-title">
                         <i class="fas fa-bolt me-2"></i>Thao Tác Nhanh
                     </h3>
-                    
+
                     <div class="action-list">
                         <a href="@Url.Action("ChiTiet", new { id = Model.CourseId })" class="action-link">
                             <i class="fas fa-eye"></i>
@@ -328,7 +341,7 @@ Ví dụ:
             const section = document.getElementById('rejectionSection');
             section.classList.add('show');
             document.getElementById('rejectionReason').focus();
-            
+
             // Hide any previous messages
             hideMessages();
         }
@@ -349,7 +362,7 @@ Ví dụ:
             const successText = document.getElementById('successText');
             successText.textContent = message;
             successDiv.style.display = 'block';
-            
+
             // Hide after 5 seconds
             setTimeout(() => {
                 successDiv.style.display = 'none';
@@ -361,7 +374,7 @@ Ví dụ:
             const errorText = document.getElementById('errorText');
             errorText.textContent = message;
             errorDiv.style.display = 'block';
-            
+
             // Hide after 5 seconds
             setTimeout(() => {
                 errorDiv.style.display = 'none';
@@ -377,18 +390,18 @@ Ví dụ:
             isProcessing = true;
             const approveBtn = document.querySelector('.btn-approve');
             const originalContent = approveBtn.innerHTML;
-            
+
             // Show loading state
             approveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Đang xử lý...</span>';
             approveBtn.classList.add('btn-loading');
-            
+
             hideMessages();
 
             // Simulate API call
             setTimeout(() => {
                 // Here you would make the actual API call to approve
                 // For demo purposes, we'll simulate success
-                
+
                 fetch('@Url.Action("Approve", "KhoaHoc")', {
                     method: 'POST',
                     headers: {
@@ -404,18 +417,18 @@ Ví dụ:
                 .then(data => {
                     if (data.success) {
                         showSuccess('Khóa học đã được phê duyệt thành công!');
-                        
+
                         // Update status badge
                         const statusBadge = document.querySelector('.status-pending');
                         if (statusBadge) {
                             statusBadge.className = 'status-badge status-approved';
                             statusBadge.innerHTML = '<i class="fas fa-check-circle me-1"></i>Đã phê duyệt';
                         }
-                        
+
                         // Disable action buttons
                         document.querySelector('.btn-approve').disabled = true;
                         document.querySelector('.btn-reject').disabled = true;
-                        
+
                         // Redirect after 3 seconds
                         setTimeout(() => {
                             window.location.href = '@Url.Action("Index")';
@@ -458,18 +471,18 @@ Ví dụ:
             isProcessing = true;
             const rejectBtn = document.querySelector('.btn-confirm-reject');
             const originalContent = rejectBtn.innerHTML;
-            
+
             // Show loading state
             rejectBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>Đang xử lý...';
             rejectBtn.classList.add('btn-loading');
-            
+
             hideMessages();
 
             // Simulate API call
             setTimeout(() => {
                 // Here you would make the actual API call to reject
                 // For demo purposes, we'll simulate success
-                
+
                 fetch('@Url.Action("Reject", "KhoaHoc")', {
                     method: 'POST',
                     headers: {
@@ -486,21 +499,21 @@ Ví dụ:
                 .then(data => {
                     if (data.success) {
                         showSuccess('Khóa học đã bị từ chối. Thông báo đã được gửi tới người tạo.');
-                        
+
                         // Update status badge
                         const statusBadge = document.querySelector('.status-pending');
                         if (statusBadge) {
                             statusBadge.className = 'status-badge status-rejected';
                             statusBadge.innerHTML = '<i class="fas fa-times-circle me-1"></i>Đã từ chối';
                         }
-                        
+
                         // Hide rejection form
                         hideRejectForm();
-                        
+
                         // Disable action buttons
                         document.querySelector('.btn-approve').disabled = true;
                         document.querySelector('.btn-reject').disabled = true;
-                        
+
                         // Redirect after 3 seconds
                         setTimeout(() => {
                             window.location.href = '@Url.Action("Index")';

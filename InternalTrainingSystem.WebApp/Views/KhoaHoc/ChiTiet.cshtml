@@ -9,6 +9,7 @@
 @section Styles {
     <link rel="stylesheet" href="~/css/khoa-hoc.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/course-modals.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/phe-duyet.css" asp-append-version="true" />
 }
 
 <div class="course-container">
@@ -165,6 +166,38 @@
                         @await Html.PartialAsync("_CourseContentPartial", Model.Modules)
                     </div>
                 </div>
+
+                @if (Model.Status == CourseStatus.Rejected)
+                {
+                    <div class="approval-card">
+                        <h3 class="card-title">
+                            <i class="fas fa-history me-2"></i>Lịch Sử Phê Duyệt
+                        </h3>
+
+                        <div class="approval-history">
+                            @if (ViewBag.ApprovalHistory != null)
+                            {
+                                @foreach (var historyItem in ViewBag.ApprovalHistory)
+                                {
+                                    <div class="history-item">
+                                        <div class="history-content">
+                                            <div class="history-action">@historyItem.Description</div>
+                                            <div class="history-user">Bởi: @historyItem.ActionBy</div>
+                                            <div class="history-time">@historyItem.ActionDate.ToString("dd/MM/yyyy HH:mm")</div>
+                                            @if (!string.IsNullOrEmpty(historyItem.Note))
+                                            {
+                                                <div class="history-note">
+                                                    <small class="text-muted">Ghi chú: @historyItem.Note</small>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
+
+                        </div>
+                    </div>
+                }
             </div>
 
             <!-- Side Info -->
