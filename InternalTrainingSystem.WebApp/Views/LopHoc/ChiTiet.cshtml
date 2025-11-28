@@ -3,6 +3,8 @@
 
 @{
     ViewData["Title"] = "Chi Tiết Lớp Học - " + Model.ClassName;
+    bool isMentor = User.IsInRole(UserRoles.Mentor);
+    bool isStaff = User.IsInRole(UserRoles.Staff);
 }
 
 @section Styles {
@@ -117,40 +119,43 @@
     </div>
 
     <!-- Quick Actions -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="mb-3">
-                        <i class="fas fa-bolt me-2"></i>Thao Tác Nhanh
-                    </h5>
-                    <div class="d-flex flex-wrap gap-2">
-                        @if (User.IsInRole(UserRoles.Mentor) || User.IsInRole(UserRoles.Staff))
-                        {
-                            <a href="@Url.Action("Index", "BaiTap", new { classId = Model.ClassId })" 
-                               class="btn btn-primary">
-                                <i class="fas fa-tasks me-2"></i>Bài Tập
-                            </a>
-                        }
-                        @if (User.IsInRole(UserRoles.Mentor))
-                        {
-                            <a href="@Url.Action("DanhSachBaiNop", "BaiTap", new { classId = Model.ClassId })" 
-                               class="btn btn-info">
-                                <i class="fas fa-list-alt me-2"></i>Quản Lý Bài Nộp
-                            </a>
-                            <a href="@Url.Action("TaoMoi", "BaiTap", new { classId = Model.ClassId })" 
-                               class="btn btn-success">
-                                <i class="fas fa-plus-circle me-2"></i>Tạo Bài Tập Mới
-                            </a>
-                        }
-                        <button type="button" class="btn btn-warning">
-                            <i class="fas fa-clipboard-check me-2"></i>Nhập Điểm
-                        </button>
+    @if(isMentor){
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="mb-3">
+                            <i class="fas fa-bolt me-2"></i>Thao Tác Nhanh
+                        </h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            @if (User.IsInRole(UserRoles.Mentor) || User.IsInRole(UserRoles.Staff))
+                            {
+                                <a href="@Url.Action("Index", "BaiTap", new { classId = Model.ClassId })"
+                                class="btn btn-primary">
+                                    <i class="fas fa-tasks me-2"></i>Bài Tập
+                                </a>
+                            }
+                            @if (User.IsInRole(UserRoles.Mentor))
+                            {
+                                <a href="@Url.Action("DanhSachBaiNop", "BaiTap", new { classId = Model.ClassId })"
+                                class="btn btn-info">
+                                    <i class="fas fa-list-alt me-2"></i>Quản Lý Bài Nộp
+                                </a>
+                                <a href="@Url.Action("TaoMoi", "BaiTap", new { classId = Model.ClassId })"
+                                class="btn btn-success">
+                                    <i class="fas fa-plus-circle me-2"></i>Tạo Bài Tập Mới
+                                </a>
+                            }
+                            <button type="button" class="btn btn-warning" onclick="openGradeModal()">
+                                <i class="fas fa-clipboard-check me-2"></i>Nhập Điểm
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    }
+
 
     <!-- Class Schedule -->
     @if (ViewBag.Schedules != null && ((List<InternalTrainingSystem.WebApp.Models.DTOs.ScheduleItemResponseDto>)ViewBag.Schedules).Any())
@@ -158,14 +163,14 @@
         var schedules = (List<InternalTrainingSystem.WebApp.Models.DTOs.ScheduleItemResponseDto>)ViewBag.Schedules;
         var minDate = schedules.Min(s => s.Day.Date);
         var maxDate = schedules.Max(s => s.Day.Date);
-        
+
         // Tìm tuần đầu tiên (thứ 2)
         var startOfWeek = minDate;
         while (startOfWeek.DayOfWeek != DayOfWeek.Monday)
         {
             startOfWeek = startOfWeek.AddDays(-1);
         }
-        
+
         var weeks = new List<DateTime>();
         var currentWeekStart = startOfWeek;
         while (currentWeekStart <= maxDate)
@@ -212,7 +217,7 @@
                                             {
                                                 var currentDate = weekStart.AddDays(dayOffset);
                                                 var daySchedules = schedules.Where(s => s.Day.Date == currentDate).OrderBy(s => s.StartTime).ToList();
-                                                
+
                                                 <td class="align-top" style="min-width: 120px;">
                                                     <div class="text-center text-muted small mb-1">
                                                         @currentDate.ToString("dd/MM", System.Globalization.CultureInfo.InvariantCulture)
@@ -281,8 +286,11 @@
                                         <th style="width: 150px;">Mã Nhân Viên</th>
                                         <th>Họ Tên</th>
                                         <th>Email</th>
-                                        <th>Số ngày nghỉ</th>
-                                        <th>Điểm cuối kỳ</th>
+                                        @if (!isStaff)
+                                        {
+                                            <th>Số ngày nghỉ</th>
+                                            <th>Điểm cuối kỳ</th>
+                                        }
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -305,23 +313,26 @@
                                                 <div class="d-flex align-items-center">
                                                     <i class="fas fa-envelope me-2 text-muted"></i>
                                                     <a href="mailto:@staff.Email"
-                                                       class="email-link">@staff.Email</a>
+                                                    class="email-link">@staff.Email</a>
                                                 </div>
                                             </td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <div>
-                                                        <div class="fw-semibold">@staff.AbsentNumberDay</div>
+                                            @if (!isStaff)
+                                            {
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div>
+                                                            <div class="fw-semibold">@staff.AbsentNumberDay</div>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <div>
-                                                        <div class="fw-semibold">@(staff.ScoreFinal?.ToString() ?? "N/A")</div>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div>
+                                                            <div class="fw-semibold">@(staff.ScoreFinal?.ToString() ?? "N/A")</div>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </td>
+                                                </td>
+                                            }
                                         </tr>
                                     }
                                 </tbody>
@@ -337,6 +348,61 @@
                         </div>
                     }
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Nhập Điểm -->
+<div class="modal fade" id="gradeModal" tabindex="-1" aria-labelledby="gradeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="gradeModalLabel">
+                    <i class="fas fa-clipboard-check me-2"></i>Nhập Điểm Cuối Kỳ
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="gradeLoading" class="text-center py-4">
+                    <i class="fas fa-spinner fa-spin fa-2x text-warning"></i>
+                    <div class="mt-2">Đang tải danh sách nhân viên...</div>
+                </div>
+                <div id="gradeError" class="bg-danger d-none"></div>
+                
+                <div id="gradeContent" class="d-none">
+                    <div class="bg-warning">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Lưu ý:</strong> Điểm cuối kỳ từ 0 đến 10. Sử dụng "Lưu Điểm" để lưu tạm thời, "Chốt Điểm" để xác nhận điểm cuối cùng (không thể sửa sau khi chốt).
+                    </div>
+                    
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-hover table-bordered">
+                            <thead class="table-light" style="position: sticky; top: 0; z-index: 10;">
+                                <tr>
+                                    <th style="width: 50px;" class="text-center">STT</th>
+                                    <th style="width: 120px;">Mã NV</th>
+                                    <th>Họ Tên</th>
+                                    <th style="width: 150px;">Điểm Hiện Tại</th>
+                                    <th style="width: 150px;">Nhập Điểm Mới</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gradeTableBody">
+                                <!-- Will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+  
+                <button type="button" class="btn btn-primary" id="saveGradeBtn" onclick="saveGrades(false)">
+                    <i class="fas fa-save me-2"></i>Lưu Điểm
+                </button>
+                <button type="button" class="btn btn-success" id="submitGradeBtn" onclick="saveGrades(true)">
+                    <i class="fas fa-check-circle me-2"></i>Chốt Điểm
+                </button>
             </div>
         </div>
     </div>
@@ -429,7 +495,227 @@
         const courseId = @Model.CourseId;
         let mentorsList = [];
         let scheduleCounter = 0;
+        let usersData = [];
 
+        // ==================== Grade Modal Functions ====================
+        async function openGradeModal() {
+            const modal = new bootstrap.Modal(document.getElementById('gradeModal'));
+            modal.show();
+            await loadUsersForGrading();
+        }
+
+        async function loadUsersForGrading() {
+            const loadingEl = document.getElementById('gradeLoading');
+            const errorEl = document.getElementById('gradeError');
+            const contentEl = document.getElementById('gradeContent');
+            const tableBody = document.getElementById('gradeTableBody');
+
+            try {
+                loadingEl.classList.remove('d-none');
+                errorEl.classList.add('d-none');
+                contentEl.classList.add('d-none');
+
+                const response = await fetch(`/lop-hoc/${classId}/users`);
+
+                if (!response.ok) {
+                    throw new Error('Không thể tải danh sách nhân viên');
+                }
+
+                const result = await response.json();
+                const usersArray = result.users || [];
+                const isScoreSubmitted = result.isScoreSubmitted || false;
+                
+                // Populate table
+                tableBody.innerHTML = '';
+                usersArray.forEach((user, index) => {
+                    const row = document.createElement('tr');
+                    const isSubmitted = user.isSubmit === true;
+                    const currentScore = user.scoreFinal !== null && user.scoreFinal !== undefined ? user.scoreFinal : '';
+                    
+                    row.innerHTML = `
+                        <td class="text-center">${index + 1}</td>
+                        <td>${user.employeeId || 'N/A'}</td>
+                        <td>${user.fullName || 'N/A'}</td>
+                        <td class="text-center">
+                            ${currentScore !== '' ? `<span class="badge bg-info">${currentScore}</span>` : '<span class="text-muted">Chưa có</span>'}
+                        </td>
+                        <td>
+                            <input 
+                                type="number" 
+                                class="form-control grade-input" 
+                                data-user-id="${user.userId}"
+                                min="0" 
+                                max="10" 
+                                step="0.1"
+                                value="${currentScore}"
+                                ${isSubmitted ? 'disabled' : ''}
+                                placeholder="0.0 - 10.0">
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                loadingEl.classList.add('d-none');
+                contentEl.classList.remove('d-none');
+                
+                // Enable/disable buttons based on data
+                updateGradeButtons(isScoreSubmitted);
+            } catch (error) {
+                loadingEl.classList.add('d-none');
+                errorEl.textContent = error.message;
+                errorEl.classList.remove('d-none');
+            }
+        }
+
+        function updateGradeButtons(isScoreSubmitted = false) {
+            const saveBtn = document.getElementById('saveGradeBtn');
+            const submitBtn = document.getElementById('submitGradeBtn');
+            const modalFooter = document.querySelector('#gradeModal .modal-footer');
+            
+            if (isScoreSubmitted) {
+                // Ẩn buttons và hiển thị thông báo
+                saveBtn.style.display = 'none';
+                submitBtn.style.display = 'none';
+                
+                // Kiểm tra xem thông báo đã tồn tại chưa
+                let alertDiv = modalFooter.querySelector('.alert-info');
+                if (!alertDiv) {
+                    alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-info mb-0 flex-grow-1';
+                    alertDiv.innerHTML = '<i class="fas fa-check-circle me-2"></i>Lớp học này đã chốt điểm';
+                    // Thêm vào trước nút Đóng
+                    modalFooter.insertBefore(alertDiv, modalFooter.firstChild);
+                }
+            } else {
+                // Hiển thị buttons bình thường
+                saveBtn.style.display = '';
+                submitBtn.style.display = '';
+                
+                const inputs = document.querySelectorAll('.grade-input:not([disabled])');
+                const hasEditableInputs = inputs.length > 0;
+                saveBtn.disabled = !hasEditableInputs;
+                submitBtn.disabled = !hasEditableInputs;
+                
+                // Xóa thông báo nếu có
+                const alertDiv = modalFooter.querySelector('.alert-info');
+                if (alertDiv) {
+                    alertDiv.remove();
+                }
+            }
+        }
+
+        async function saveGrades(isSubmit) {
+            const inputs = document.querySelectorAll('.grade-input:not([disabled])');
+            const scores = [];
+            let hasError = false;
+            const totalUsers = inputs.length;
+            let emptyCount = 0;
+
+            // Đếm số nhân viên chưa nhập điểm
+            inputs.forEach(input => {
+                if (input.value.trim() === '') {
+                    emptyCount++;
+                }
+            });
+
+            inputs.forEach(input => {
+                const userId = input.dataset.userId;
+                const value = parseFloat(input.value);
+                
+                if (input.value.trim() === '') {
+                    // Khi chốt điểm, nhân viên chưa nhập điểm sẽ mặc định là 0
+                    if (isSubmit) {
+                        scores.push({
+                            UserId: userId,
+                            Score: 0
+                        });
+                    }
+                    return;
+                }
+                
+                if (isNaN(value) || value < 0 || value > 10) {
+                    hasError = true;
+                    input.classList.add('is-invalid');
+                } else {
+                    input.classList.remove('is-invalid');
+                    scores.push({
+                        UserId: userId,
+                        Score: value
+                    });
+                }
+            });
+
+            if (hasError) {
+                alert('Vui lòng kiểm tra lại điểm số. Điểm phải từ 0 đến 10.');
+                return;
+            }
+
+            if (!isSubmit && scores.length === 0) {
+                alert('Vui lòng nhập ít nhất một điểm số.');
+                return;
+            }
+
+            if (isSubmit) {
+                const warningMessage = emptyCount > 0 
+                    ? `\n\nCẢNH BÁO: ${emptyCount} nhân viên chưa nhập điểm sẽ được mặc định là 0 điểm!`
+                    : '';
+                    
+                const confirm = window.confirm(
+                    'Bạn có chắc chắn muốn CHỐT ĐIỂM?\n\n' +
+                    'Sau khi chốt, điểm số sẽ không thể thay đổi được nữa.\n\n' +
+                    `Số lượng điểm sẽ chốt: ${scores.length} / ${totalUsers} nhân viên` +
+                    warningMessage
+                );
+                if (!confirm) return;
+            }
+
+            const saveBtn = document.getElementById('saveGradeBtn');
+            const submitBtn = document.getElementById('submitGradeBtn');
+            const originalSaveText = saveBtn.innerHTML;
+            const originalSubmitText = submitBtn.innerHTML;
+            
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang lưu...';
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang lưu...';
+            saveBtn.disabled = true;
+            submitBtn.disabled = true;
+
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                
+                const requestData = {
+                    ClassId: classId,
+                    UserScore: scores,
+                    IsSubmitted: isSubmit
+                };
+                
+                const response = await fetch('/lop-hoc/scores-final', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                if (response.ok) {
+                    alert(isSubmit ? 'Chốt điểm thành công!' : 'Lưu điểm thành công!');
+                    
+                    // Reload the page to show updated scores
+                    location.reload();
+                } else {
+                    const errorText = await response.text();
+                    throw new Error(errorText || 'Không thể lưu điểm');
+                }
+            } catch (error) {
+                alert('Đã xảy ra lỗi: ' + error.message);
+                saveBtn.innerHTML = originalSaveText;
+                submitBtn.innerHTML = originalSubmitText;
+                saveBtn.disabled = false;
+                submitBtn.disabled = false;
+            }
+        }
+
+        // ==================== Setup Class Modal Functions ====================
         async function openSetupClassModal() {
             const modal = new bootstrap.Modal(document.getElementById('setupClassModal'));
             modal.show();

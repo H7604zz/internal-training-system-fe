@@ -191,5 +191,32 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public int SwapRequestId { get; set; }
         public bool Accepted { get; set; }
     }
+    public class UserScoreDto
+    {
+        public string UserId { get; set; } = string.Empty;
+        public double? Score { get; set; }
+    }
+
+    public class ScoreFinalRequest
+    {
+        public int ClassId { get; set; }
+        public bool IsSubmitted { get; set; } = false;
+        public List<UserScoreDto> UserScore { get; set; } = new();
+    }
+
+    public class StaffInClassDto
+    {
+        public string UserId { get; set; } = string.Empty;
+        public string EmployeeId { get; set; } = string.Empty;
+        public string? FullName { get; set; }
+        public string? Email { get; set; }
+        public double? ScoreFinal { get; set; } = 0;
+    }
+
+    public class UsersInClassResponse
+    {
+        public List<StaffInClassDto> Users { get; set; } = new();
+        public bool IsScoreSubmitted { get; set; }
+    }
 }
 
