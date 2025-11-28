@@ -143,15 +143,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         /// <summary>
-        /// Trang thông báo không có quyền truy cập
-        /// </summary>
-        [HttpGet("/khong-co-quyen")]
-        public IActionResult KhongCoQuyen()
-        {
-            return View();
-        }
-
-        /// <summary>
         /// Xử lý đổi mật khẩu - Sử dụng AuthService với bool return
         /// </summary>
         [HttpPost]
