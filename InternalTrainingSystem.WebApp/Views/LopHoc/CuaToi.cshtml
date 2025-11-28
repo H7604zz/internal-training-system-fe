@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "Lớp Học Của Tôi";
     var isMentor = User.IsInRole(UserRoles.Mentor);
+    var isStaff = User.IsInRole(UserRoles.Staff);
 }
 
 @section Styles {
@@ -110,7 +111,7 @@
                                                         <i class="fas fa-tasks"></i>
                                                     </a>
                                                 </div>
-                                                @if (!isMentor && classItem.StartDate > DateTime.Now)
+                                                @if (isStaff && classItem.StartDate > DateTime.Now)
                                                 {
                                                     <button type="button" 
                                                             class="btn btn-warning btn-sm ms-1" 
