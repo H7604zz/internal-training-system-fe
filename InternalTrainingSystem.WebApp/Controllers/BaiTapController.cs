@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Authorization;
 namespace InternalTrainingSystem.WebApp.Controllers
 {
     [Route("bai-tap")]
-    [Authorize]
     public class BaiTapController : Controller
     {
         private readonly HttpClient _httpClient;
@@ -27,7 +26,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         /// <summary>
-        /// Danh sách bài tập của lớp học
+        /// bài tập cuối kỳ của lớp học
         /// Mentor: xem tất cả
         /// Staff: chỉ xem nếu thuộc lớp
         /// </summary>
@@ -57,28 +56,23 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 var classDetail = JsonSerializer.Deserialize<ClassDetailDto>(classContent, 
                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                // Lấy danh sách bài tập
+                // Lấy bài tập cuối kỳ
                 var response = await _httpClient.GetAsync(
                     Utilities.GetAbsoluteUrl($"api/assignment/{classId}"));
 
-                List<AssignmentDto> assignments;
+                var responseContent = await response.Content.ReadAsStringAsync();
+                
+                AssignmentDto? assignment = null;
                 if (response.IsSuccessStatusCode)
                 {
-                    var responseContent = await response.Content.ReadAsStringAsync();
-                    assignments = JsonSerializer.Deserialize<List<AssignmentDto>>(responseContent,
-                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) 
-                        ?? new List<AssignmentDto>();
-                }
-                else
-                {
-                    assignments = new List<AssignmentDto>();
+                    assignment = JsonSerializer.Deserialize<AssignmentDto>(responseContent,
+                       new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                 }
 
                 ViewBag.ClassId = classId;
                 ViewBag.ClassName = classDetail?.ClassName ?? "";
-                ViewBag.IsMentor = User.IsInRole(UserRoles.Mentor);
 
-                return View(assignments);
+                return View(assignment);
             }
             catch (Exception ex)
             {
@@ -88,51 +82,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
         }
 
-        /// <summary>
-        /// Chi tiết bài tập
-        /// </summary>
-        [HttpGet("{classId}/chi-tiet/{assignmentId}")]
-        public async Task<IActionResult> ChiTiet(int classId, int assignmentId)
-        {
-            try
-            {
-                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
-                {
-                    TempData["Error"] = "Phiên đăng nhập đã hết hạn.";
-                    return RedirectToAction("DangNhap", "XacThuc");
-                }
-
-                var response = await _httpClient.GetAsync(
-                    Utilities.GetAbsoluteUrl($"api/assignment/{classId}/{assignmentId}"));
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    TempData["Error"] = "Không tìm thấy bài tập.";
-                    return RedirectToAction("Index", new { classId });
-                }
-
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var assignment = JsonSerializer.Deserialize<AssignmentDto>(responseContent,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                if (assignment == null)
-                {
-                    TempData["Error"] = "Không tìm thấy bài tập.";
-                    return RedirectToAction("Index", new { classId });
-                }
-
-                ViewBag.IsMentor = User.IsInRole(UserRoles.Mentor);
-                ViewBag.ClassId = classId;
-
-                return View(assignment);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while getting assignment detail {AssignmentId}", assignmentId);
-                TempData["Error"] = "Đã xảy ra lỗi khi tải chi tiết bài tập.";
-                return RedirectToAction("Index", new { classId });
-            }
-        }
+        
 
         /// <summary>
         /// Trang tạo bài tập mới (Mentor)
@@ -400,9 +350,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     form.File.ContentType);
                 formData.Add(fileContent, "File", form.File.FileName);
 
-                if (!string.IsNullOrEmpty(form.Note))
-                    formData.Add(new StringContent(form.Note), "Note");
-
                 var response = await _httpClient.PostAsync(
                     Utilities.GetAbsoluteUrl($"api/assignment/{assignmentId}/submissions"),
                     formData);
@@ -421,94 +368,6 @@ namespace InternalTrainingSystem.WebApp.Controllers
             {
                 _logger.LogError(ex, "Error occurred while submitting assignment {AssignmentId}", assignmentId);
                 return StatusCode(500, "Đã xảy ra lỗi khi nộp bài.");
-            }
-        }
-
-        /// <summary>
-        /// Danh sách bài nộp của assignment (Mentor)
-        /// </summary>
-        [HttpGet("{assignmentId}/danh-sach-bai-nop")]
-        [Authorize(Roles = UserRoles.Mentor)]
-        public async Task<IActionResult> DanhSachBaiNop(int assignmentId)
-        {
-            try
-            {
-                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
-                {
-                    TempData["Error"] = "Phiên đăng nhập đã hết hạn.";
-                    return RedirectToAction("DangNhap", "XacThuc");
-                }
-
-                // Lấy thông tin bài tập
-                var assignmentResponse = await _httpClient.GetAsync(
-                    Utilities.GetAbsoluteUrl($"api/assignment/{assignmentId}/submissions"));
-
-                if (!assignmentResponse.IsSuccessStatusCode)
-                {
-                    TempData["Error"] = "Không thể tải danh sách bài nộp.";
-                    return RedirectToAction("CuaToi", "LopHoc");
-                }
-
-                var responseContent = await assignmentResponse.Content.ReadAsStringAsync();
-                var submissions = JsonSerializer.Deserialize<List<AssignmentSubmissionSummaryDto>>(responseContent,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) 
-                    ?? new List<AssignmentSubmissionSummaryDto>();
-
-                ViewBag.AssignmentId = assignmentId;
-
-                return View(submissions);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while getting submissions for assignment {AssignmentId}", assignmentId);
-                TempData["Error"] = "Đã xảy ra lỗi khi tải danh sách bài nộp.";
-                return RedirectToAction("CuaToi", "LopHoc");
-            }
-        }
-
-        /// <summary>
-        /// Chi tiết bài nộp (Mentor & Staff)
-        /// </summary>
-        [HttpGet("{assignmentId}/bai-nop/{submissionId}")]
-        public async Task<IActionResult> ChiTietBaiNop(int assignmentId, int submissionId)
-        {
-            try
-            {
-                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
-                {
-                    TempData["Error"] = "Phiên đăng nhập đã hết hạn.";
-                    return RedirectToAction("DangNhap", "XacThuc");
-                }
-
-                var response = await _httpClient.GetAsync(
-                    Utilities.GetAbsoluteUrl($"api/assignment/{assignmentId}/submissions/{submissionId}"));
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    TempData["Error"] = "Không tìm thấy bài nộp.";
-                    return RedirectToAction("CuaToi", "LopHoc");
-                }
-
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var submission = JsonSerializer.Deserialize<AssignmentSubmissionDetailDto>(responseContent,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                if (submission == null)
-                {
-                    TempData["Error"] = "Không tìm thấy bài nộp.";
-                    return RedirectToAction("CuaToi", "LopHoc");
-                }
-
-                ViewBag.IsMentor = User.IsInRole(UserRoles.Mentor);
-                ViewBag.AssignmentId = assignmentId;
-
-                return View(submission);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while getting submission detail {SubmissionId}", submissionId);
-                TempData["Error"] = "Đã xảy ra lỗi khi tải chi tiết bài nộp.";
-                return RedirectToAction("CuaToi", "LopHoc");
             }
         }
 

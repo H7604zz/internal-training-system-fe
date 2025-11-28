@@ -7,15 +7,18 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
     {
         public int AssignmentId { get; set; }
         public int ClassId { get; set; }
+        public int? ScheduleId { get; set; }
         public string ClassName { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public string? Description { get; set; }
+        public DateTime? StartAt { get; set; }
         public DateTime DueAt { get; set; }
         public DateTime CreatedAt { get; set; }
         public string? AttachmentFileName { get; set; }
         public string? AttachmentUrl { get; set; }
         public string? AttachmentMimeType { get; set; }
         public long? AttachmentSizeBytes { get; set; }
+        public List<AssignmentSubmissionSummaryDto> Submissions { get; set; } = new();
     }
 
     /// <summary>
@@ -48,7 +51,6 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
     public class SubmitAssignmentForm
     {
         public IFormFile File { get; set; } = null!;
-        public string? Note { get; set; }
     }
 
     /// <summary>
@@ -67,12 +69,9 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
     {
         public int SubmissionId { get; set; }
         public string EmployeeId { get; set; } = string.Empty;
-        public string EmployeeName { get; set; } = string.Empty;
-        public string EmployeeEmail { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public string PublicUrl { get; set; } = string.Empty;
         public DateTime SubmittedAt { get; set; }
-        public bool IsLate { get; set; }
-        public decimal? Score { get; set; }
-        public bool IsGraded { get; set; }
     }
 
     /// <summary>

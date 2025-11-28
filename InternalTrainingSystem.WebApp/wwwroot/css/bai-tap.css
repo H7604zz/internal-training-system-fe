@@ -48,6 +48,39 @@
     border-color: #0d6efd;
 }
 
+/* Assignment Detail Card */
+.assignment-detail-card {
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Submission Table */
+.submission-table {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Badge Styles for Submissions */
+.badge-late {
+    background-color: #dc3545;
+    color: white;
+}
+
+.badge-on-time {
+    background-color: #28a745;
+    color: white;
+}
+
+/* Info Notice Box */
+.info-notice {
+    padding: 15px;
+    background-color: #d1ecf1;
+    border-left: 4px solid #0c5460;
+    border-radius: 5px;
+    color: #0c5460;
+    margin-bottom: 20px;
+}
+
 /* Stat Cards */
 .stat-card {
     border: none;
