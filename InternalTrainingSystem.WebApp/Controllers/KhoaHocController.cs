@@ -853,7 +853,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                             Description = h.Description ?? h.ActionName,
                             ActionBy = h.FullName ?? "Hệ thống",
                             ActionDate = h.ActionDate
-                        }).OrderBy(h => h.ActionDate).ToList();
+                        }).ToList();
 
                         return approvalHistory;
                     }
