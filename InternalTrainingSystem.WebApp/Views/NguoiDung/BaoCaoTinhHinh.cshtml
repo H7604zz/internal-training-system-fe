@@ -94,8 +94,8 @@
                             </div>
                             @if (course.Score.HasValue)
                             {
-                                var scoreClass = course.Score.Value >= 80 ? "good" :
-                                               course.Score.Value >= 50 ? "warning" : "bad";
+                                var scoreClass = course.Score.Value >= 8.0 ? "good" :
+                                               course.Score.Value >= 5.0 ? "warning" : "bad";
                                 <div class="stat-value @scoreClass">
                                     @course.Score.Value.ToString("F1")
                                 </div>
