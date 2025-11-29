@@ -1,5 +1,13 @@
 @using InternalTrainingSystem.WebApp.Constants
 
+@{
+    bool isAdmin = User.IsInRole(UserRoles.Administrator);
+    bool isDirectManager = User.IsInRole(UserRoles.DirectManager);
+    bool isTrainingDept = User.IsInRole(UserRoles.TrainingDepartment);
+    bool isBoD = User.IsInRole(UserRoles.BoardOfDirectors);
+    bool isHr = User.IsInRole(UserRoles.HR);
+}
+
 <ul class="navbar-nav flex-grow-1">
     <li class="nav-item">
         <a class="nav-link text-white" asp-area="" asp-controller="" asp-action="">
@@ -11,33 +19,77 @@
             <i class="fas fa-info-circle me-1"></i>Giới Thiệu
         </a>
     </li>
-    @if (User.IsInRole(UserRoles.Administrator) ||
-        User.IsInRole(UserRoles.TrainingDepartment) ||
-        User.IsInRole(UserRoles.DirectManager) ||
-        User.IsInRole(UserRoles.BoardOfDirectors))
-    {
-        <li class="nav-item">
-            <a class="nav-link text-white" asp-area="" asp-controller="KhoaHoc" asp-action="Index">
-                <i class="fas fa-graduation-cap me-1"></i>Khóa Học
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link text-white" asp-area="" asp-controller="LopHoc" asp-action="Index">
-                <i class="fas fa-users me-1"></i>Lớp Học
-            </a>
-        </li>
-    }
     
-    @if (User.IsInRole(UserRoles.HR) || 
-         User.IsInRole(UserRoles.Administrator) ||
-         User.IsInRole(UserRoles.TrainingDepartment))
+    @if (isAdmin)
     {
         <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle text-white" href="#" id="quanTriDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="fas fa-cog me-1"></i>Quản Trị
             </a>
             <ul class="dropdown-menu" aria-labelledby="quanTriDropdown">
-                @if (User.IsInRole(UserRoles.Administrator))
+                <li>
+                    <a class="dropdown-item" asp-area="" asp-controller="NguoiDung" asp-action="Index">
+                        <i class="fas fa-users-cog me-2"></i>Quản lý người dùng
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" asp-area="" asp-controller="PhongBan" asp-action="Index">
+                        <i class="fas fa-building me-2"></i>Quản lý phòng ban
+                    </a>
+                </li>
+            </ul>
+        </li>
+    }
+
+    @if (isDirectManager)
+    {
+        <li class="nav-item">
+            <a class="nav-link text-white" asp-area="" asp-controller="LopHoc" asp-action="Index">
+                <i class="fas fa-users me-1"></i>Lớp Học
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-white" asp-area="" asp-controller="KhoaHoc" asp-action="Index">
+                <i class="fas fa-graduation-cap me-1"></i>Khóa Học
+            </a>
+        </li>
+    }
+
+    @if (isTrainingDept)
+    {
+        <li class="nav-item">
+            <a class="nav-link text-white" asp-area="" asp-controller="LopHoc" asp-action="Index">
+                <i class="fas fa-users me-1"></i>Lớp Học
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-white" asp-area="" asp-controller="KhoaHoc" asp-action="Index">
+                <i class="fas fa-graduation-cap me-1"></i>Khóa Học
+            </a>
+        </li>
+    }
+
+    @if (isBoD)
+    {
+        <li class="nav-item">
+            <a class="nav-link text-white" asp-area="" asp-controller="LopHoc" asp-action="Index">
+                <i class="fas fa-users me-1"></i>Lớp Học
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-white" asp-area="" asp-controller="KhoaHoc" asp-action="Index">
+                <i class="fas fa-graduation-cap me-1"></i>Khóa Học
+            </a>
+        </li>
+    }
+
+    @if (isHr)
+    {
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-white" href="#" id="quanTriDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-cog me-1"></i>Quản Trị
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="quanTriDropdown">
                 {
                     <li>
                         <a class="dropdown-item" asp-area="" asp-controller="NguoiDung" asp-action="Index">
@@ -45,17 +97,6 @@
                         </a>
                     </li>
                 }
-                @if (User.IsInRole(UserRoles.HR))
-                {
-                    <li>
-                        <a class="dropdown-item" asp-area="" asp-controller="NguoiDung" asp-action="ThemMoi">
-                            <i class="fas fa-user-plus me-2"></i>Thêm mới nhân viên
-                        </a>
-                    </li>
-                }
-                @if (User.IsInRole(UserRoles.HR) ||
-                     User.IsInRole(UserRoles.Administrator) ||
-                     User.IsInRole(UserRoles.TrainingDepartment))
                 {
                     <li>
                         <a class="dropdown-item" asp-area="" asp-controller="PhongBan" asp-action="Index">
@@ -66,6 +107,7 @@
             </ul>
         </li>
     }
+
     <li class="nav-item"> 
         <a class="nav-link text-white" asp-area="" asp-controller="LienHe">
             <i class="fas fa-envelope me-1"></i>Liên Hệ
