@@ -52,7 +52,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpGet("chi-tiet")]
-        [Authorize(Roles = UserRoles.Administrator + "," + UserRoles.TrainingDepartment + "," + UserRoles.HR)]
+        [Authorize(Roles = UserRoles.Administrator + "," + UserRoles.HR)]
         public async Task<IActionResult> ChiTiet(int id, int page = 1)
         {
             try
@@ -272,7 +272,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
         // POST: PhongBan/ChuyenNhanVien
         [HttpPost("chuyen-nhan-vien")]
-        [Authorize(Roles = UserRoles.Administrator + "," + UserRoles.TrainingDepartment + "," + UserRoles.HR)]
+        [Authorize(Roles = UserRoles.Administrator + "," + UserRoles.HR)]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChuyenNhanVien([FromBody] TransferEmployeeDto model)
         {

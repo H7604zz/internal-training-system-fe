@@ -136,6 +136,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpPost("create-class")]
+        [Authorize(Roles = UserRoles.TrainingDepartment)]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateClass(CreateClassViewModel model)
         {
@@ -196,6 +197,8 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpGet("by-course/{courseId}")]
+        [Authorize(Roles = UserRoles.TrainingDepartment + "," 
+                + UserRoles.DirectManager + "," + UserRoles.Staff + "," + UserRoles.Mentor)]
         public async Task<IActionResult> GetClassesByCourse(int courseId)
         {
             try

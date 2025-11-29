@@ -78,7 +78,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpGet("chi-tiet/{id}")]
-        [Authorize]
+        [Authorize(Roles = UserRoles.TrainingDepartment + "," + UserRoles.BoardOfDirectors + "," + UserRoles.Mentor)]
         public async Task<IActionResult> ChiTiet(int id)
         {
             try
@@ -540,35 +540,11 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
                 // Get current user role for button visibility
                 ViewBag.UserRole = await UserProfileHelper.GetCurrentUserRoleAsync(_httpClient, _httpContextAccessor);
-                
+
                 // Check if enrollments are finalized
-                bool isFinalized = false;
-                try
-                {
-                    // Try to check if there's a finalization status API
-                    var finalizationResponse = await _httpClient.GetAsync(Utilities.GetAbsoluteUrl($"api/course/{id}/finalization-status"));
-                    if (finalizationResponse.IsSuccessStatusCode)
-                    {
-                        var finalizationContent = await finalizationResponse.Content.ReadAsStringAsync();
-                        isFinalized = JsonSerializer.Deserialize<bool>(finalizationContent, new JsonSerializerOptions
-                        {
-                            PropertyNameCaseInsensitive = true
-                        });
-                    }
-                    else
-                    {
-                        // Fallback: check if there are any enrolled students (indicates finalization has occurred)
-                        isFinalized = staff.Any(s => s.Status == "Enrolled" || s.Status == "InProgress" || s.Status == "Completed");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Failed to check finalization status for course {CourseId}", id);
-                    // Fallback: check if there are any enrolled students
-                    isFinalized = staff.Any(s => s.Status == "Enrolled" || s.Status == "InProgress" || s.Status == "Completed");
-                }
-                ViewBag.IsFinalized = isFinalized;
-                
+                ViewBag.IsFinalized = staff.Any(s => s.Status == EnrollmentConstants.Status.Enrolled
+                                                  || s.Status == EnrollmentConstants.Status.InProgress);
+               
                 // Get total count of enrolled employees using the confirmed-staff/count API
                 try
                 {
@@ -674,6 +650,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpPost("approve")]
+        [Authorize(Roles = UserRoles.BoardOfDirectors)]
         public async Task<IActionResult> Approve([FromBody] CourseApprovalRequest request)
         {
             try
@@ -746,6 +723,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
 
         [HttpPost("reject")]
+        [Authorize(Roles = UserRoles.BoardOfDirectors)]
         public async Task<IActionResult> Reject([FromBody] CourseApprovalRequest request)
         {
             try

@@ -29,9 +29,10 @@ namespace InternalTrainingSystem.WebApp.Controllers
         /// bài tập cuối kỳ của lớp học
         /// Mentor: xem tất cả
         /// Staff: chỉ xem nếu thuộc lớp
+        /// ĐT: xem được bài tập cuối kỳ của lớp
         /// </summary>
         [HttpGet("{classId}")]
-        [Authorize(Roles = UserRoles.Mentor + "," + UserRoles.Staff)]
+        [Authorize(Roles = UserRoles.Mentor + "," + UserRoles.Staff + "," + UserRoles.TrainingDepartment)]
         public async Task<IActionResult> Index(int classId)
         {
             try

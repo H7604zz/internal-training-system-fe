@@ -46,11 +46,6 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string DepartmentName => string.Join(", ", Departments?.Select(d => d.DepartmentName) ?? new List<string>());
         
         /// <summary>
-        /// Trainer name (alias cho CreatedBy)
-        /// </summary>
-        public string TrainerName => CreatedBy ?? "N/A";
-        
-        /// <summary>
         /// Response type (alias cho Status)
         /// </summary>
         public string ResponseType => Status ?? "NotEnrolled";
@@ -106,11 +101,16 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         /// Kiểm tra đang trong quá trình học hay không
         /// </summary>
         public bool IsInProgress => ResponseType == "InProgress";
-        
+
         /// <summary>
         /// Kiểm tra đã hoàn thành hay chưa
         /// </summary>
         public bool IsCompleted => ResponseType == "Completed";
+
+        /// <summary>
+        /// Tạch khóa học
+        /// </summary>
+        public bool IsFailed => ResponseType == "NotPass";
         
         /// <summary>
         /// Hiển thị badge class cho trạng thái
@@ -121,6 +121,7 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
             "inprogress" => "badge-info",
             "completed" => "badge-primary",
             "dropped" => "badge-danger",
+            "notpass" => "badge-danger",
             "notenrolled" => "badge-warning",
             _ => "badge-secondary"
         };
@@ -134,6 +135,7 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
             "inprogress" => "fa-play-circle",
             "completed" => "fa-trophy",
             "dropped" => "fa-times-circle",
+            "notpass" => "fa-exclamation-circle",
             "notenrolled" => "fa-clock",
             _ => "fa-question-circle"
         };
@@ -147,6 +149,7 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
             "inprogress" => "Đang học",
             "completed" => "Đã hoàn thành",
             "dropped" => "Đã từ chối",
+            "notpass" => "Trượt",
             "notenrolled" => "Chờ phản hồi",
             _ => "N/A"
         };

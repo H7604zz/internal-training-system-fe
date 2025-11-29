@@ -29,23 +29,23 @@
             <div class="container">
                 <div class="filter-tabs">
                     <a href="@Url.Action("DanhSachKhoaHocCuaToi", "KhoaHoc", new { status = "all", page = 1 })" 
-                       class="filter-tab @(ViewBag.CurrentStatus == "all" ? "active" : "")">
+                    class="filter-tab @(ViewBag.CurrentStatus == "all" ? "active" : "")">
                         <i class="fas fa-list me-2"></i>Tất cả 
                     </a>
                     <a href="@Url.Action("DanhSachKhoaHocCuaToi", "KhoaHoc", new { status = EnrollmentConstants.Status.NotEnrolled, page = 1 })" 
-                       class="filter-tab @(ViewBag.CurrentStatus == EnrollmentConstants.Status.NotEnrolled ? "active" : "")">
+                    class="filter-tab @(ViewBag.CurrentStatus == EnrollmentConstants.Status.NotEnrolled ? "active" : "")">
                         <i class="fas fa-clock me-2"></i>Chờ phản hồi
                     </a>
                     <a href="@Url.Action("DanhSachKhoaHocCuaToi", "KhoaHoc", new { status = EnrollmentConstants.Status.Enrolled, page = 1 })" 
-                       class="filter-tab @(ViewBag.CurrentStatus == EnrollmentConstants.Status.Enrolled ? "active" : "")">
+                    class="filter-tab @(ViewBag.CurrentStatus == EnrollmentConstants.Status.Enrolled ? "active" : "")">
                         <i class="fas fa-check-circle me-2"></i>Đã tham gia
                     </a>
                     <a href="@Url.Action("DanhSachKhoaHocCuaToi", "KhoaHoc", new { status = EnrollmentConstants.Status.Completed, page = 1 })"
-                       class="filter-tab @(ViewBag.CurrentStatus == EnrollmentConstants.Status.Completed ? "active" : "")">
+                    class="filter-tab @(ViewBag.CurrentStatus == EnrollmentConstants.Status.Completed ? "active" : "")">
                         <i class="fas fa-check-circle me-2"></i>Đã hoàn thành
                     </a>
                     <a href="@Url.Action("DanhSachKhoaHocCuaToi", "KhoaHoc", new { status = EnrollmentConstants.Status.Dropped, page = 1 })"
-                       class="filter-tab @(ViewBag.CurrentStatus == EnrollmentConstants.Status.Dropped ? "active" : "")">
+                    class="filter-tab @(ViewBag.CurrentStatus == EnrollmentConstants.Status.Dropped ? "active" : "")">
                         <i class="fas fa-check-circle me-2"></i>Đã từ chối
                     </a>
                 </div>
@@ -90,16 +90,14 @@
                                 <!-- Course Body -->
                                 <div class="course-body">
                                     <p class="course-description">@course.Description</p>
-                                    
+
                                     <div class="course-details">
-                                        @* <div class="detail-row"> *@
-                                        @*     <i class="fas fa-calendar-alt me-2"></i> *@
-                                        @*     <strong>Thời gian: </strong> @course.StartDateDisplay đến @course.EndDateDisplay *@
-                                        @* </div> *@
                                         <div class="detail-row">
-                                            <i class="fas fa-user-tie me-2"></i>
-                                            <strong>Giảng viên: </strong> @course.TrainerName
+                                            <i class="fas @(course.IsOnline ? "fa-laptop" : "fa-chalkboard-teacher") me-1"></i>
+                                            <strong>Hình thức: </strong>
+                                            @(course.IsOnline ? "Trực tuyến" : "Trực tiếp")
                                         </div>
+
                                         <div class="detail-row">
                                             <i class="fas fa-building me-2"></i>
                                             <strong>Phòng ban: </strong> @course.DepartmentName
@@ -111,13 +109,6 @@
                                                 <strong>Ngày phản hồi: </strong> @course.ResponseDateDisplay
                                             </div>
                                         }
-                                        @* @if (course.IsPending && course.DaysLeftToRespond > 0) *@
-                                        @* { *@
-                                        @*     <div class="detail-row text-warning"> *@
-                                        @*         <i class="fas fa-exclamation-triangle me-2"></i> *@
-                                        @*         <strong>Còn @course.DaysLeftToRespond ngày để phản hồi</strong> *@
-                                        @*     </div> *@
-                                        @* } *@
                                     </div>
 
                                     @if (!string.IsNullOrEmpty(course.Note))
@@ -141,7 +132,7 @@
                                         </button>
                                     </div>
                                 }
-                                else if ((course.IsAccepted || course.IsInProgress) && course.CourseStatus == "Open")
+                                @if (course.IsAccepted || course.IsInProgress)
                                 {
                                     <div class="course-actions">
                                         <a href="@Url.Action("HocTap", "KhoaHoc", new { courseId = course.CourseId })" class="btn btn-primary">
@@ -149,12 +140,20 @@
                                         </a>
                                     </div>
                                 }
-                                else if (course.IsCompleted)
+                                @if (course.IsCompleted)
                                 {
                                     <div class="course-actions">
                                         <a asp-controller="KhoaHoc" asp-action="ChungChi" asp-route-courseId="@course.CourseId" class="btn btn-warning">
                                             <i class="fas fa-certificate me-1"></i>Xem chứng chỉ
                                         </a>
+                                        <a href="@Url.Action("HocTap", "KhoaHoc", new { courseId = course.CourseId })" class="btn btn-outline-primary">
+                                            <i class="fas fa-eye me-1"></i>Xem lại
+                                        </a>
+                                    </div>
+                                }
+                                @if (course.IsFailed)
+                                {
+                                    <div class="course-actions">
                                         <a href="@Url.Action("HocTap", "KhoaHoc", new { courseId = course.CourseId })" class="btn btn-outline-primary">
                                             <i class="fas fa-eye me-1"></i>Xem lại
                                         </a>
