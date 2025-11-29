@@ -110,6 +110,47 @@ namespace InternalTrainingSystem.WebApp.Controllers
             }
         }
 
+        // POST: nguoi-dung/khoa-tai-khoan
+        [HttpPost("khoa-tai-khoan")]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = UserRoles.Administrator)]
+        public async Task<IActionResult> KhoaTaiKhoan([FromBody] ToggleUserStatusRequest request)
+        {
+            try
+            {
+                if (TokenHelpers.IsTokenExpired(_httpContextAccessor))
+                {
+                    return Json(new { success = false, message = "Phiên đăng nhập đã hết hạn" });
+                }
+
+                var jsonContent = new StringContent(
+                    JsonSerializer.Serialize(request),
+                    Encoding.UTF8,
+                    "application/json");
+
+                var response = await _httpClient.PostAsync(
+                    Utilities.GetAbsoluteUrl("api/auth/toggle-status"),
+                    jsonContent);
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var message = responseContent.Trim('\"');
+                    return Json(new { success = true, message = message });
+                }
+                else
+                {
+                    var message = responseContent.Trim('\"');
+                    return Json(new { success = false, message = message });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Đã xảy ra lỗi: {ex.Message}" });
+            }
+        }
+
         // POST: nguoi-dung/doi-role
         [HttpPost("doi-role")]
         [ValidateAntiForgeryToken]

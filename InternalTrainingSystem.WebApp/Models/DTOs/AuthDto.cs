@@ -168,4 +168,12 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         public string Id { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
     }
+
+    /// <summary>
+    /// DTO cho request khóa/mở khóa tài khoản
+    /// </summary>
+    public class ToggleUserStatusRequest
+    {
+        public string UserId { get; set; } = string.Empty;
+    }
 }
