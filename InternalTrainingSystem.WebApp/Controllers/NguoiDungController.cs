@@ -25,7 +25,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
         // GET: nguoi-dung
         [HttpGet]
-        [Authorize(Roles = UserRoles.Administrator)]
+        [Authorize(Roles = UserRoles.Administrator + "," + UserRoles.HR)]
         public async Task<IActionResult> Index(string? search, int page = 1, int pageSize = 10)
         {
             try

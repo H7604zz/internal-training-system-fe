@@ -1,9 +1,11 @@
 @model InternalTrainingSystem.WebApp.Models.PagedResult<InternalTrainingSystem.WebApp.Models.DTOs.UserListDto>
 @using InternalTrainingSystem.WebApp.Models.ViewModels
 @using InternalTrainingSystem.WebApp.Models.DTOs
+@using InternalTrainingSystem.WebApp.Constants
 @{
     ViewData["Title"] = "Quản Lý Người Dùng";
     var roles = ViewBag.Roles as List<RoleDto> ?? new List<RoleDto>();
+    bool isAdmin = User.IsInRole(UserRoles.Administrator);
 }
 
 @section Styles {
@@ -43,11 +45,11 @@
                                     <i class="fas fa-search me-1"></i>Tìm kiếm
                                 </label>
                                 <input type="text" 
-                                       class="form-control" 
-                                       id="search" 
-                                       name="search" 
-                                       value="@ViewBag.CurrentSearch"
-                                       placeholder="Tìm theo tên, mã nhân viên hoặc email...">
+                                class="form-control" 
+                                id="search" 
+                                name="search" 
+                                value="@ViewBag.CurrentSearch"
+                                placeholder="Tìm theo tên, mã nhân viên hoặc email...">
                             </div>
                             <div class="col-md-3">
                                 <button type="submit" class="btn btn-primary w-100">
@@ -86,7 +88,10 @@
                                         <th style="width: 10%;">Chức vụ</th>
                                         <th style="width: 10%;">Quyền</th>
                                         <th style="width: 8%;" class="text-center">Trạng thái</th>
-                                        <th style="width: 10%;" class="text-center">Thao tác</th>
+                                        @if (isAdmin)
+                                        {
+                                            <th style="width: 10%;" class="text-center">Thao tác</th>
+                                        }
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -124,32 +129,35 @@
                                                     </span>
                                                 }
                                             </td>
-                                            <td class="text-center">
-                                                <button type="button" 
-                                                        class="btn btn-sm btn-warning me-1" 
-                                                        onclick="openRoleModal('@user.Id', '@user.FullName', '@user.Role')"
-                                                        title="Đổi quyền">
-                                                    <i class="fas fa-user-shield"></i>
-                                                </button>
-                                                @if (user.IsActive)
-                                                {
-                                                    <button type="button" 
-                                                            class="btn btn-sm btn-danger" 
-                                                            onclick="toggleUserStatus('@user.Id', '@user.FullName', false)"
-                                                            title="Khóa tài khoản">
-                                                        <i class="fas fa-lock"></i>
+                                            @if (isAdmin)
+                                            {
+                                                <td class="text-center">
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-warning me-1"
+                                                            onclick="openRoleModal('@user.Id', '@user.FullName', '@user.Role')"
+                                                            title="Đổi quyền">
+                                                        <i class="fas fa-user-shield"></i>
                                                     </button>
-                                                }
-                                                else
-                                                {
-                                                    <button type="button" 
-                                                            class="btn btn-sm btn-success" 
-                                                            onclick="toggleUserStatus('@user.Id', '@user.FullName', true)"
-                                                            title="Mở khóa tài khoản">
-                                                        <i class="fas fa-unlock"></i>
-                                                    </button>
-                                                }
-                                            </td>
+                                                    @if (user.IsActive)
+                                                    {
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-danger"
+                                                                onclick="toggleUserStatus('@user.Id', '@user.FullName', false)"
+                                                                title="Khóa tài khoản">
+                                                            <i class="fas fa-lock"></i>
+                                                        </button>
+                                                    }
+                                                    else
+                                                    {
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-success"
+                                                                onclick="toggleUserStatus('@user.Id', '@user.FullName', true)"
+                                                                title="Mở khóa tài khoản">
+                                                            <i class="fas fa-unlock"></i>
+                                                        </button>
+                                                    }
+                                                </td>
+                                            }
                                         </tr>
                                     }
                                 </tbody>
