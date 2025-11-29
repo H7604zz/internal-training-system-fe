@@ -111,6 +111,34 @@
                                         Chức vụ hiện tại của nhân viên (không bắt buộc)
                                     </div>
                                 </div>
+
+                                @if (ViewBag.IsAdmin == true)
+                                {
+                                    <div class="col-md-6 mb-4">
+                                        <label asp-for="RoleName" class="form-label required">
+                                            <i class="fas fa-user-tag me-1"></i>Vai Trò
+                                        </label>
+                                        <select asp-for="RoleName" class="form-select">
+                                            <option value="">-- Chọn vai trò --</option>
+                                            @if (ViewBag.Roles != null)
+                                            {
+                                                var roles = ViewBag.Roles as List<InternalTrainingSystem.WebApp.Models.DTOs.RoleDto>;
+                                                if (roles != null)
+                                                {
+                                                    foreach (var role in roles)
+                                                    {
+                                                        <option value="@role.Name" selected="@(role.Name == "Staff")">@role.Name</option>
+                                                    }
+                                                }
+                                            }
+                                        </select>
+                                        <span asp-validation-for="RoleName" class="text-danger"></span>
+                                        <div class="form-text">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Chọn vai trò cho người dùng trong hệ thống
+                                        </div>
+                                    </div>
+                                }
                             </div>
 
                             <div class="form-actions">
@@ -157,6 +185,20 @@
                                 <i class="fas fa-lightbulb text-warning"></i>
                                 <span>Nhân viên nên đổi mật khẩu ngay sau lần đăng nhập đầu tiên để bảo mật tài khoản</span>
                             </div>
+                            @if (ViewBag.IsAdmin == true)
+                            {
+                                <div class="help-item">
+                                    <i class="fas fa-user-shield text-primary"></i>
+                                    <span><strong>Admin:</strong> Bạn có thể chọn bất kỳ vai trò nào cho người dùng mới</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="help-item">
+                                    <i class="fas fa-user-shield text-info"></i>
+                                    <span><strong>HR:</strong> Người dùng mới sẽ được tạo với vai trò Staff mặc định</span>
+                                </div>
+                            }
                             <div class="help-item">
                                 <i class="fas fa-lightbulb text-warning"></i>
                                 <span>Tất cả các trường đánh dấu (*) là bắt buộc phải điền</span>
@@ -224,6 +266,14 @@
 
                 // Validate required fields
                 const requiredFields = ['#EmployeeId', '#FullName', '#Email', '#DepartmentId'];
+                
+                // Nếu là Admin, thêm RoleName vào danh sách validate
+                @if (ViewBag.IsAdmin == true)
+                {
+                    <text>
+                    requiredFields.push('#RoleName');
+                    </text>
+                }
                 
                 requiredFields.forEach(function(field) {
                     const value = $(field).val();

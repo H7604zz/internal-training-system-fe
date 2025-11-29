@@ -195,7 +195,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         }
         // GET: nguoi-dung/them-moi
         [HttpGet("them-moi")]
-        [Authorize(Roles = "HR")]
+        [Authorize(Roles = UserRoles.Administrator + "," + UserRoles.HR)]
         public async Task<IActionResult> ThemMoi()
         {
             try
@@ -210,6 +210,17 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 var departments = await GetDepartmentsAsync();
                 ViewBag.Departments = departments;
 
+                // Kiểm tra role của user hiện tại
+                var isAdmin = User.IsInRole(UserRoles.Administrator);
+                ViewBag.IsAdmin = isAdmin;
+
+                // Nếu là Admin, lấy danh sách roles
+                if (isAdmin)
+                {
+                    var roles = await GetRolesAsync();
+                    ViewBag.Roles = roles;
+                }
+
                 return View(new CreateStaffDto());
             }
             catch (Exception)
@@ -222,7 +233,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
         // POST: nguoi-dung/them-moi
         [HttpPost("them-moi")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "HR")]
+        [Authorize(Roles = UserRoles.Administrator + "," + UserRoles.HR )]
         public async Task<IActionResult> ThemMoi(CreateStaffDto model)
         {
             try
@@ -237,7 +248,28 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 {
                     var departments = await GetDepartmentsAsync();
                     ViewBag.Departments = departments;
+                    
+                    // Kiểm tra role để trả về view đúng
+                    var isAdmin = User.IsInRole(UserRoles.Administrator);
+                    ViewBag.IsAdmin = isAdmin;
+                    if (isAdmin)
+                    {
+                        var roles = await GetRolesAsync();
+                        ViewBag.Roles = roles;
+                    }
+                    
                     return View(model);
+                }
+
+                // Xác định RoleName dựa trên role của người dùng hiện tại
+                string roleName = UserRoles.Staff;
+                if (User.IsInRole(UserRoles.Administrator))
+                {
+                    roleName = string.IsNullOrWhiteSpace(model.RoleName) ? "Staff" : model.RoleName;
+                }
+                else if (User.IsInRole(UserRoles.HR))
+                {
+                    roleName = "Staff";
                 }
 
                 // Tạo request DTO khớp với backend CreateUserDto
@@ -249,7 +281,7 @@ namespace InternalTrainingSystem.WebApp.Controllers
                     Phone = model.Phone,
                     DepartmentId = model.DepartmentId,
                     Position = model.Position,
-                    RoleName = "Staff" // Role mặc định là Staff
+                    RoleName = roleName
                 };
 
                 var json = JsonSerializer.Serialize(createUserDto);
@@ -276,6 +308,16 @@ namespace InternalTrainingSystem.WebApp.Controllers
 
                     var departments = await GetDepartmentsAsync();
                     ViewBag.Departments = departments;
+                    
+                    // Kiểm tra role để trả về view đúng
+                    var isAdmin = User.IsInRole(UserRoles.Administrator);
+                    ViewBag.IsAdmin = isAdmin;
+                    if (isAdmin)
+                    {
+                        var roles = await GetRolesAsync();
+                        ViewBag.Roles = roles;
+                    }
+                    
                     return View(model);
                 }
             }
@@ -284,6 +326,16 @@ namespace InternalTrainingSystem.WebApp.Controllers
                 TempData["Error"] = $"Đã xảy ra lỗi: {ex.Message}";
                 var departments = await GetDepartmentsAsync();
                 ViewBag.Departments = departments;
+                
+                // Kiểm tra role để trả về view đúng
+                var isAdmin = User.IsInRole(UserRoles.Administrator);
+                ViewBag.IsAdmin = isAdmin;
+                if (isAdmin)
+                {
+                    var roles = await GetRolesAsync();
+                    ViewBag.Roles = roles;
+                }
+                
                 return View(model);
             }
         }
