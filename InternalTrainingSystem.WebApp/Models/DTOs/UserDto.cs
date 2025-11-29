@@ -168,7 +168,7 @@ namespace InternalTrainingSystem.WebApp.Models.DTOs
         // Thông tin điểm danh
         public int TotalSessions { get; set; }
         public int AbsentDays { get; set; }
-        public double AttendanceRate { get; set; }
+        public double AbsentRate { get; set; }
 
         // Thông tin khóa học
         public string Status { get; set; } = "InProgress";

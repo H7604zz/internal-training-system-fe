@@ -1,4 +1,5 @@
 @model List<InternalTrainingSystem.WebApp.Models.DTOs.UserCourseSummaryDto>
+@using InternalTrainingSystem.WebApp.Constants
 @{
     ViewData["Title"] = "Báo Cáo Tình Hình Học Tập";
 }
@@ -21,23 +22,25 @@
             {
                 var statusClass = course.Status switch
                 {
-                    "Completed" => "status-completed",
-                    "Failed" => "status-failed",
+                    EnrollmentConstants.Status.Completed => "status-completed",
+                    EnrollmentConstants.Status.NotPass => "status-failed",
                     _ => "status-inprogress"
                 };
 
                 var statusText = course.Status switch
                 {
-                    "Completed" => "Hoàn thành",
-                    "Failed" => "Chưa hoàn thành",
+                    EnrollmentConstants.Status.Completed => "Hoàn thành",
+                    EnrollmentConstants.Status.NotPass => "Trượt",
                     _ => "Đang học"
                 };
 
-                var attendanceColor = course.AttendanceRate >= 80 ? "#388e3c" :
-                                     course.AttendanceRate >= 60 ? "#f57c00" : "#d32f2f";
+                var absentColor = course.AbsentRate >= 80 ? "#d32f2f" :
+                                  course.AbsentRate >= 60 ? "#f57c00" :
+                                  course.AbsentRate >= 20 ? "#fbc02d" : "#388e3c";
 
-                var attendanceClass = course.AttendanceRate >= 80 ? "good" :
-                                     course.AttendanceRate >= 60 ? "warning" : "bad";
+                var absentClass = course.AbsentRate >= 80 ? "bad" :
+                                  course.AbsentRate >= 60 ? "warning" :
+                                  course.AbsentRate >= 20 ? "warning" : "good";
 
                 <div class="course-card">
                     <div class="course-header">
@@ -77,13 +80,13 @@
 
                         <div class="stat-item">
                             <div class="stat-label">
-                                <i class="fas fa-percent me-1"></i>Tỷ lệ điểm danh
+                                <i class="fas fa-percent me-1"></i>Tỷ lệ vắng điểm danh
                             </div>
-                            <div class="stat-value @attendanceClass">
-                                @course.AttendanceRate.ToString("F1")%
+                            <div class="stat-value @absentClass">
+                                @course.AbsentRate.ToString("F1")%
                             </div>
                             <div class="attendance-bar">
-                                <div class="attendance-fill" style="width: @(course.AttendanceRate)%; background-color: @attendanceColor;"></div>
+                                <div class="attendance-fill" style="width: @(course.AbsentRate)%; background-color: @absentColor;"></div>
                             </div>
                         </div>
 
